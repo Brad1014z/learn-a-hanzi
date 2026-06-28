@@ -1,0 +1,42 @@
+LICENSE NOTICE — learn-a-hanzi
+================================
+
+This file records the licensing *intent* for the project. Final license terms for any
+distributed data are to be confirmed against upstream sources before public release —
+see docs/specs/02-data-sources.md (sections "License obligations summary" and the ⚠ flags).
+
+1. APPLICATION SOURCE CODE
+   -------------------------
+   Intended license: MIT OR Apache-2.0 (to be chosen before first release).
+   Until chosen, this source code is © its authors; all rights reserved for the code,
+   except as required to honor the upstream data licenses below.
+
+2. DERIVED LEARNING DATA (the bundled SQLite dataset)
+   ---------------------------------------------------
+   Built from open datasets, each under its own license. The combined dataset inherits the
+   most restrictive applicable terms (likely CC-BY-SA 3.0 share-alike from CC-CEDICT, plus
+   the Arphic Public License conditions from make-me-a-hanzi graphics). Confirm before
+   redistribution.
+
+   Upstream sources and their licenses (⚠ verify current text before release):
+
+   - make-me-a-hanzi (chanind/make-me-a-hanzi)
+       graphics.txt, dictionary.txt → stroke paths, medians, definitions
+       License: Arphic Public License
+
+   - CC-CEDICT (https://www.mdbg.net/chinese/dictionary?page=cedict)
+       multi-char words, definitions cross-check
+       License: CC-BY-SA 3.0
+
+   - Unihan database (unicode.org)
+       frequency ranks, radical/stroke metadata
+       License: Unicode Data Files agreement
+
+   - Tatoeba (tatoeba.org)
+       example sentences + translation links
+       License: CC-BY 2.0 FR (per-sentence attribution recorded)
+
+3. ATTRIBUTION
+   -------------
+   A Credits screen in the app lists these sources and (where the license requires) the
+   individual contributors whose data is bundled.
