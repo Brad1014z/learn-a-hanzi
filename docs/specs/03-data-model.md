@@ -134,8 +134,99 @@ value         TEXT NOT NULL
 - No per-stroke user drawings kept long-term. A drawing lives only in memory for the
   current practice card; only the boolean `drawnCorrectly` + grade reach `ReviewLog`.
   (Rationale: privacy, storage; constitution: minimal footprint.)
-- No accounts, no sync metadata in MVP.
 - No analytics events.
+- (Phase 2 adds account/sync metadata below — but still no per-stroke drawings, and still
+  no analytics.)
+
+---
+
+## Phase 2 tables (Arcade & competition)
+
+> **Status:** DRAFT · Phase 2. These tables are added in Phase 2a/2b/2c. For the cloud-sourced
+> data (profiles, league standings, leaderboards), the **server is source of truth**; these
+> local rows are **mirrors/caches + the sync outbox**. Game sessions and local high scores
+> are local-only (server never sees the full session, only the validated submission).
+
+### Local-only (game state)
+
+#### `GameSession` — one row per arcade play
+```
+id            INTEGER PRIMARY KEY AUTOINCREMENT
+mode          TEXT NOT NULL        -- SPRINT | DAILY | TOWER | SPEED
+characterSetId TEXT                -- identifies the char set played (date-seed for DAILY)
+score         INTEGER NOT NULL
+xp            INTEGER NOT NULL
+startedAt     INTEGER NOT NULL     -- epoch millis
+durationMs    INTEGER NOT NULL
+events        TEXT                 -- JSON compact play log (per-char verdicts + ts)
+synced        INTEGER NOT NULL DEFAULT 0   -- 0/1: has the outbox drained this session?
+```
+Index on `(mode, startedAt)` for per-mode history; `synced` drives outbox drain queries.
+
+#### `LocalHighScore` — best score per mode (one row per mode)
+```
+mode          TEXT PRIMARY KEY     -- SPRINT | DAILY | TOWER | SPEED
+bestScore     INTEGER NOT NULL
+bestXp        INTEGER NOT NULL
+achievedAt    INTEGER NOT NULL
+```
+
+### Sync outbox (drained by WorkManager — see `10`)
+
+#### `PendingXpSync` — queued submissions
+```
+id            INTEGER PRIMARY KEY AUTOINCREMENT
+sessionId     INTEGER NOT NULL     -- FK -> GameSession
+submissionUuid TEXT NOT NULL       -- client-generated; server dedupes on this
+attempts      INTEGER NOT NULL DEFAULT 0
+queuedAt      INTEGER NOT NULL
+lastError     TEXT                 -- nullable; last failure reason
+```
+Drained on connectivity change / sign-in; row deleted on confirmed server success.
+Idempotency via `submissionUuid` (retries can't double-count XP).
+
+### Cloud mirrors (read-mostly caches; server is source of truth)
+
+#### `Profile` — cached local profile (if signed in)
+```
+uid           TEXT PRIMARY KEY     -- Firebase/Supabase uid
+handle        TEXT NOT NULL        -- auto-generated anonymous handle
+leagueTier    INTEGER              -- current league tier (nullable pre-first-placement)
+signedInAt    INTEGER NOT NULL
+```
+
+#### `LeagueMembership` — cached current-week league
+```
+uid           TEXT NOT NULL
+weekStart     INTEGER NOT NULL     -- Monday 00:00 UTC, epoch millis
+leagueId      TEXT NOT NULL
+tier          INTEGER NOT NULL
+totalXp       INTEGER NOT NULL DEFAULT 0
+rank          INTEGER              -- nullable until computed
+cachedAt      INTEGER NOT NULL
+PRIMARY KEY (uid, weekStart)
+```
+
+#### `DailyLeaderboardEntry` — cached daily challenge standings (optional cache)
+```
+date          INTEGER NOT NULL     -- UTC date key
+uid           TEXT NOT NULL
+handle        TEXT NOT NULL
+bestScore     INTEGER NOT NULL
+bestXp        INTEGER NOT NULL
+cachedAt      INTEGER NOT NULL
+PRIMARY KEY (date, uid)
+```
+
+### Phase 2 migration notes
+
+- All Phase 2 tables are **additive** — added via a single `Migration(N, N+1)` that creates
+  them. No existing Phase 1 table is altered, so the user-data-preservation rule holds
+  trivially.
+- If a user **never signs in**, only `GameSession` + `LocalHighScore` are ever written; the
+  cloud mirrors + outbox stay empty. The app works identically to the no-account experience.
+- On **sign-out / account deletion**, `GameSession`/`LocalHighScore` are **kept** (they're
+  the user's local history); cloud mirrors + outbox are cleared.
 
 ## Open questions
 
@@ -143,3 +234,5 @@ value         TEXT NOT NULL
       Lean: surrogate id keeps CEDICT/Tatoeba dedup simple.
 - [ ] Store pinyin with or without tone numbers vs tone marks? Decision: store tone-**marked**
       for display; engine can derive numbers if needed. Confirm against source formats.
+- [ ] (Phase 2) Prune old `GameSession` rows after N days? Lean: keep a rolling window
+      (e.g. 90 days) + aggregate; drop detail.

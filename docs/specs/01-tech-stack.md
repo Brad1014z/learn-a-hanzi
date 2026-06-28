@@ -103,11 +103,29 @@ user strokes against known characters) so tuning changes are measurable. See `05
 
 ## Dependencies we explicitly avoid
 
-- No RxJava, no Kotlinx Serialization if we can use hand-rolled parsing of the small JSON
-  lines (kotlinx.serialization is acceptable if ingestion in-app needs it; the ingestion
-  *tool* may use whatever it likes since it isn't shipped).
+- No RxJava, no Kotlinx Serialization if we can hand-roll parsing of the small JSON lines
+  (kotlinx.serialization is acceptable if ingestion in-app needs it; the ingestion *tool*
+  may use whatever it likes since it isn't shipped).
 - No WebView, no React Native bridge, no Flutter embedding.
 - No Google services (Firebase, etc.) in MVP.
+
+## Phase 2 additions (Arcade & competition) — NOT in MVP
+
+> None of the below is pulled into the build for Phase 1. They are listed here so the stack
+> decision is recorded; all are accessed **behind interfaces** (see `06`, `10`) so the vendor
+> choice stays reversible.
+
+- **Auth:** Google Sign-In (`credentials-play-services-auth` / Credential Manager). No
+  email/password.
+- **Backend (recommended): Firebase** — Firebase Auth + Cloud Firestore + Cloud Functions
+  (scheduled + on-write triggers for league shuffle + score validation). Mature Android SDK,
+  trivial Google auth, near-zero ops.
+- **Backend (alternative): Supabase** — Postgres + Row Level Security + Edge Functions (Deno)
+  + `pg_cron`. Open-source, relational, self-hostable; more glue code.
+- **Background sync:** **WorkManager** to drain the XP outbox (see `10`) on connectivity
+  change with backoff — already an AndroidX staple, no new heavy dep.
+- **Choice is reversible:** the app talks to `ScoreRepository` / `LeagueRepository` /
+  `AccountRepository` interfaces only; the Firebase/Supabase impl is one swappable module.
 
 ## Open questions to resolve at Phase 0
 

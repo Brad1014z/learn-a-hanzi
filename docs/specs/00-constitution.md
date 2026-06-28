@@ -34,9 +34,10 @@ future characters easier to learn. So: we grade writing, not just recognition.
    reproducible. No proprietary content lock-in. A user could rebuild the dataset
    themselves from public sources.
 
-4. **Minimal permissions, minimal footprint.** No accounts required to start. No ads, no
-   trackers, no background data collection in the MVP. We ask for only what a feature
-   needs.
+4. **Minimal permissions, minimal footprint.** No account is required to start — the app is
+   fully usable offline and unsigned-in. An *optional* account enables cloud sync and
+   competition (Phase 2); nothing in the core learning loop depends on it. No ads, no
+   trackers, no background data collection. We ask for only what a feature needs.
 
 5. **Feedback that teaches, not punishes.** Grading is forgiving within reason and always
    shows the correct path on failure. The goal is to leave every session having written
@@ -45,6 +46,11 @@ future characters easier to learn. So: we grade writing, not just recognition.
 6. **Calm, single-task screens.** One clear thing per screen. No notifications nags, no
    streak guilt-tripping as a dark pattern. Streaks and progress exist to motivate, and
    they say so honestly.
+
+7. **Separation of learning and play.** The learning path (learn / practice / review) never
+   applies time pressure — it stays accuracy-focused per principle #2. Speed, adrenaline,
+   and competition live in a distinct **Arcade** track that the user can ignore entirely.
+   Games are a reward for learning progress, never a substitute for it.
 
 ## Design values
 
@@ -65,8 +71,10 @@ These are things we are **deliberately not building**. Listing them prevents sco
 - **A general Chinese course / grammar curriculum.** We teach characters and their
   immediate context, not sentence construction rules, grammar drills, or listening
   comprehension exercises.
-- **Social / community features.** No friends, leaderboards-as-pressure, sharing, or
-  accounts-required collaboration in the MVP.
+- **Social / community features.** No real-time multiplayer, no chat/DMs, no friends graph,
+  and no social-pressure dark patterns. Competition (Phase 2) is opt-in, async, and
+  **anonymous leagues only** — you climb a weekly ladder of strangers, never identifiable
+  individuals.
 - **iOS, web, or desktop.** Android only for the foreseeable future. Architecture stays
   clean enough that sharing logic later is plausible, but we optimize for Android.
 - **A custom TTS voice or recorded audio library.** MVP uses the system TTS engine. We do
@@ -86,6 +94,19 @@ A new user, starting from zero, can:
    drawing re-graded.
 
 If those three hold, the MVP has succeeded. Everything else is a stretch goal.
+
+## Success criteria (Phase 2 — Arcade & competition)
+
+Building on the MVP, a user who opts in can:
+
+4. Play simple **writing-based games** that reuse the stroke grader, entirely offline (local
+   high scores saved).
+5. Sign in (optional) with Google and submit game scores to earn XP.
+6. See their placement in a **weekly anonymous league** (promoted/relegated), with no friends,
+   chat, or identifiable opponents.
+
+The learning path's success criteria (1–3 above) must hold *with or without* an account and
+*with or without* Arcade. Games and competition are additive, never gating.
 
 ## What "done" means for this spec set
 

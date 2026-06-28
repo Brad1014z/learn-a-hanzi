@@ -12,6 +12,8 @@ Goal: a buildable repo, locked specs, and a reproducible data pipeline. **No app
 - [ ] Specs reviewed and marked `ACCEPTED` (this document set).
 - [ ] Gradle multi-module skeleton: `:app`, `:core:data`, `:core:domain`, `:core:ui`,
       `:feature:practice`, `:feature:review`, `:feature:browser`, `:data-ingest`.
+      (Phase 2 modules `:core:games`, `:feature:arcade`, `:core:account`, `:core:sync` are
+      added in Phase 2a/2b — see below.)
 - [ ] Version catalog (`gradle/libs.versions.toml`) with pinned dependency versions.
 - [ ] Hilt + Compose + Room wired in `:app` so it launches to a blank screen.
 - [ ] `:data-ingest` tool:
@@ -48,9 +50,62 @@ criteria.)*
 feedback, hear pronunciation, read a definition + one example, and get a correct SRS review
 queue the next day — fully offline.
 
-## Phase 2 — Polish & depth
+## Phase 2 — Polish, depth & Arcade
 
-Goal: make it genuinely pleasant and deepen the content.
+Goal: make the app genuinely pleasant, deepen content, and add a fun optional **Arcade** +
+**competition** layer. Phase 2 is split so the riskier, backend-dependent parts are isolated.
+
+> Constitutional reminder: the calm offline learn→practice→review loop from Phase 1 stays
+> first-class throughout. Arcade is an additive track (spec `09`); competition is opt-in
+> and anonymous (specs `09`/`10`).
+
+### Phase 2a — Local Arcade (no backend)
+
+Goal: the four writing-based game modes, playable fully offline with local high scores.
+
+- [ ] `:core:games` module: scoring formula, combo math, theoretical-max calc, league
+      promotion/relegation logic — fully unit-tested (mirrors SrsEngine rigor).
+- [ ] `:feature:arcade`: Arcade hub + shared game screen shell reusing the stroke grader.
+- [ ] Modes: Stroke Sprint (60s), Combo Tower (endless), Speed Write (time attack).
+  Daily Challenge UI can exist but is local-only until 2b.
+- [ ] Local state: `GameSession`, `LocalHighScore` tables (see `03`).
+- [ ] Distinct energetic Arcade visual identity vs the calm learning path (see `07`).
+- [ ] Character-pool rule: games draw from learned + in-review chars (`09`).
+
+**Definition of done:** a user can play all four modes offline and see local high scores;
+the learning path is untouched.
+
+### Phase 2b — Daily Challenge + leaderboards (backend, no leagues yet)
+
+Goal: the social anchor — a shared daily challenge and per-day leaderboards.
+
+- [ ] Backend vendor decision: Firebase (recommended) vs Supabase — confirm here.
+- [ ] Google Sign-In (`:core:account`), profile creation with auto-generated handle.
+- [ ] `:core:sync`: `ScoreRepository` + outbox drain via WorkManager; score validation
+      Cloud Function (bounds-check only).
+- [ ] Daily Challenge: date-seeded shared set; best-of-N attempts; per-day leaderboard.
+- [ ] `PendingXpSync` outbox; offline submission queues and drains on reconnect.
+- [ ] Sign-in/out + account-delete in Settings; privacy policy drafted.
+
+**Definition of done:** signed-in users see a shared Daily Challenge and today's leaderboard;
+unsigned/offline users lose nothing (local play + high scores intact).
+
+### Phase 2c — Weekly anonymous leagues
+
+Goal: the long-term competition loop.
+
+- [ ] Weekly league shuffle Cloud Function (cron, Mon 00:00 UTC), ~12-person leagues.
+- [ ] `LeagueRepository`; league standings view (cached, offline-aware).
+- [ ] Promotion/relegation (~3 up / ~3 down), tier ladder.
+- [ ] Handle re-roll; weekly XP aggregation from all game sessions.
+- [ ] "Offline / stale" indicators; no penalties or guilt-tripping for missing a week.
+
+**Definition of done:** signed-in users are placed in a weekly anonymous league and
+promoted/relegated based on their game XP; unsigned users see none of it.
+
+### Phase 2 — Polish & depth (parallel, non-backend)
+
+Goal: make the core learning app genuinely pleasant and deeper. Can interleave with 2a–2c.
 
 - [ ] Richer example sentences (multiple per character, curated shortlist).
 - [ ] Audio polish: better TTS handling, per-word/per-sentence playback.
@@ -62,15 +117,16 @@ Goal: make it genuinely pleasant and deepen the content.
 - [ ] Onboarding screen + adaptive icon.
 - [ ] Performance pass + robustness (large decks, edge cases).
 
-**Definition of done:** the app feels finished for daily use; content extends beyond HSK 1;
-progress is motivating without being manipulative.
+**Definition of done (whole Phase 2):** the app feels finished for daily use; Arcade is fun
+and ignorable; competition is opt-in and honest; content extends beyond HSK 1.
 
 ## Phase 3 — If we go further (optional)
 
 Goal: take it from personal to publishable, if desired.
 
 - [ ] Privacy-respecting, **opt-in** crash reporting.
-- [ ] Cloud sync of progress (accounts optional; layer over existing repository interfaces).
+- [ ] Cloud sync of *learning* progress (separate from game sync; layer over existing
+      repository interfaces).
 - [ ] Backup/restore (export/import a small JSON of progress).
 - [ ] Achievements / milestones (honest, non-dark-pattern).
 - [ ] Wider curricula (HSK 4–6), traditional-character support.

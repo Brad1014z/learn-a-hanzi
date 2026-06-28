@@ -121,7 +121,7 @@ by every feature.
 
 - Name/wordmark, app icon (an adaptive icon — a single character or stroke motif).
 - Onboarding: a single short screen explaining the writing-first philosophy + TTS prompt.
-  No multi-step wizard; constitution favors getting into the app fast.
+  No multi-step Wizard; constitution favors getting into the app fast.
 
 ## Open questions
 
@@ -130,3 +130,63 @@ by every feature.
 - [ ] Rice-grid (米字格) vs. simpler box guide — rice grid is more authentic and useful for
       proportion; lean yes.
 - [ ] Tone mark emphasis: color vs. weight. Try both at implementation.
+
+---
+
+## Phase 2 — Arcade & competition (addendum)
+
+> Adds a distinct, optional track on top of the calm learning screens above. Governed by the
+> constitution's **"separation of learning and play"** principle: the learning path stays
+> exactly as specced; Arcade is louder, faster, and ignorable.
+
+### Track separation (visual)
+- The Arcade uses a **distinct accent palette** (warmer/higher-energy, e.g. an amber/orange
+  secondary) so entering it feels different from the calm learning path. The learning path's
+  calm semantic colors (`ink`, `strokeCorrect`, etc.) remain unchanged.
+- A bottom-nav or hub switch makes the boundary explicit: **Learn** vs **Arcade**.
+
+### Arcade hub (new screen)
+- Cards for each game mode (Stroke Sprint, Daily Challenge, Combo Tower, Speed Write) — see
+  `09`. Each card shows local high score + a "play" action.
+- **Daily Challenge** card is prominent (the social anchor) and shows "X hours left" until
+  reset.
+- Status chip: signed-in vs local-only; entry to leagues/leaderboards from here.
+
+### Game screen (shared shell)
+- Reuses the Practice `Canvas` + rice grid + stroke grader from the learning path, but with
+  **game chrome**: live score, combo multiplier (e.g. "×1.8"), timer (in timed modes),
+  characters-remaining count.
+- Feedback is **more energetic**: faster color flashes, score popups, combo escalation
+  visuals, punchier haptics. This is the one place the app gets loud.
+- On game end: **score screen** with local high score (always), and — if signed in —
+  submitted XP + league/daily placement delta.
+
+### Daily Challenge screen
+- Shows today's 5 characters, attempts remaining (best-of-N), and after play, the user's
+  best score + a link to the **daily leaderboard** view.
+
+### League / leaderboard views
+- **Weekly league:** the user's ~12-person anonymous ladder — handle, XP this week, rank,
+  promotion/relegation zone shading, "resets in Nd".
+- **Daily leaderboard:** today's Daily Challenge rankings.
+- Handles are auto-generated ("Swift Otter"); **no avatars from contacts, no real names, no
+  friend-add UI** (constitution + `09`).
+- Offline: show last-cached standings with an "offline" indicator.
+
+### Settings additions (Phase 2)
+- **Account:** sign in / out with Google, re-roll handle, delete account.
+- **Arcade toggles:** sound/haptics intensity for games (separate from learning path),
+  opt out of leagues while keeping local play.
+
+### Key flow additions
+
+**Flow D — Play an arcade game:** Arcade hub → pick mode → game screen (timed/combo) →
+score screen → (if signed in) see league/daily delta → back to hub.
+
+**Flow E — Daily challenge:** Arcade hub → Daily Challenge → play (best-of-N) → see best
+score + daily leaderboard.
+
+### Interaction posture differences
+- Learning path: no timers, forgiving, calm (unchanged from above).
+- Arcade: timers, combos, score popups, louder haptics — but **never** push notifications or
+  guilt-tripping. Opting out of Arcade loses nothing in the learning path.

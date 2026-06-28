@@ -145,3 +145,64 @@ Each returns `Flow` for observable data and `suspend` for writes.
       with stock Compose Navigation, reassess if route boilerplate bites.
 - [ ] Whether `LEARNING`/`RELEARNING` step counts (e.g. 1 or 2 learning steps before
       graduation) should be configurable. Lean: hardcode for MVP, expose later.
+
+---
+
+## Phase 2 — Arcade & competition (addendum)
+
+> Adds modules and a cloud layer on top of the architecture above. **None of the Phase 1
+> rules change**: Arcade runs offline, the cloud is purely additive, and `:core:domain`
+> stays pure-Kotlin and framework-free.
+
+### New modules
+
+```
+:core:games       -- pure Kotlin scoring/combo/league-domain (the "GameConfig" engine,
+                     mirrors how :core:domain holds SrsEngine). Fully unit-tested.
+:feature:arcade   -- Arcade hub + game screens + league/leaderboard views. Reuses the
+                     stroke grader from :feature:practice's engine module.
+```
+
+Optional cloud modules (Phase 2b/2c), all behind interfaces:
+
+```
+:core:account     -- AccountRepository interface (sign in/out, handle, delete) in domain;
+                     impl behind it.
+:core:sync        -- ScoreRepository / LeagueRepository interfaces in domain; Firebase or
+                     Supabase impl behind them. WorkManager worker drains the outbox.
+```
+
+### Dependency rules (unchanged + reinforced)
+
+- `:feature:arcade` depends on `:core:games`, the stroke grader, `:core:ui`, and the
+  **interfaces** from `:core:account` / `:core:sync` — never on Firebase/Supabase types.
+- `:core:games` is pure Kotlin (no Android), unit-tested like `SrsEngine`: combo math,
+  scoring formula, theoretical-max calculation, league promotion/relegation logic.
+- The Firebase/Supabase impl is a single swappable module bound via Hilt; fakes exist so
+  Arcade UI tests run fully offline (no emulator, no network).
+
+### Offline-first reinforcement
+
+- **Arcade games run with zero network.** Only XP submission and league fetch are gated on
+  auth + connectivity. See `09` (offline behavior) and `10` (outbox).
+- The `ScoreRepository` interface has a local-first shape: `submit()` always writes Room +
+  the outbox immediately and returns; cloud drain is asynchronous and never blocks the UI.
+- If no backend is configured (e.g. unsigned-in user), the impls are no-ops for cloud calls
+  and the app behaves identically to local-only — the constitution's #1 principle holds.
+
+### State ownership (additions)
+
+- `ArcadeViewModel` per game screen holds transient game state (score, combo, timer,
+  current target char) in `StateFlow`; raw touch input stays in the Composable (same
+  pattern as the practice screen).
+- `LeagueViewModel` exposes cached standings as `StateFlow`, with an explicit
+  "offline / stale" flag rather than a spinner when no network.
+
+### Testing additions
+
+- `:core:games` — deep unit coverage on scoring/combo/league math; property tests on the
+  theoretical-max validator.
+- `:feature:arcade` — Compose UI tests with `FakeScoreRepository` / `FakeLeagueRepository`;
+  no Firebase emulator needed for the UI suite.
+- Cloud impl — a thin integration test against the Firebase/Supabase emulator (optional,
+  CI-gated).

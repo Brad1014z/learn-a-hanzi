@@ -171,6 +171,25 @@ The corpus ships with the test code (no PII — they're geometric paths).
 - A future "recognition-only" mode (skip drawing, just reveal) is a reasonable
   accessibility fallback — noted, not in MVP.
 
+## Phase 2 addendum — Arcade reuse
+
+> The Arcade game modes (spec `09`) reuse this grader **unchanged**. This section only adds
+> a hook so the game layer can react to grading — **no algorithm change.**
+
+- **Per-stroke verdict callback.** The grader already produces a verdict (Accept / Accept-
+  sloppy / Reject) on each pointer-up. Expose it as a callback (`onStrokeVerdict`) so the
+  Arcade combo/scoring layer can react in real time (break a combo on reject, award a clean
+  bonus on a non-sloppy character, play a punchier haptic).
+- **Stateless, mode-agnostic.** The grader itself stays pure: it knows the target character
+  and the input, nothing about which "mode" invoked it. The caller (practice screen vs.
+  arcade screen) decides what to *do* with each verdict.
+- **Session framing.** For Arcade, the caller drives the sequence of target characters
+  (per `09`'s pool rules) and wraps each in its own grader turn. The grader's contract per
+  character is identical to practice: draw strokes → verdicts → completion.
+- **Performance under speed.** Sprint/Speed Write push stroke throughput higher than
+  practice mode, but per-stroke grading remains O(points × segments) and trivially fast
+  (see *Performance*). No special-casing needed.
+
 ## Open questions
 
 - [ ] Outline-clip demo vs thick-median demo — decide after seeing real `pathData`.

@@ -17,12 +17,14 @@ decision-record-like: it states what we chose, why, and what is explicitly out o
 | Stroke input   | Native Compose Canvas, custom grading    |
 | Audio          | Android `TextToSpeech` (Mandarin)        |
 | DI / Async     | Hilt / Coroutines + Flow                 |
+| Games (P2)     | Writing-based arcade modes on the grader |
+| Backend (P2)   | Optional Google sign-in + serverless     |
 | Ambition       | Personal / portfolio (publishable later) |
 
 ## Reading order
 
 Read top to bottom. The first two (`00`, `01`) frame everything; `02` and `05` carry the
-most technical risk and should be reviewed carefully.
+most technical risk and should be reviewed carefully. `09`–`10` are Phase 2 and additive.
 
 | #   | Document               | What it answers                                             |
 |-----|------------------------|-------------------------------------------------------------|
@@ -35,6 +37,8 @@ most technical risk and should be reviewed carefully.
 | 06  | [Architecture](./specs/06-architecture.md)         | Modules, layers, state, offline-first rules          |
 | 07  | [Design System](./specs/07-design-system.md)       | Theme, core screens, key user flows                  |
 | 08  | [Roadmap](./specs/08-roadmap.md)                   | Phased milestones, MVP → v2                         |
+| 09  | [Arcade Games](./specs/09-arcade-games.md)         | Game modes, combo, scoring, anonymous leagues (Phase 2) |
+| 10  | [Account, Sync & Backend](./specs/10-account-sync-backend.md) | Auth, sync outbox, serverless backend (Phase 2b/2c) |
 
 ## Status legend
 
