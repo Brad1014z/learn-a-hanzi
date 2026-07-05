@@ -1,6 +1,6 @@
 # 03 — Data Model
 
-> **Status:** DRAFT
+> **Status:** ACCEPTED (reviewed 2026-07-05)
 > Room (SQLite) schema. Two classes of data: **content** (read-only, seeded by the ingest
 > tool — see `02`) and **user** (mutated at runtime). The split matters because a dataset
 > update replaces content tables but must preserve user tables.
@@ -9,8 +9,13 @@
 
 - The **simplified character** is the natural primary key for content (`character = "你"`).
   Stable, human-readable, and the join key across all sources.
+- All content rows carry a **`lang` tag** (BCP-47, script-qualified: `zh-Hans` for the
+  MVP) so future languages/scripts (`zh-Hant`, `ja`, `ko`) are *data additions*, not
+  schema migrations. Single-column PKs stay for the MVP; cross-language codepoint
+  collisions (e.g. 学 in zh and ja) are resolved in `09-extension-paths.md` when a second
+  language actually lands.
 - Content tables are **read-only at runtime**. The app never writes to them; only the
-> ingestion tool and dataset migrations do.
+  ingestion tool and dataset migrations do.
 - User tables reference content by the character key (FK) so a content refresh doesn't
   orphan progress.
 - Coordinates (stroke paths, medians) are stored in a normalized **1000×1000** box (see
@@ -25,15 +30,31 @@
 #### `Character` — one row per character we teach
 ```
 character     TEXT PRIMARY KEY     -- e.g. "你"
+lang          TEXT NOT NULL        -- BCP-47, "zh-Hans" in MVP
 pinyin        TEXT NOT NULL        -- JSON array: ["nǐ"]
 definition    TEXT NOT NULL        -- primary English gloss
 radical       TEXT                 -- e.g. "⺅" (nullable: rare gaps)
 strokeCount   INTEGER NOT NULL     -- len(strokes), cross-checked vs Unihan
-freqRank      INTEGER              -- from Unihan kFrequency-derived rank (nullable)
-hskLevel      INTEGER              -- 1..6; nullable for non-HSK chars
+freqRank      INTEGER              -- Tatoeba-corpus-derived rank, see 02 (nullable)
 decomposition TEXT                 -- component hint, e.g. "⺅尔" (nullable)
 etymologyHint TEXT                 -- short text if present (nullable)
 ```
+> Curriculum membership (formerly an `hskLevel` column) lives in `CurriculumEntry` below —
+> one mechanism for HSK levels now and the frequency track / JLPT / other curricula later.
+
+#### `CurriculumEntry` — membership of a character in a curriculum
+```
+curriculumId  TEXT NOT NULL        -- "hsk" in MVP; later e.g. "freq", "jlpt"
+character     TEXT NOT NULL        -- FK -> Character
+level         INTEGER NOT NULL     -- e.g. HSK level 1..6
+sequence      INTEGER NOT NULL     -- teaching order within the curriculum, computed by ingest
+PRIMARY KEY (curriculumId, character)
+FOREIGN KEY (character) REFERENCES Character(character)
+```
+> `sequence` is the deterministic teaching order `04-curriculum.md` defines (frequency,
+> then stroke count, then radical grouping) — computed once by the ingest tool, never at
+> runtime. User-built custom decks (Phase 3+) would mirror this shape in a *user* table
+> rather than extending this content table.
 
 #### `StrokePath` — one row per stroke of a character
 ```
@@ -51,6 +72,7 @@ FOREIGN KEY (character) REFERENCES Character(character)
 #### `Word` — multi-char words (from CC-CEDICT), used as example phrases
 ```
 id            INTEGER PRIMARY KEY AUTOINCREMENT
+lang          TEXT NOT NULL        -- BCP-47, "zh-Hans" in MVP
 simplified    TEXT NOT NULL        -- e.g. "你好"
 traditional   TEXT                 -- nullable
 pinyin        TEXT NOT NULL        -- space-separated, tone-marked
@@ -63,6 +85,7 @@ Plus join table `WordCharacter(wordId, character, position)` so we can query
 #### `Sentence` — example sentences (from Tatoeba)
 ```
 id            INTEGER PRIMARY KEY                  -- Tatoeba sentence id
+lang          TEXT NOT NULL                        -- BCP-47, "zh-Hans" in MVP
 text          TEXT NOT NULL                        -- Mandarin sentence
 english       TEXT                                 -- linked English translation (nullable)
 source        TEXT NOT NULL                        -- "tatoeba"
@@ -106,8 +129,9 @@ value         TEXT NOT NULL
 
 ## Indexes
 
-- `Character(hskLevel)` — curriculum queries.
-- `Character(freqRank)` — frequency ordering.
+- `CurriculumEntry(curriculumId, level, sequence)` — curriculum queries ("next new
+  character in HSK 1").
+- `Character(freqRank)` — frequency ordering (browse).
 - `CharacterProgress(dueAt)` — the daily review queue (the hottest query in the app).
 - `WordCharacter(character)` and `SentenceCharacter(character)` — example lookups.
 
@@ -139,7 +163,8 @@ value         TEXT NOT NULL
 
 ## Open questions
 
-- [ ] Should `Word` / `Sentence` use the natural text as PK instead of a surrogate id?
-      Lean: surrogate id keeps CEDICT/Tatoeba dedup simple.
-- [ ] Store pinyin with or without tone numbers vs tone marks? Decision: store tone-**marked**
-      for display; engine can derive numbers if needed. Confirm against source formats.
+- [x] ~~Natural text vs surrogate id for `Word`/`Sentence`~~ — **decided: surrogate id**
+      (keeps CEDICT/Tatoeba dedup simple; Tatoeba's own id is the Sentence PK).
+- [x] ~~Tone numbers vs tone marks~~ — **decided: store tone-marked** for display
+      (make-me-a-hanzi is already tone-marked; the ingest tool converts CEDICT's tone
+      numbers to marks). The engine derives numbers if it ever needs them.

@@ -1,6 +1,6 @@
 # 07 — Design System
 
-> **Status:** DRAFT
+> **Status:** ACCEPTED (reviewed 2026-07-05)
 > Theme tokens, core screens, and the key user flows. Focus is on structure and behavior;
 > pixel-perfect visuals are finalized at implementation with reference mockups.
 
@@ -58,13 +58,16 @@ by every feature.
 ### 3. Practice (stroke quiz) — the centerpiece
 - Full-bleed **Canvas** with the rice-grid guide; minimal chrome.
 - Top bar: target character (faint), pinyin, audio, progress (stroke x of n).
+- **Tracing guide** (faint full character on the canvas): defaults **on during
+  first-learn**, **off during review** — scaffolding that fades as recall takes over;
+  overridable in Settings (see `05`).
 - Controls: **Hint** (show next stroke), **Undo**, **Replay demo**, **Exit**.
 - Drawing input → live ink; on pointer-up, grading feedback (color + optional haptic).
 - On completion: success state, SRS grade recorded, "Next" / "Done".
 
 ### 4. Review (SRS queue)
 - Presents due characters one at a time in the practice canvas (same engine as Practice,
-- but driven by the review queue, no new-character intro step).
+  but driven by the review queue, no new-character intro step, tracing guide off).
 - Progress indicator (x of n due today); session summary at the end (retention %, time).
 
 ### 5. Browse
@@ -87,7 +90,8 @@ by every feature.
 2. **Intro:** Character Detail content shown (meaning, pinyin, audio, example).
 3. **Demo:** app animates correct stroke order (play once, allow replay, slow-mo).
 4. **Quiz:** user draws each stroke; engine grades per `05`. Hint/undo available.
-5. **First review:** immediately queued as a learning-step review (short interval).
+5. **First review:** the card re-enters the tail of the current session's queue (first
+   learning step — see `06`), then comes due again the next day.
 6. → Returns to Home or proceeds to the next new character (up to daily cap).
 
 ### Flow B — Daily review
@@ -104,6 +108,10 @@ by every feature.
 
 - **Audio button** anywhere a character/word/sentence appears → TTS speaks it. Debounced
   so rapid taps don't queue overlapping utterances.
+- **Polyphonic characters (多音字):** for a character whose pinyin array has multiple
+  readings (e.g. 了, 长), TTS on the bare glyph may pick a reading that contradicts the
+  pinyin on screen — so the character's audio button speaks it **inside its example word**
+  instead (see `01`). Word/sentence audio is unaffected.
 - **Haptics** on grading verdicts (light tick on accept, stronger on reject) — toggleable.
 - **Offline indicators**: none needed in normal use (always offline-first); a one-time
   hint if no Mandarin TTS engine is installed.

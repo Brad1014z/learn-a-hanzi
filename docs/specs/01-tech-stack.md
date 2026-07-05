@@ -1,6 +1,6 @@
 # 01 — Tech Stack
 
-> **Status:** DRAFT
+> **Status:** ACCEPTED (reviewed 2026-07-05)
 > Concrete technology choices, with rationale and the boundaries within which each is used.
 > Versions are pinned via a Gradle version catalog; exact numbers are set in
 > `gradle/libs.versions.toml` at implementation time and kept current.
@@ -8,7 +8,9 @@
 ## Summary
 
 A modern, single-platform native Android app. No cross-platform framework, no WebView for
-core learning, no remote backend in the MVP.
+core learning, no remote backend in the MVP. The domain core is written as **pure Kotlin
+(KMP-ready)** so an iOS build later reuses it rather than rewriting it — see
+`06-architecture.md` and `09-extension-paths.md`.
 
 ## Language & runtime
 
@@ -38,8 +40,8 @@ Java 17+ toolchain via the Android Gradle Plugin.
   After that, only user-generated rows (progress, logs) mutate.
 - **DataStore (Preferences)** for small settings (daily new-char cap, theme, TTS engine
   choice, sound on/off). No settings in SharedPreferences.
-- **No network persistence layer in MVP.** Sync is a Phase 3 concern and would layer over
-  the same repository interfaces, not replace them.
+- **No network persistence layer in MVP.** Sync is a Phase 4 (publish) concern and would
+  layer over the same repository interfaces, not replace them.
 
 ## Dependency injection
 
@@ -57,8 +59,12 @@ Java 17+ toolchain via the Android Gradle Plugin.
 
 ## Audio
 
-- **Android `TextToSpeech`** with `LANG_CHINESE` (Mandarin). The app sets the language per
-  utterance and speaks the pinyin's underlying characters.
+- **Android `TextToSpeech`** with `Locale.SIMPLIFIED_CHINESE` (zh-CN, Mandarin). The app
+  sets the language per utterance and speaks the underlying characters.
+- **Polyphonic characters (多音字):** TTS reads a bare character like 了 or 长 with *one*
+  reading, which may contradict the pinyin shown on screen. Where the taught reading is
+  ambiguous, the audio button speaks the character inside its example word instead (see
+  `07-design-system.md`).
 - **Graceful degradation:** if no Mandarin TTS engine is installed, the app shows a one-time
   hint pointing the user to install one, and silently falls back to pinyin-only display.
   Pronunciation is never a hard blocker for a learning session.
@@ -67,20 +73,29 @@ Java 17+ toolchain via the Android Gradle Plugin.
 ## Stroke engine
 
 - Pure Kotlin, no third-party graphics libraries. Path math (Ramer–Douglas–Peucker,
-  resampling, nearest-point distance, SVG path parsing) implemented in `:feature:practice`.
-  Rationale and algorithm in `05-stroke-engine.md`.
-- SVG path data from make-me-a-hanzi is parsed by a small, dependency-light SVG-path-to
-  `Path` converter (Android `android.graphics.Path` + `PathParser`, available in Compose).
+  resampling, nearest-point distance, polyline scoring, SVG path parsing) lives in the
+  **pure-Kotlin core module** (`:core:domain`, no `android.*` imports — see
+  `06-architecture.md`); `:feature:practice` contributes only Canvas rendering and touch
+  capture. Algorithm in `05-stroke-engine.md`.
+- SVG path data (`M/L/Q/C/Z`) is parsed by a **vendored ~100-line pure-Kotlin parser** in
+  the core module. (androidx's `PathParser` is a `@RestrictTo` API — lint-blocked for
+  apps — and a pure parser keeps the core KMP-ready.) The feature module adapts parsed
+  geometry to a Compose `Path` for rendering only.
 
 ## Build & tooling
 
 - **Gradle (Kotlin DSL)** with a **version catalog** (`gradle/libs.versions.toml`) — single
   source of truth for dependency versions.
-- **`applicationId`:** `dev.brad.hanzi` (final TBD).
+- **`applicationId`:** TBD — must be a namespace the maintainer actually owns (the old
+  `dev.brad.hanzi` placeholder is not). It is immutable once uploaded to Play, so it must
+  be final before the first Play upload; the Phase 0 prototype doesn't need it.
 - **Build variants:** `debug` / `release` only for MVP. Release uses R8/ProGuard with keep
   rules for Room and any reflection (none planned beyond Room's).
 - **Versioning:** semantic version `MAJOR.MINOR.PATCH` in `build.gradle.kts`; the dataset
   carries its own version (see `02-data-sources.md`) so we can detect schema/data changes.
+- **CI:** GitHub Actions from Phase 1 (foundation) — assemble + unit tests (`:core:*`
+  suites including the grading golden corpus) on every push; the ingest tool's
+  determinism check runs on demand.
 
 ## Testing
 
@@ -103,16 +118,19 @@ user strokes against known characters) so tuning changes are measurable. See `05
 
 ## Dependencies we explicitly avoid
 
-- No RxJava, no Kotlinx Serialization if we can use hand-rolled parsing of the small JSON
-  lines (kotlinx.serialization is acceptable if ingestion in-app needs it; the ingestion
-  *tool* may use whatever it likes since it isn't shipped).
+- No RxJava. kotlinx.serialization **is** used app-side for small structured blobs
+  (median point arrays, pinyin lists) and for the Phase 0 prototype's checked-in
+  per-character JSON; the ingestion *tool* may use whatever it likes since it isn't
+  shipped.
 - No WebView, no React Native bridge, no Flutter embedding.
 - No Google services (Firebase, etc.) in MVP.
 
-## Open questions to resolve at Phase 0
+## Open questions
 
-- [ ] Final `applicationId` / package name.
-- [ ] Whether to use `PathParser` from androidx or vendor a tiny SVG-path parser (decide
-      when we see real path strings from the dataset).
-- [ ] Confirm minSdk 26 doesn't exclude a meaningful share of the intended audience
-      (portfolio → likely fine).
+- [ ] Final `applicationId` / package name — an owned namespace, decided before the first
+      Play upload (Phase 4).
+- [x] ~~`PathParser` vs vendored parser~~ — **decided: vendor a pure-Kotlin SVG-path
+      parser** (androidx `PathParser` is `@RestrictTo`; the core must stay free of
+      `android.*`).
+- [ ] Confirm minSdk 26 doesn't exclude a meaningful share of the audience — check Play
+      device stats at publish time (Phase 4).

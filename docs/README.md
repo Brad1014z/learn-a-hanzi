@@ -9,15 +9,16 @@ decision-record-like: it states what we chose, why, and what is explicitly out o
 
 ## Stack at a glance
 
-| Concern        | Choice                                   |
-|----------------|------------------------------------------|
-| Language       | Kotlin                                   |
-| UI             | Jetpack Compose + Material 3             |
-| Persistence    | Room (SQLite), offline-first             |
-| Stroke input   | Native Compose Canvas, custom grading    |
-| Audio          | Android `TextToSpeech` (Mandarin)        |
-| DI / Async     | Hilt / Coroutines + Flow                 |
-| Ambition       | Personal / portfolio (publishable later) |
+| Concern        | Choice                                          |
+|----------------|-------------------------------------------------|
+| Language       | Kotlin                                          |
+| UI             | Jetpack Compose + Material 3                    |
+| Persistence    | Room (SQLite), offline-first                    |
+| Stroke input   | Native Compose Canvas, custom grading           |
+| Audio          | Android `TextToSpeech` (Mandarin)               |
+| DI / Async     | Hilt / Coroutines + Flow                        |
+| Portability    | Pure-Kotlin KMP-ready core; Android-only build  |
+| Ambition       | Free/open product (Play Store; open source)     |
 
 ## Reading order
 
@@ -34,7 +35,8 @@ most technical risk and should be reviewed carefully.
 | 05  | [Stroke Engine](./specs/05-stroke-engine.md)       | Native Canvas grading algorithm (hardest part)       |
 | 06  | [Architecture](./specs/06-architecture.md)         | Modules, layers, state, offline-first rules          |
 | 07  | [Design System](./specs/07-design-system.md)       | Theme, core screens, key user flows                  |
-| 08  | [Roadmap](./specs/08-roadmap.md)                   | Phased milestones, MVP → v2                         |
+| 08  | [Roadmap](./specs/08-roadmap.md)                   | Phased milestones, prototype → publish              |
+| 09  | [Extension Paths](./specs/09-extension-paths.md)   | iOS/KMP, Japanese, Korean, traditional Chinese       |
 
 ## Status legend
 
@@ -47,6 +49,7 @@ Each spec carries a status line at the top:
 ## Verification flags
 
 Items the spec asserts but that must be confirmed against upstream sources before the
-related code ships are marked **⚠ verify**. They are concentrated in `02-data-sources.md`
-(license terms, exact field names) because web research was unavailable when these specs
-were drafted.
+related code ships are marked **⚠ verify**. Licenses and repository facts were verified by
+web research on **2026-07-05** (see `02-data-sources.md`); the remaining flags are
+ingest-time checks (exact field names, export formats) that the ingest tool confirms
+mechanically and fails loudly on.
