@@ -109,8 +109,9 @@ Goal: make it genuinely pleasant and deepen the content.
 
 - [ ] **Daily challenge + share card** (Flow D in `07`): offline date-derived puzzle,
       spoiler-free emoji result, OS share sheet.
-- [ ] **Opt-in arcade** (per `10`): timed modes over mastered characters only
-      (Speed Trace, Stroke Blitz, Ghost Race); local personal bests, cosmetic scores.
+- [ ] **Opt-in arcade** (per `10`): timed modes over mastered (Bronze+) characters only —
+      Stroke Sprint, Combo Tower, Speed Write; local personal bests, cosmetic scores, no
+      accounts or server.
 - [ ] **Collection art pass:** pictographic personality for HSK 1 characters (etymology
       hints as flavor text; art style per son's direction).
 - [ ] Richer example sentences (multiple per character, curated shortlist).

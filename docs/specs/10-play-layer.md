@@ -76,14 +76,71 @@ Wordle-shaped, offline, serverless:
 
 ## The arcade (opt-in, Phase 3)
 
-A clearly separated corner where **speed is celebration of mastery**:
+A clearly separated corner where **speed is celebration of mastery** — entirely local,
+entirely offline, no account, no server. (This section absorbs and simplifies an earlier,
+independently-drafted backend-and-leagues design; see *Deliberately dropped*, below.)
 
-- **Speed Trace** — time trial tracing characters you've mastered.
-- **Stroke Blitz** — stroke-order puzzles (tap the strokes in order) against the clock.
-- **Ghost Race** — race a replay of your own best past drawing.
-- Rules: draws only from Bronze+ characters; scores are **local personal bests**
-  (cosmetic — no learning effect, no global leaderboards); arcade results never touch
-  SRS state. The learn/review writing moment remains untimed, always (`00` principle 2).
+### Modes
+
+Each mode wraps the unmodified stroke grader (`05`) in a scoring/combo layer — the grader
+itself knows nothing about "modes."
+
+- **Stroke Sprint (60s):** write as many complete characters as possible before the timer
+  hits zero. A wrong stroke costs a small time penalty and breaks the combo; a clean
+  character (no sloppy, no hint, no reject-retry) grows it.
+- **Combo Tower (endless):** characters stream one after another, rarity descending
+  (commoner characters first). One character failed beyond the retry limit ends the run —
+  no timer; it's about depth and flow, not speed.
+- **Speed Write (time attack):** a fixed set (5/10/15 characters); clear them all as fast
+  as possible. Wrong strokes add a time penalty; final time is the score (lower is better).
+- **Daily challenge** is *not* a fourth arcade mode — it's the one already specified above,
+  which stays offline/serverless with its own share card. The arcade modes are separate,
+  session-length play, not the daily ritual.
+
+### Combo & scoring (local, tunable — mirrors `GradingConfig`'s discipline)
+
+A combo rewards clean, no-hint, in-order stroke sets:
+
+```kotlin
+object ArcadeConfig {
+    const val SPRINT_DURATION_MS      = 60_000
+    const val WRONG_STROKE_PENALTY_MS = 1_500
+    const val COMBO_CAP               = 10
+    const val COMBO_MULTIPLIER_STEP   = 0.1   // multiplier = 1.0 + min(combo, CAP) × STEP
+    const val COMBO_MAX               = 2.0
+}
+```
+
+- Combo resets on a wrong stroke or a used hint (mode-tuning decides whether a *sloppy*
+  accept also resets it — lean: yes in Sprint/Tower, no in Speed Write, to keep it flowing).
+- `basePoints(char) = 100 + 10 × strokeCount + (25 if clean)`; session score is the sum of
+  `basePoints × comboMultiplier` per character. Purely a **local high score** per mode
+  (Room, one row per mode) — cosmetic, no XP conversion, no server, no leaderboard.
+
+### Character pool rule (ties arcade to real progress)
+
+Draws only from characters at **Bronze rank or better** (mastery-gated, per `04`) — the
+more you've genuinely learned, the more you can play. If that pool is too small
+(new users, < ~5 characters), fall back to the first few curriculum characters with the
+demo available on demand, so the mode is never a dead end.
+
+### Rules
+
+- Arcade results never touch SRS state or `CharacterProgress` — playing a game is not a
+  review. Scores are **local personal bests only** (per mode): no global leaderboards, no
+  accounts, no cloud sync.
+- The learn/review writing moment remains untimed, always (`00` principle 2). Arcade is
+  the *only* place a clock runs against a stroke, and only over what's already mastered.
+
+### Deliberately dropped
+
+An earlier draft of this idea (a separate PR, since closed) added Google Sign-In,
+Firebase/Supabase, weekly anonymous leagues, a daily-challenge leaderboard, and an XP-sync
+outbox. That's a real, well-specified design for a *different* product shape — one with
+accounts and a backend. It doesn't fit this build: no-accounts/offline-first is a
+constitution principle (`00`), not a Phase-1 shortcut, and the father-son build (`11`)
+wants fast, local, demo-on-a-single-phone wins. If online competition is ever wanted, it
+re-enters as a new extension path (alongside `09`), not a retrofit of this section.
 
 ## Guardrails (hard constraints — every phase, every feature)
 
@@ -105,6 +162,8 @@ A clearly separated corner where **speed is celebration of mastery**:
   schema delta to `03` at implementation.
 - Daily-challenge attempts — reuse `ReviewLog` with a `session` tag (`"daily-YYYY-MM-DD"`),
   no new table expected.
+- `LocalHighScore(mode TEXT PRIMARY KEY, bestScore INTEGER, achievedAt INTEGER)` — one row
+  per arcade mode, local-only, added at Phase 3 implementation.
 - Everything else (ranks, world progress, dimming) is **derived**, not stored.
 
 ## Open questions
