@@ -2,7 +2,9 @@
 
 A native Android app for learning to **write** Chinese characters with correct stroke
 order — reinforced with meaning (zh→en), pronunciation (pinyin + TTS), and useful phrases
-and sentences, driven by a spaced-repetition review loop.
+and sentences, driven by a spaced-repetition review loop — **and shaped as a game**:
+mastered characters join your collection, the curriculum unfolds as worlds, and each day
+brings a quest and a shareable challenge. Co-built by a father-son team.
 
 > **Status:** specs ACCEPTED (reviewed 2026-07); next up is the Phase 0 stroke-engine
 > prototype. No application code yet — see the [spec set](./docs/README.md).
@@ -37,6 +39,8 @@ order:
 8. [`07-design-system`](./docs/specs/07-design-system.md) — screens & flows
 9. [`08-roadmap`](./docs/specs/08-roadmap.md) — phased milestones
 10. [`09-extension-paths`](./docs/specs/09-extension-paths.md) — iOS/KMP, Japanese, Korean
+11. [`10-play-layer`](./docs/specs/10-play-layer.md) — the game design (XP, collection, worlds, quest)
+12. [`11-family-prototype`](./docs/specs/11-family-prototype.md) — the kid co-creator's Phase 0 mini-spec
 
 The two ⚠ docs carry the most technical/licensing risk and should be reviewed first.
 
@@ -46,7 +50,7 @@ Following [`08-roadmap`](./docs/specs/08-roadmap.md):
 
 - [x] Draft spec set
 - [x] Spec review — specs ACCEPTED (2026-07)
-- [ ] Phase 0 — stroke-engine prototype (grading feel, on-device)
+- [ ] Phase 0 — family prototype (grading engine + game feel, on-device)
 - [ ] Phase 1 — foundation (module skeleton, data-ingest pipeline, CI)
 - [ ] Phase 2 — MVP (HSK 1 learn → practice → review loop, offline)
 - [ ] Phase 3 — polish & depth

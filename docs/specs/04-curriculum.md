@@ -1,6 +1,6 @@
 # 04 — Curriculum
 
-> **Status:** ACCEPTED (reviewed 2026-07-05)
+> **Status:** ACCEPTED (reviewed 2026-07-05; amended 2026-07-05 — worlds & play layer, see `10`)
 > Which characters the app teaches, in what order, and the rules for unlocking them.
 
 ## Scope
@@ -33,6 +33,20 @@ This produces a single deterministic sequence per level, stored as
 `CurriculumEntry.sequence` (see `03`), computed by the ingest tool so the app never
 re-derives ordering at runtime.
 
+### Worlds (play layer)
+
+The play layer (`10-play-layer.md`) groups each level's characters into **thematic
+worlds** — hand-curated clusters for HSK 1, e.g. *Nature* (火 水 山 木 日 月…), *People*
+(人 你 我 他…), *Numbers* (一 二 三…). Rules:
+
+- Worlds are ordered by their aggregate frequency (most-common cluster first); **within**
+  a world, characters follow `sequence` order as above.
+- The next world unlocks when the previous reaches a mastery threshold (default: **80%
+  of its characters at Bronze rank or better** — see ranks below). Unlocking is a
+  celebration moment, never a paywall or timer.
+- The world tags are curated once for HSK 1 (~174 chars) and shipped in the dataset.
+  *Schema delta:* a `world` column on `CurriculumEntry`, added to `03` at implementation.
+
 ## Progression rules
 
 The user does **not** get all ~174 characters dumped at once. Unlocking is paced:
@@ -41,16 +55,32 @@ The user does **not** get all ~174 characters dumped at once. Unlocking is paced
   introduces up to `cap` new characters per calendar day.
 - A character enters the user's world in the `NEW` state and moves to `LEARNING` on first
   exposure (see SRS states in `03` / `06`).
-- **Order is respected**: new characters unlock in `CurriculumEntry.sequence` order. You can't
-  jump ahead to character #50 while #5 is still `NEW`. (Browse mode is exempt — see below.)
+- **Order is respected within a world**: new characters unlock in `CurriculumEntry.sequence`
+  order inside the current world; the next world opens at the mastery threshold above.
+  You can't jump ahead to character #50 while #5 is still `NEW`. (Browse mode is exempt —
+  see below.)
 - Once a character reaches the `REVIEW` state (graduated from learning, per SRS), it no
   longer counts against new-character headroom.
 
-### "Learned" definition
+### "Learned" definition & collection ranks
 
 A character is considered **learned** (counts toward "characters mastered") when it is in
 the `REVIEW` state **and** has been answered correctly at least twice in review. This is
 deliberately stricter than "seen once" so the headline number is meaningful.
+
+The play layer surfaces this as **collection ranks** — derived *only* from SRS state
+(the "juice with honesty" value in `00`):
+
+| Rank | Meaning | SRS condition |
+|------|---------|---------------|
+| — (silhouette) | met, not yet reliable | `NEW` / `LEARNING` |
+| **Bronze** | can write it | graduated to `REVIEW` |
+| **Silver** | learned | `REVIEW` + ≥2 correct reviews (the definition above) |
+| **Gold** | durable | interval ≥ 21 days |
+
+A lapse **dims** the character's rank in the collection (it visibly "asks to be practiced
+again") but never deletes it — honest, not punishing. Ranks are recomputed from
+`CharacterProgress`; no separate rank state is stored.
 
 ## Two tracks
 
@@ -62,16 +92,24 @@ deliberately stricter than "seen once" so the headline number is meaningful.
    If they practice a not-yet-unlocked character in Browse, it still creates a
    `CharacterProgress` row (so they get reviews), it just doesn't reorder the guided track.
 
-## Daily session shape
+## Daily session shape — the daily quest
 
-A typical day for an active user:
+The daily session is framed as the **daily quest** (`10-play-layer.md`); the underlying
+order is unchanged from sound SRS practice:
 
-1. **Reviews first.** Due cards (from SRS `dueAt ≤ now`) are queued and practiced first.
-   These are the highest-value work — the app surfaces them prominently on Home.
-2. **Then new characters** up to the remaining daily cap, but only if reviews are not
+1. **Warm-up.** One easy due card (highest-retention due character) — a guaranteed early
+   win to open the session.
+2. **Reviews.** Remaining due cards (from SRS `dueAt ≤ now`). These are the highest-value
+   work — the quest presents them as its main body.
+3. **New characters** up to the remaining daily cap, but only if reviews are not
    backlogged beyond a threshold (configurable; default: if > ~100 reviews due, the app
    suggests clearing them before adding new ones, but doesn't hard-block).
-3. **Optional extra practice.** Free practice on any character in Browse.
+4. **Boss stroke.** The quest closes with one character drawn fully from memory (no
+   guide) — picked from today's material. Completing it opens the **chest**: session XP,
+   celebration, and the day's share card. Failing it costs nothing (the character just
+   re-queues); the chest still opens on quest completion.
+5. **Optional extra practice.** Free practice on any character in Browse; the opt-in
+   arcade (Phase 3) lives outside the quest.
 
 ## Reordering / resets
 

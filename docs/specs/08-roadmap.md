@@ -1,14 +1,18 @@
 # 08 — Roadmap
 
-> **Status:** ACCEPTED (reviewed 2026-07-05)
+> **Status:** ACCEPTED (reviewed 2026-07-05; amended 2026-07-05 — family prototype & play layer)
 > Phased milestones. Each phase has a clear **definition of done** so "are we there?" is
 > answerable. Dates are not committed — quality over speed — but the destination is a
 > published, free/open product (constitution).
 
-## Phase 0 — Stroke-engine prototype
+## Phase 0 — Family prototype (stroke engine + game feel)
 
 Goal: validate the single riskiest component — **does grading feel right on a real
-device?** — before building any infrastructure. One screen, no Room, no SRS, no nav.
+device?** — *and* get the father-son build off to a high-feedback start. One app, no
+Room, no SRS, no nav; two named workstreams (see `11-family-prototype.md` for the
+session-by-session plan):
+
+**Engine workstream (dad + AI):**
 
 - [x] Specs reviewed and marked `ACCEPTED` (2026-07-05, this document set).
 - [ ] Single-module Compose app. The *app structure* is throwaway; the **engine code is
@@ -25,9 +29,21 @@ device?** — before building any infrastructure. One screen, no Room, no SRS, n
 - [ ] Golden stroke corpus started: recorded attempts (clean / sloppy / wrong-order /
       wrong-stroke) checked in with expected verdicts + a replay unit test.
 
+**Game-feel workstream (son + AI, staged in `11`):**
+
+- [ ] S1 "It's alive": a character animates stroke-by-stroke, replay button, his color
+      scheme, confetti on completion; working app name v0 (his call).
+- [ ] S2 "Trace it": finger ink over a faint character; brush color picker.
+- [ ] S3 "The Shelf": collection grid of traced characters, tap to replay.
+- [ ] S4 "It judges you": dad's grading verdicts wired to son-designed feedback
+      (colors / sound / shake / haptics).
+- [ ] S5 "Boss + share": completion celebration, simple XP counter, APK on his phone,
+      demo to friends.
+
 **Definition of done:** two or three people can each learn a character they didn't know on
-a physical phone, and verdicts feel fair — no false rejects on honest attempts, no false
-accepts on wrong-order strokes — measured against the corpus, tuned by feel.
+a physical phone, verdicts feel fair — no false rejects on honest attempts, no false
+accepts on wrong-order strokes (measured against the corpus, tuned by feel) — **and the
+in-house 12-year-old demos it to someone without being asked.**
 
 ## Phase 1 — Foundation & data pipeline
 
@@ -69,29 +85,39 @@ criteria.)*
 - [ ] **Stroke engine integration** (`:feature:practice`): renderer + demo + quiz wired to
       the real dataset; `GradingConfig` re-tuned against the full HSK 1 set; grade
       mapping per `05`.
-- [ ] **Screens:** Home, Character Detail, Practice, Review, Browse (search + HSK 1 list),
-      minimal Settings.
+- [ ] **Screens:** Quest Hub (Home), Character Detail, Practice, Review, Browse (search +
+      HSK 1 list), Collection (simple grid + ranks), minimal Settings.
+- [ ] **Play layer v1** (per `10`): daily quest frame (warm-up → reviews → new → boss →
+      chest), session XP + learner level, collection ranks (silhouette/Bronze/Silver/Gold,
+      lapse dimming), world grouping + unlock gating.
 - [ ] **Audio:** TTS wired (zh-CN) with graceful no-engine fallback and the polyphonic
       example-word rule (`01`/`07`).
 - [ ] **Theme:** light/dark, semantic colors, rice-grid guide; tracing-guide defaults
-      (on for learn, off for review).
-- [ ] **Curriculum:** HSK 1 ~174 chars, frequency-ordered, daily cap (default 10),
-      unlock gating.
+      (on for learn, off for review); celebration moments (short, skippable).
+- [ ] **Curriculum:** HSK 1 ~174 chars, frequency-ordered within hand-curated worlds,
+      daily cap (default 10), world unlock gating.
 - [ ] Smoke test: a fresh user can learn all HSK 1 characters and review them next day.
 
 **Definition of done:** a new user can learn all ~174 HSK 1 characters with stroke-order
 feedback, hear pronunciation, read a definition + one example, and get a correct SRS review
-queue the next day — fully offline.
+queue the next day — fully offline — inside the quest/collection game frame, with every
+rank and unlock truthfully reflecting SRS state.
 
 ## Phase 3 — Polish & depth
 
 Goal: make it genuinely pleasant and deepen the content.
 
+- [ ] **Daily challenge + share card** (Flow D in `07`): offline date-derived puzzle,
+      spoiler-free emoji result, OS share sheet.
+- [ ] **Opt-in arcade** (per `10`): timed modes over mastered characters only
+      (Speed Trace, Stroke Blitz, Ghost Race); local personal bests, cosmetic scores.
+- [ ] **Collection art pass:** pictographic personality for HSK 1 characters (etymology
+      hints as flavor text; art style per son's direction).
 - [ ] Richer example sentences (multiple per character, curated shortlist).
 - [ ] Audio polish: better TTS handling, per-word/per-sentence playback.
-- [ ] Progress dashboard (heatmap, retention chart, mastered count over time).
+- [ ] Stats dashboard in Collection (heatmap, retention chart, mastered over time).
 - [ ] Custom decks / favorites ("star" a character) — user-side mirror of `CurriculumEntry`.
-- [ ] Frequency-only track (`curriculumId = "freq"`) + HSK 2/3 characters.
+- [ ] Frequency-only track (`curriculumId = "freq"`) + HSK 2/3 characters (new worlds).
 - [ ] Outline-clip demo animation (if the thick-median MVP demo isn't good enough).
 - [ ] Radical browser + decomposition navigation.
 - [ ] Onboarding screen + adaptive icon.
@@ -125,6 +151,8 @@ accurate; a stranger can install it and learn.
   are the trust core.
 - Every phase respects the constitution: offline-first, minimal permissions, no trackers,
   data transparency, free/open.
+- Every phase respects the play-layer guardrails (`10`): the writing moment is never
+  timed in learn/review, game signals stay mastery-truthful, no dark patterns.
 - Remaining ⚠ verify flags in `02` (field names, export formats) are resolved during
   Phase 1 ingestion work; license compliance closes before Phase 4 ships.
 

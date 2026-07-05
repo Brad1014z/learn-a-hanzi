@@ -2,7 +2,10 @@
 
 Hanzi is a native Android app for learning to **write** Chinese characters with correct
 stroke order, reinforced with meaning (zh→en), pronunciation (pinyin + TTS), and useful
-phrases/sentences — all driven by a spaced-repetition review loop.
+phrases/sentences — all driven by a spaced-repetition review loop, and framed as **a
+game**: characters join your collection as you master them, the curriculum unfolds as
+worlds, and each day brings a quest and a shareable challenge (see `10-play-layer.md`).
+It is co-built by a father-son team (see `11-family-prototype.md`).
 
 This directory is the authoritative spec set. Each document is self-contained and
 decision-record-like: it states what we chose, why, and what is explicitly out of scope.
@@ -37,6 +40,8 @@ most technical risk and should be reviewed carefully.
 | 07  | [Design System](./specs/07-design-system.md)       | Theme, core screens, key user flows                  |
 | 08  | [Roadmap](./specs/08-roadmap.md)                   | Phased milestones, prototype → publish              |
 | 09  | [Extension Paths](./specs/09-extension-paths.md)   | iOS/KMP, Japanese, Korean, traditional Chinese       |
+| 10  | [Play Layer](./specs/10-play-layer.md)             | Game design: XP, collection, worlds, quest, arcade   |
+| 11  | [Family Prototype](./specs/11-family-prototype.md) | The 12-year-old co-creator's staged Phase 0 workstream |
 
 ## Status legend
 

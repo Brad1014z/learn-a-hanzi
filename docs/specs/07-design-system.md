@@ -1,8 +1,13 @@
 # 07 — Design System
 
-> **Status:** ACCEPTED (reviewed 2026-07-05)
+> **Status:** ACCEPTED (reviewed 2026-07-05; amended 2026-07-05 — play layer, see `10`)
 > Theme tokens, core screens, and the key user flows. Focus is on structure and behavior;
 > pixel-perfect visuals are finalized at implementation with reference mockups.
+>
+> **Tone: all-ages playful.** The app is a game (see `00`/`10`) — generous, juicy
+> feedback everywhere *except* during the act of writing, which stays focused and calm.
+> Playful never means childish: type, color, and copy work for a 12-year-old and a
+> 40-year-old at once.
 
 ## Theme & tokens (Material 3)
 
@@ -38,15 +43,21 @@ by every feature.
 ### Motion
 - Stroke reveal animations are smooth and short (≤ ~400ms per stroke in demo mode).
 - Feedback flashes are quick (≈ 150–250ms) so the user keeps their rhythm.
+- **Celebration moments** (stroke-set complete, rank-up, world unlock, chest opening) may
+  be big — confetti, sound, haptics — but short (≤ ~1.5s) and always skippable by tap.
+  Celebrations happen **between** writing moments, never during one.
 - No gratuitous screen transitions.
 
 ## Core screens
 
-### 1. Home / Dashboard
-- **Today's reviews** count card (prominent, tappable → Review screen).
-- **New characters** available today (tappable → starts the "learn a new char" flow).
-- **Streak / progress** summary (characters mastered, days active) — honest, not pressure.
-- Quick entry to Browse and Settings.
+### 1. Home — the Quest Hub
+- **Today's quest** card (prominent): warm-up → reviews → new characters → boss stroke →
+  chest, with progress shown as quest steps (see `04`). Tap to start/continue.
+- **Daily challenge** entry (today's shared puzzle + its share card once done — see `10`).
+- **Current world** strip: world name, mastery progress toward the next world unlock.
+- **Collection** teaser (latest characters + any dimmed ones asking for practice).
+- **Streak / XP** summary — days played and learner level; honest, pauses gracefully.
+- Quick entry to Browse, Collection, and Settings.
 
 ### 2. Character Detail
 - Large character display (rendered from stroke outlines).
@@ -75,9 +86,14 @@ by every feature.
 - Level/group browsing (HSK 1 list, radical groups).
 - Tap any character → Character Detail. (Browse practice doesn't consume the daily cap.)
 
-### 6. Progress (later / MVP-minimal)
-- Characters mastered, review calendar heatmap, retention over time.
-- MVP can ship a minimal version (mastered count + last-7-days activity).
+### 6. Collection — the trophy room (MVP: simple grid)
+- Every encountered character displayed as a collection tile: silhouette → Bronze →
+  Silver → Gold (ranks per `04`); lapsed characters shown dimmed with a gentle "practice
+  me" affordance.
+- Organized by world; tap a tile → Character Detail (with replay-the-strokes animation).
+- Stats live here too: characters mastered, review calendar heatmap, retention over time
+  (MVP: mastered count + last-7-days activity).
+- MVP ships the simple grid + ranks; art/personality per character is a Phase 3 pass.
 
 ### 7. Settings
 - Daily new-character cap, theme (system/light/dark), dynamic color toggle, TTS engine
@@ -103,6 +119,13 @@ by every feature.
 ### Flow C — Free exploration
 1. Browse → search/tap a character → Detail → optional Practice (free, doesn't affect
    guided track or daily cap).
+
+### Flow D — Daily challenge & share
+1. Home → "Daily challenge" → today's character puzzle (same for everyone, derived
+   offline from the date — see `10`).
+2. User writes it from memory; per-stroke verdicts recorded.
+3. Result card: spoiler-free emoji grid of stroke verdicts (🟩🟨🟥) + day number.
+4. **Share** via the OS share sheet (no server, no account); or dismiss. Done for the day.
 
 ## Interaction details
 
