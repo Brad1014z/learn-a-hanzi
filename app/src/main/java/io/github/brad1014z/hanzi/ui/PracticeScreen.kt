@@ -127,10 +127,15 @@ fun PracticeScreen(
             }
             is StrokeVerdict.Reject -> {
                 fadingReject = points
+                // Scores shown for GradingConfig tuning (Phase 0); hidden post-tuning.
+                val s = verdict.scores
+                val debug = s?.let {
+                    "  [d=%.0f dir=%.2f len=%.2f]".format(it.meanDist, it.directionScore, it.lengthRatio)
+                } ?: ""
                 when (verdict.reason) {
-                    RejectReason.WRONG_DIRECTION -> "Right place, wrong direction — watch the demo arrow."
-                    RejectReason.LENGTH_OUT_OF_RANGE -> "Stroke length looks off — try the full stroke."
-                    RejectReason.TOO_FAR -> "Not quite — aim for the highlighted area."
+                    RejectReason.WRONG_DIRECTION -> "Right place, wrong direction — watch the demo arrow.$debug"
+                    RejectReason.LENGTH_OUT_OF_RANGE -> "Stroke length looks off — try the full stroke.$debug"
+                    RejectReason.TOO_FAR -> "Not quite — aim for the highlighted area.$debug"
                 }
             }
             StrokeVerdict.Ignored -> feedback
