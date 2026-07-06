@@ -86,16 +86,17 @@ Java 17+ toolchain via the Android Gradle Plugin.
 
 - **Gradle (Kotlin DSL)** with a **version catalog** (`gradle/libs.versions.toml`) — single
   source of truth for dependency versions.
-- **`applicationId`:** TBD — must be a namespace the maintainer actually owns (the old
-  `dev.brad.hanzi` placeholder is not). It is immutable once uploaded to Play, so it must
-  be final before the first Play upload; the Phase 0 prototype doesn't need it.
+- **`applicationId`:** the prototype uses `io.github.brad1014z.hanzi` — the
+  `io.github.<username>` convention is a namespace the maintainer verifiably owns and is
+  Play-acceptable. It is immutable once uploaded to Play, so the **final** id (keep this
+  one, or a custom domain later) is confirmed before the first Play upload (Phase 4).
 - **Build variants:** `debug` / `release` only for MVP. Release uses R8/ProGuard with keep
   rules for Room and any reflection (none planned beyond Room's).
 - **Versioning:** semantic version `MAJOR.MINOR.PATCH` in `build.gradle.kts`; the dataset
   carries its own version (see `02-data-sources.md`) so we can detect schema/data changes.
-- **CI:** GitHub Actions from Phase 1 (foundation) — assemble + unit tests (`:core:*`
-  suites including the grading golden corpus) on every push; the ingest tool's
-  determinism check runs on demand.
+- **CI:** GitHub Actions, **live since Phase 0** — unit tests (including the grading
+  golden corpus) gate the build; a debug-APK artifact is produced only when the suite
+  passes. The ingest tool's determinism check joins in Phase 1.
 
 ## Testing
 

@@ -26,6 +26,9 @@ never depends on a feature.
   are injected. The **stroke-grading math** (polyline ops, scoring, the vendored SVG path
   parser) lives here, not in `:feature:practice` — the feature module contributes only
   Canvas rendering and touch capture.
+- *Phase 0 note:* the family prototype already applies this rule — its `:engine` module
+  is exactly this pure-JVM shape (geometry, parser, grader, quiz state machine, character
+  loading) and graduates to `:core:domain` in Phase 1 with its tests.
 - `:feature:*` depend on `:core:domain`, `:core:ui`, and `:core:data` (via interfaces).
 - `:app` wires implementations (Hilt modules bind `Repository` impls from `:core:data` to
   interfaces declared in `:core:domain`).

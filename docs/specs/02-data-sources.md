@@ -110,8 +110,11 @@ Format: one entry per line, `#`-prefixed comments are metadata.
 `chanind/hanzi-writer-data` republishes make-me-a-hanzi data as per-character JSON files
 (same lineage, same Arphic terms). Two uses:
 
-- **Phase 0 prototype source:** the stroke-engine prototype checks in ~10–20 per-character
-  JSON files directly (no ingest pipeline yet) — see `08-roadmap.md`.
+- **Phase 0 prototype source:** the stroke-engine prototype checks in 20 per-character
+  JSON files directly (no ingest pipeline yet) — see `08-roadmap.md`. The prototype also
+  checks in a **20-entry dictionary slice** (pinyin + English definitions) extracted from
+  make-me-a-hanzi's `dictionary.txt` (LGPL v3+ — attribution ships in the data NOTICE),
+  so characters are never shown as bare shapes even before the real pipeline exists.
 - **Ingest sanity check:** verify that our ingestion of `graphics.txt` produces identical
   stroke/median data for a sample of characters, and cross-reference field naming if
   make-me-a-hanzi's raw files have drifted.

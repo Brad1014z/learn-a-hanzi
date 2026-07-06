@@ -1,6 +1,7 @@
 # 05 — Stroke Engine
 
-> **Status:** ACCEPTED (reviewed 2026-07-05)
+> **Status:** ACCEPTED (reviewed 2026-07-05; revised 2026-07-06 to match the Phase 0
+> implementation — config shape, Ignored tier, reject reasons, hint leniency)
 > The technically hardest part of the app. This spec describes how the app renders strokes
 > and **grades the user's freehand input** against a known target character — entirely in
 > native Kotlin on a Compose `Canvas`, no WebView, no third-party library.
@@ -65,9 +66,11 @@ acceptance.
    additional simultaneous pointers are ignored (stylus users resting fingers, edge
    touches).
 2. **Discard accidental contacts:** a contact with total arc length below
-   `MIN_STROKE_UNITS` *and* shorter than ~30 ms is dropped silently (no reject flash) —
-   it was a palm graze or a tap, not an attempt. Deliberate dot strokes are far longer
-   than this floor.
+   `MIN_STROKE_UNITS` is dropped silently as an explicit **Ignored** verdict (no reject
+   flash) — it was a palm graze or a stray tap, not an attempt. Deliberate dot strokes
+   are far longer than this floor. (The engine filters on geometry alone — it is pure and
+   has no timestamps; a UI-side <~30 ms duration filter can be layered on if length-only
+   proves insufficient during tuning.)
 3. **Simplify** with Ramer–Douglas–Peucker (RDP) at a small epsilon (e.g. 2.0 units) to
    drop redundant points.
 4. **Resample** to a fixed point density (e.g. one point every ~10 units along arc length)
@@ -125,13 +128,21 @@ Combine into a verdict using thresholds (constants in one place — see *Tuning*
 |-----------|---------|--------|
 | `meanDist ≤ ACCEPT_DIST` **and** `directionScore ≥ ACCEPT_DIR` | ✅ **Accept** | Advance expected index; turn the stroke solid (correct color). |
 | `meanDist ≤ SLOPPY_DIST` **and** `directionScore ≥ SLOPPY_DIR` | 🟡 **Accept (sloppy)** | Advance, but mark the stroke with a "close enough" tint; counts as correct for SRS but logs `drawnCorrectly` nuance. |
-| `meanDist` small but **wrong stroke index** would've matched better | 🔴 **Wrong stroke / out of order** | Reject; briefly flash the *correct* next stroke's faint outline + median arrow. |
-| Otherwise | 🔴 **Reject** | Reject; flash correct path; let the user retry. |
+| stroke fails the expected index but reaches an accept tier on a **lookahead stroke** | 🔴 **Wrong stroke / out of order** | Reject; name the stroke it matched ("that one is stroke N"); briefly flash the correct next stroke. |
+| arc length below `MIN_STROKE_UNITS` | ⚪ **Ignored** | No feedback at all — accidental contact, not an attempt. |
+| Otherwise | 🔴 **Reject** | Reject with a **reason-specific message**; flash correct path; let the user retry. |
 
-"Wrong stroke index would've matched better": also compute the position score against a
-few *other* stroke medians (e.g. the next 1–2 expected). If another stroke matches
-markedly better, the user drew the right *kind* of stroke but in the wrong order — give
-the specific "out of order" feedback rather than a generic reject.
+"Out of order" is defined concretely: score the stroke against the next
+`LOOKAHEAD_STROKES` medians; if it reaches the Accept or Sloppy tier on one of those
+while failing the expected stroke, the user drew the right *kind* of stroke at the wrong
+time — say so specifically rather than generically rejecting.
+
+**Reject reasons** (feedback that teaches, per `00`): each Reject carries a reason with
+its own message — `LENGTH_OUT_OF_RANGE` ("try the full stroke"), `WRONG_DIRECTION`
+("right place, wrong direction"), `TOO_FAR` ("aim for the highlighted area"). During
+Phase 0 tuning, reject feedback also shows the raw scores (mean distance / direction /
+length ratio) so threshold changes can be judged with numbers; this debug line is
+removed or dev-gated after tuning.
 
 ### Step 4 — Completion
 
@@ -154,24 +165,28 @@ with the SRS engine in `06`:
 
 ## Tuning
 
-All thresholds live in a single `object GradingConfig` so they're tunable in one place and
-testable in isolation. Starting points (in 1000-space units; to be tuned empirically):
+All thresholds live in a single **immutable `GradingConfig` data class** (not compile-time
+constants) so they're tunable in one place, testable in isolation, and adjustable from a
+future tuning UI — "sliders for feelings" is literally session S4 of the family prototype
+(`11`). Defaults (in 1000-space units; tuned empirically on-device):
 
 ```kotlin
-object GradingConfig {
-    const val RDP_EPSILON        = 2.0
-    const val RESAMPLE_STEP      = 10.0
-    const val ACCEPT_DIST        = 45.0   // mean normalized distance
-    const val ACCEPT_DIR         = 0.6    // mean cosine similarity
-    const val SLOPPY_DIST        = 70.0
-    const val SLOPPY_DIR         = 0.4
-    const val MAX_SLOPPY_BEFORE_FAIL = 2
-    const val LOOKAHEAD_STROKES  = 2      // how many future strokes to disambiguate order
-    const val LEN_RATIO_MIN      = 0.5    // length guard band
-    const val LEN_RATIO_MAX      = 2.0
-    const val SHORT_STROKE_LEN   = 60.0   // below: dot-stroke path (position + endpoint vector)
-    const val MIN_STROKE_UNITS   = 15.0   // below (and < ~30ms): accidental contact, ignore
-}
+data class GradingConfig(
+    val rdpEpsilon: Double = 2.0,
+    val resampleStep: Double = 10.0,
+    val acceptDist: Double = 45.0,    // mean normalized distance
+    val acceptDir: Double = 0.6,      // mean cosine similarity
+    val sloppyDist: Double = 70.0,
+    val sloppyDir: Double = 0.4,
+    val maxSloppyBeforeFail: Int = 2,
+    val lookaheadStrokes: Int = 2,    // future strokes checked for out-of-order
+    val lenRatioMin: Double = 0.5,    // length guard band
+    val lenRatioMax: Double = 2.0,
+    val shortStrokeLen: Double = 60.0, // below: dot path (position + endpoint vector)
+    val minStrokeUnits: Double = 15.0, // below: accidental contact, Ignored
+    val hintDistLeniency: Double = 1.3, // hint active: distance caps × this
+    val hintDirLeniency: Double = 0.75, // hint active: direction floors × this
+)
 ```
 
 ### Golden test set
@@ -194,8 +209,9 @@ The corpus ships with the test code (no PII — they're geometric paths).
 - On reject, the user's just-drawn stroke **fades away** (not left as permanent ink), so
   the canvas stays uncluttered for a retry.
 - After 2 consecutive rejects on the same stroke, offer a **"show me"** button that plays
-  the demo for the current stroke and lifts grading pressure (next attempt accepted more
-  leniently, marked as hinted).
+  the demo for the current stroke and lifts grading pressure: while the hint is active,
+  the distance caps widen by `hintDistLeniency` (×1.3) and the direction floors drop by
+  `hintDirLeniency` (×0.75); the resulting accept is recorded as HINTED (grade ≤ 3).
 - A persistent **undo** clears the last accepted stroke (in case of a misfire).
 
 ## Performance

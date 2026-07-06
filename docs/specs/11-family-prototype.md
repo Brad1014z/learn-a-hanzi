@@ -24,9 +24,13 @@ If a session risks ending in plumbing, dad pre-bakes the plumbing beforehand.
 
 ## Roles
 
-- **Dad:** engine workstream (`08` Phase 0 list), environment setup, pre-baked skeleton
-  before S1 (project that builds + loads character JSON + a median renderer stub), PR
-  review of the son's branches.
+- **Dad:** engine workstream (`08` Phase 0 list), environment setup, pre-bake before S1,
+  PR review of the son's branches.
+  *Pre-bake status (2026-07-06):* it went further than the original "skeleton" — the
+  working app already has the grid (with meanings), demo animation, full quiz grading,
+  hint/undo/guide, placeholder verdict sounds with a toggle, and CI producing a test APK.
+  That's fine: it shifts the sessions from "build these from nothing" to **"make these
+  yours"** — every game-feel surface carries a `TODO(son, S1..S5)` marker in the code.
 - **Son:** game-feel workstream below; app name + icon; all naming in `10`; the ideas
   backlog. Works on his own branch; his changes reach `main` by PR that dad reviews —
   review culture from day one, gently.
@@ -43,7 +47,8 @@ A character (his pick — 火 is a good first: 4 strokes, looks like fire) anima
 stroke-by-stroke on screen, in colors he chose, with a replay button and **confetti**
 when it finishes. He names the app (v0 name, changeable).
 *Learns:* prompting loop, run-on-device, what a Composable is (one walkthrough).
-*Pre-baked by dad:* JSON loading + basic median rendering, so S1 is pure payoff.
+*Pre-baked by dad:* the demo animation already runs — S1 is making it *his*: colors
+(`PracticeColors` is waiting), the app name, and the first pass at completion confetti.
 
 ### S2 — "Trace it"
 Finger drawing: ink follows his finger over a faint version of the character. Brush
@@ -58,11 +63,13 @@ replay its animation. This is the first version of the real product's Collection
 *Learns:* lists and state — where "which characters have I done" lives.
 
 ### S4 — "It judges you"
-Dad's grading engine (built in parallel) plugs in underneath. Now tracing gets verdicts —
-and **he designs the feedback**: accept color/sound, the reject shake, haptics, how mean
-or kind the retry moment feels. This is real game design on a real grading system.
-*Learns:* thresholds and tuning (`GradingConfig` is sliders for feelings), the sloppy
-tier as a design choice.
+Dad's grading engine already judges — S4 is **designing the feedback**: replace the
+placeholder verdict sounds (synthesized WAVs in `res/raw`, wired via `SoundPlayer` — react
+to them, then make better ones), pick the accept/reject colors, add the reject shake and
+haptics, decide how mean or kind the retry moment feels. This is real game design on a
+real grading system.
+*Learns:* thresholds and tuning (`GradingConfig` is sliders for feelings — reject
+messages already show the raw scores), the sloppy tier as a design choice.
 
 ### S5 — "Boss + share"
 A tiny session loop: trace 3 characters → boss character → confetti + XP counter →

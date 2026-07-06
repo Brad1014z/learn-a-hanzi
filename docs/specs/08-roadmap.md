@@ -24,6 +24,12 @@ session-by-session plan):
       dots, hooks, and crossings (一 人 我 火 心 小 十 中 …).
 - [x] Vendored pure-Kotlin SVG-path parser + Y-flip/normalization applied at load
       (with a regression test that 三's strokes run top-to-bottom on screen).
+- [x] **Meanings** (added 2026-07-06): a 20-entry dictionary slice (pinyin + definitions
+      from make-me-a-hanzi `dictionary.txt`, LGPL — see `02`) shown on grid tiles, in the
+      practice header, and on the completion overlay.
+- [x] **Verdict sounds** (added 2026-07-06): synthesized placeholder WAVs — accept ding,
+      gentle reject tone, completion sparkle — via SoundPool with an on/off toggle
+      (`07`). Final sounds are S4's job (`11`).
 - [x] Practice canvas: rice-grid guide, demo animation (thick-median variant), quiz mode
       with the full grading pipeline per `05` (capture → accidental-contact filter → RDP →
       resample → length guard → position + direction scores → verdict tiers → hint/undo).
@@ -57,8 +63,9 @@ engine moves into its permanent home.
 - [ ] Gradle multi-module skeleton: `:app`, `:core:data`, `:core:domain`, `:core:ui`,
       `:feature:practice`, `:feature:review`, `:feature:browser`, `:data-ingest`.
       `:core:domain` is a plain `kotlin("jvm")` module (see `06`).
-- [ ] Version catalog (`gradle/libs.versions.toml`) with pinned dependency versions.
-- [ ] CI: GitHub Actions — assemble + unit tests on every push.
+- [x] Version catalog (`gradle/libs.versions.toml`) with pinned dependency versions
+      (landed with the Phase 0 prototype).
+- [x] CI: GitHub Actions — unit tests gate a debug-APK artifact (landed in Phase 0).
 - [ ] Prototype engine code + golden corpus land in `:core:domain` unchanged, tests green.
 - [ ] Hilt + Compose + Room wired in `:app` so it launches to a blank screen.
 - [ ] `:data-ingest` tool (see `02` for the full pipeline):

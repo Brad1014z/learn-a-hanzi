@@ -68,13 +68,18 @@ by every feature.
 
 ### 3. Practice (stroke quiz) — the centerpiece
 - Full-bleed **Canvas** with the rice-grid guide; minimal chrome.
-- Top bar: target character (faint), pinyin, audio, progress (stroke x of n).
+- Top bar: target character (faint), progress (stroke x of n), audio.
+- **Meaning line** under the top bar: tone-marked pinyin + short English gloss
+  ("yī · one") — the character is always more than a shape, even mid-quiz. The gloss is
+  the first clause of the full definition (definitions are `;`-separated, see `02`).
 - **Tracing guide** (faint full character on the canvas): defaults **on during
   first-learn**, **off during review** — scaffolding that fades as recall takes over;
   overridable in Settings (see `05`).
 - Controls: **Hint** (show next stroke), **Undo**, **Replay demo**, **Exit**.
-- Drawing input → live ink; on pointer-up, grading feedback (color + optional haptic).
-- On completion: success state, SRS grade recorded, "Next" / "Done".
+- Drawing input → live ink; on pointer-up, grading feedback (color + sound + optional
+  haptic).
+- On completion: success state showing character · pinyin · meaning (one last
+  reinforcement), SRS grade recorded, "Next" / "Done".
 
 ### 4. Review (SRS queue)
 - Presents due characters one at a time in the practice canvas (same engine as Practice,
@@ -135,6 +140,10 @@ by every feature.
   readings (e.g. 了, 长), TTS on the bare glyph may pick a reading that contradicts the
   pinyin on screen — so the character's audio button speaks it **inside its example word**
   instead (see `01`). Word/sentence audio is unaffected.
+- **Verdict sound effects** on grading (bright short ding on accept, **gentle** low tone
+  on reject — never harsh, per `00`'s feedback-that-teaches principle — and an ascending
+  sparkle on character completion) — toggleable, independent of TTS. Phase 0 ships
+  synthesized placeholders; the final sounds are the co-designer's call (`11`, S4).
 - **Haptics** on grading verdicts (light tick on accept, stronger on reject) — toggleable.
 - **Offline indicators**: none needed in normal use (always offline-first); a one-time
   hint if no Mandarin TTS engine is installed.
