@@ -10,8 +10,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import io.github.brad1014z.hanzi.engine.data.CharacterRepository
 
 /**
@@ -36,18 +38,24 @@ fun HanziApp() {
         Surface(color = MaterialTheme.colorScheme.background) {
             val repository = remember { CharacterRepository() }
             val characters = remember { repository.listCharacters() }
+            val meanings = remember { characters.associateWith { repository.load(it).shortDefinition } }
+            val context = LocalContext.current
+            val sounds = remember { SoundPlayer(context) }
+            DisposableEffect(Unit) { onDispose { sounds.release() } }
             var selected by remember { mutableStateOf<String?>(null) }
 
             val current = selected
             if (current == null) {
                 CharacterGridScreen(
                     characters = characters,
+                    meanings = meanings,
                     onCharacterTap = { selected = it },
                 )
             } else {
                 BackHandler { selected = null }
                 PracticeScreen(
                     character = remember(current) { repository.load(current) },
+                    sounds = sounds,
                     onExit = { selected = null },
                     onNext = {
                         val idx = characters.indexOf(current)

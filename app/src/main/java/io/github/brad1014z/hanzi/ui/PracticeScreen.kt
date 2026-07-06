@@ -7,6 +7,8 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -58,9 +60,11 @@ private enum class Mode { DEMO, QUIZ }
  * TODO(son, S4): the verdict feedback here is deliberately plain — colors, sounds,
  * haptics, and the shake on a reject are yours to design.
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun PracticeScreen(
     character: CharacterData,
+    sounds: SoundPlayer,
     onExit: () -> Unit,
     onNext: () -> Unit,
 ) {
@@ -115,6 +119,11 @@ fun PracticeScreen(
         if (mode != Mode.QUIZ || quiz.isComplete) return
         val (next, verdict) = engine.submitStroke(quiz, points)
         quiz = next
+        when (verdict) {
+            is StrokeVerdict.Accept -> if (next.isComplete) sounds.playComplete() else sounds.playCorrect()
+            is StrokeVerdict.WrongOrder, is StrokeVerdict.Reject -> sounds.playWrong()
+            StrokeVerdict.Ignored -> Unit
+        }
         feedback = when (verdict) {
             is StrokeVerdict.Accept -> when {
                 next.isComplete -> "完成! Character complete."
@@ -170,6 +179,13 @@ fun PracticeScreen(
             Spacer(Modifier.weight(1f))
             TextButton(onClick = onExit) { Text("Exit") }
         }
+        // Pinyin + meaning: the character should always be more than a shape (spec 00).
+        Text(
+            text = "${character.pinyin.joinToString(", ")} · ${character.shortDefinition}",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(bottom = 4.dp),
+        )
 
         Box {
             Canvas(
@@ -259,7 +275,7 @@ fun PracticeScreen(
             modifier = Modifier.padding(vertical = 8.dp),
         )
 
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedButton(onClick = {
                 mode = Mode.DEMO
                 demoRun++
@@ -281,6 +297,11 @@ fun PracticeScreen(
             OutlinedButton(onClick = { showGuide = !showGuide }) {
                 Text(if (showGuide) "Guide on" else "Guide off")
             }
+            var soundOn by remember { mutableStateOf(sounds.enabled) }
+            OutlinedButton(onClick = {
+                soundOn = !soundOn
+                sounds.enabled = soundOn
+            }) { Text(if (soundOn) "Sound on" else "Sound off") }
         }
     }
 }
@@ -297,6 +318,13 @@ private fun CompletionOverlay(quiz: QuizState, onAgain: () -> Unit, onNext: () -
             verticalArrangement = Arrangement.Center,
         ) {
             Text(text = "完成!", fontSize = 44.sp)
+            Text(
+                text = "${quiz.character.character} · ${quiz.character.pinyin.joinToString(", ")} · " +
+                    quiz.character.shortDefinition,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 4.dp),
+            )
             Text(
                 text = "Grade ${quiz.toGrade()} / 5",
                 style = MaterialTheme.typography.titleLarge,

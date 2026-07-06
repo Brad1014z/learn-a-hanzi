@@ -35,6 +35,18 @@ class CharacterRepositoryTest {
     }
 
     @Test
+    fun `every character has pinyin and an English definition`() {
+        for (char in repo.listCharacters()) {
+            val data = repo.load(char)
+            assertTrue(data.pinyin.isNotEmpty(), "$char missing pinyin")
+            assertTrue(data.definition.isNotBlank(), "$char missing definition")
+            assertTrue(data.shortDefinition.isNotBlank(), "$char short definition")
+        }
+        assertEquals("fire, flame", repo.load("火").shortDefinition)
+        assertEquals(listOf("huǒ"), repo.load("火").pinyin)
+    }
+
+    @Test
     fun `normalized geometry stays within the 1000-space box`() {
         // Small tolerance: some glyphs overshoot the em-square slightly.
         val range = -60.0..1060.0

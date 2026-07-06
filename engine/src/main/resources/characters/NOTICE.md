@@ -8,6 +8,10 @@ The stroke graphics derive from Arphic Technology's PL KaitiM GB / PL UKai fonts
 licensed under the **Arphic Public License**. Redistribution of this data must include
 that license: https://github.com/skishore/makemeahanzi/blob/master/APL/english
 
+`dictionary.json` (pinyin + English definitions for the 20 prototype characters) is
+extracted from make-me-a-hanzi's `dictionary.txt`, which is licensed **LGPL v3+**
+(it derives from Unihan and CJKlib — see the repo's COPYING).
+
 This is the Phase 0 prototype slice (20 HSK 1 characters, checked in per
 `docs/specs/08-roadmap.md`). The full APL text ships with any public release
 (license checklist in `docs/specs/02-data-sources.md`, closed in Phase 4).

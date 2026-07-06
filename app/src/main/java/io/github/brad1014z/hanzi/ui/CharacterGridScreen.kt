@@ -2,7 +2,6 @@ package io.github.brad1014z.hanzi.ui
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun CharacterGridScreen(
     characters: List<String>,
+    meanings: Map<String, String>,
     onCharacterTap: (String) -> Unit,
 ) {
     Column(
@@ -60,8 +61,21 @@ fun CharacterGridScreen(
                         .aspectRatio(1f)
                         .clickable { onCharacterTap(char) },
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Text(text = char, fontSize = 36.sp)
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                    ) {
+                        Text(text = char, fontSize = 32.sp)
+                        meanings[char]?.let { meaning ->
+                            Text(
+                                text = meaning,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.padding(horizontal = 4.dp),
+                            )
+                        }
                     }
                 }
             }

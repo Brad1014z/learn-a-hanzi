@@ -32,7 +32,15 @@ data class CharacterData(
     val strokeOutlines: List<List<SvgCommand>>,
     /** One entry per stroke, parallel to [strokeOutlines]: the centerline, normalized. */
     val medians: List<Polyline>,
+    /** Tone-marked readings, e.g. ["huǒ"] (from make-me-a-hanzi dictionary.txt). */
+    val pinyin: List<String> = emptyList(),
+    /** English gloss, often ;-separated clauses; UI may shorten (spec 02). */
+    val definition: String = "",
 ) {
+    /** First clause of the gloss — fits small UI (e.g. "fire" from "fire, flame; to burn"). */
+    val shortDefinition: String
+        get() = definition.substringBefore(";").trim()
+
     val strokeCount: Int get() = medians.size
 
     init {
@@ -49,6 +57,12 @@ private data class HanziWriterFile(
     val medians: List<List<List<Double>>>,
 )
 
+@Serializable
+private data class DictionaryEntry(
+    val pinyin: List<String> = emptyList(),
+    val definition: String = "",
+)
+
 /**
  * Loads the checked-in Phase 0 character slice from classpath resources under
  * `/characters/` (downloaded from hanzi-writer-data — see NOTICE.md there).
@@ -58,6 +72,9 @@ class CharacterRepository {
 
     private val json = Json { ignoreUnknownKeys = true }
     private val cache = mutableMapOf<String, CharacterData>()
+    private val dictionary: Map<String, DictionaryEntry> by lazy {
+        json.decodeFromString<Map<String, DictionaryEntry>>(readResource("dictionary.json"))
+    }
 
     /** Characters included in the prototype, in teaching order. */
     fun listCharacters(): List<String> =
@@ -68,6 +85,7 @@ class CharacterRepository {
         require(file.strokes.size == file.medians.size) {
             "$character: schema drift — strokes/medians not parallel (spec 02: fail loudly)"
         }
+        val entry = dictionary[character]
         CharacterData(
             character = character,
             strokeOutlines = file.strokes.map { path ->
@@ -76,6 +94,8 @@ class CharacterRepository {
             medians = file.medians.map { median ->
                 median.map { (x, y) -> HanziCoordinates.normalize(Point(x, y)) }
             },
+            pinyin = entry?.pinyin.orEmpty(),
+            definition = entry?.definition.orEmpty(),
         )
     }
 
