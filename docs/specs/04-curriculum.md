@@ -1,52 +1,86 @@
 # 04 — Curriculum
 
-> **Status:** DRAFT
+> **Status:** ACCEPTED (reviewed 2026-07-05; amended 2026-07-05 — worlds & play layer, see `10`)
 > Which characters the app teaches, in what order, and the rules for unlocking them.
 
 ## Scope
 
-- **MVP:** **HSK 1** — the ≈178 characters of the HSK 1 vocabulary set.
-  (HSK 2.0 list; ⚠ verify against the current official list at Phase 0, since HSK
-  restructured into 9 levels in 2021. We target the well-known HSK 1 ≈178 set regardless of
-  which "version" it's called.)
+- **MVP:** **HSK 1** — the ~174 unique characters of the HSK 1 (2.0) 150-word vocabulary
+  set. (⚠ pin the exact list snapshot at Phase 1 (data pipeline), since HSK restructured
+  into 9 levels in 2021. We target the well-known HSK 2.0 level-1 set regardless of what
+  it's called now.)
 - **MVP+:** HSK 2, then HSK 3 (≈150 / ≈300 chars). Added after the MVP loop is validated.
 - **Later:** HSK 4–6, a frequency-only track, and user-built custom decks.
 
 Only characters that have **complete data** (stroke paths + medians + a definition) are
-teachable. Characters missing any of those are silently excluded and logged by the ingest
-tool (see `02`). The curriculum is a *subset* of teachable characters, ordered.
+teachable. For characters *inside* an MVP curriculum level, missing data **fails the
+ingest build** — the constitution promises "all of HSK 1", so a silent drop is a broken
+promise. Outside the curricula, incomplete characters are excluded and logged (see `02`).
+The curriculum is a *subset* of teachable characters, ordered.
 
 ## Ordering within a level
 
 Within HSK 1, characters are ordered by:
 
-1. **Frequency rank** (from Unihan `kFrequency`-derived rank) — most common first, so the
-   user immediately learns characters they'll see everywhere.
+1. **Frequency rank** (Tatoeba-corpus-derived, computed at ingest — see `02`; Unihan's
+   `kFrequency` no longer exists) — most common first, so the user immediately learns
+   characters they'll see everywhere.
 2. Tie-break: **stroke count ascending** — simpler shapes first (good early morale).
 3. Final tie-break: **radical grouping** so visually/structurally similar characters sit
    near each other when stroke count is equal.
 
-This produces a single deterministic `sequence` per level, stored as
-`Character.curriculumOrder` (added in `03`; if not, derive on the fly — TBD at implementation).
+This produces a single deterministic sequence per level, stored as
+`CurriculumEntry.sequence` (see `03`), computed by the ingest tool so the app never
+re-derives ordering at runtime.
+
+### Worlds (play layer)
+
+The play layer (`10-play-layer.md`) groups each level's characters into **thematic
+worlds** — hand-curated clusters for HSK 1, e.g. *Nature* (火 水 山 木 日 月…), *People*
+(人 你 我 他…), *Numbers* (一 二 三…). Rules:
+
+- Worlds are ordered by their aggregate frequency (most-common cluster first); **within**
+  a world, characters follow `sequence` order as above.
+- The next world unlocks when the previous reaches a mastery threshold (default: **80%
+  of its characters at Bronze rank or better** — see ranks below). Unlocking is a
+  celebration moment, never a paywall or timer.
+- The world tags are curated once for HSK 1 (~174 chars) and shipped in the dataset.
+  *Schema delta:* a `world` column on `CurriculumEntry`, added to `03` at implementation.
 
 ## Progression rules
 
-The user does **not** get all 178 characters dumped at once. Unlocking is paced:
+The user does **not** get all ~174 characters dumped at once. Unlocking is paced:
 
 - A **daily new-character cap** (default **10**, configurable in Settings). The app
   introduces up to `cap` new characters per calendar day.
 - A character enters the user's world in the `NEW` state and moves to `LEARNING` on first
   exposure (see SRS states in `03` / `06`).
-- **Order is respected**: new characters unlock in `curriculumOrder` sequence. You can't
-  jump ahead to character #50 while #5 is still `NEW`. (Browse mode is exempt — see below.)
+- **Order is respected within a world**: new characters unlock in `CurriculumEntry.sequence`
+  order inside the current world; the next world opens at the mastery threshold above.
+  You can't jump ahead to character #50 while #5 is still `NEW`. (Browse mode is exempt —
+  see below.)
 - Once a character reaches the `REVIEW` state (graduated from learning, per SRS), it no
   longer counts against new-character headroom.
 
-### "Learned" definition
+### "Learned" definition & collection ranks
 
 A character is considered **learned** (counts toward "characters mastered") when it is in
 the `REVIEW` state **and** has been answered correctly at least twice in review. This is
 deliberately stricter than "seen once" so the headline number is meaningful.
+
+The play layer surfaces this as **collection ranks** — derived *only* from SRS state
+(the "juice with honesty" value in `00`):
+
+| Rank | Meaning | SRS condition |
+|------|---------|---------------|
+| — (silhouette) | met, not yet reliable | `NEW` / `LEARNING` |
+| **Bronze** | can write it | graduated to `REVIEW` |
+| **Silver** | learned | `REVIEW` + ≥2 correct reviews (the definition above) |
+| **Gold** | durable | interval ≥ 21 days |
+
+A lapse **dims** the character's rank in the collection (it visibly "asks to be practiced
+again") but never deletes it — honest, not punishing. Ranks are recomputed from
+`CharacterProgress`; no separate rank state is stored.
 
 ## Two tracks
 
@@ -58,16 +92,24 @@ deliberately stricter than "seen once" so the headline number is meaningful.
    If they practice a not-yet-unlocked character in Browse, it still creates a
    `CharacterProgress` row (so they get reviews), it just doesn't reorder the guided track.
 
-## Daily session shape
+## Daily session shape — the daily quest
 
-A typical day for an active user:
+The daily session is framed as the **daily quest** (`10-play-layer.md`); the underlying
+order is unchanged from sound SRS practice:
 
-1. **Reviews first.** Due cards (from SRS `dueAt ≤ now`) are queued and practiced first.
-   These are the highest-value work — the app surfaces them prominently on Home.
-2. **Then new characters** up to the remaining daily cap, but only if reviews are not
+1. **Warm-up.** One easy due card (highest-retention due character) — a guaranteed early
+   win to open the session.
+2. **Reviews.** Remaining due cards (from SRS `dueAt ≤ now`). These are the highest-value
+   work — the quest presents them as its main body.
+3. **New characters** up to the remaining daily cap, but only if reviews are not
    backlogged beyond a threshold (configurable; default: if > ~100 reviews due, the app
    suggests clearing them before adding new ones, but doesn't hard-block).
-3. **Optional extra practice.** Free practice on any character in Browse.
+4. **Boss stroke.** The quest closes with one character drawn fully from memory (no
+   guide) — picked from today's material. Completing it opens the **chest**: session XP,
+   celebration, and the day's share card. Failing it costs nothing (the character just
+   re-queues); the chest still opens on quest completion.
+5. **Optional extra practice.** Free practice on any character in Browse; the opt-in
+   arcade (Phase 3) lives outside the quest.
 
 ## Reordering / resets
 
@@ -81,7 +123,7 @@ A typical day for an active user:
 - **No adaptive reordering** based on which characters the user finds hard (possible later;
   the data is captured in `ReviewLog` to enable it). MVP uses the fixed sequence.
 - **No multi-character "words" as first-class cards.** Words/sentences are *context* shown
-  alongside a character, not separate SRS cards. (Considered for Phase 2.)
+  alongside a character, not separate SRS cards. (Considered for Phase 3, polish.)
 - **No grammar sequencing.** Example sentences are chosen for shortness + containing the
   character, not for grammatical progression.
 
@@ -90,14 +132,15 @@ A typical day for an active user:
 The HSK 1 character list + frequency data is part of the seeded dataset (see `02`).
 Concretely:
 
-- `Character.hskLevel = 1` for the HSK 1 set.
-- `Character.freqRank` drives intra-level order.
-- `Character.curriculumOrder` (if added) is a stable integer sequence per level, computed
-  by the ingest tool so the app doesn't recompute ordering at runtime.
+- `CurriculumEntry(curriculumId = "hsk", level = 1, …)` rows for the HSK 1 set.
+- `Character.freqRank` (Tatoeba-derived) drives intra-level order.
+- `CurriculumEntry.sequence` is the stable integer teaching order, computed by the ingest
+  tool so the app doesn't recompute ordering at runtime.
 
 ## Open questions
 
-- [ ] HSK 1 ≈178: confirm the exact character list + counts at Phase 0 (list is stable, but
-      pin the source snapshot). ⚠ verify
-- [ ] Should the daily cap be "new chars/day" or also limit total cards/day? Lean: only
-      new chars; reviews are uncapped (you should always clear your reviews).
+- [ ] HSK 1 ~174: confirm the exact character list + count at Phase 1 (list is stable, but
+      pin the source snapshot in `data/raw/`). ⚠ verify
+- [x] ~~Cap new chars/day or total cards/day?~~ — **decided: cap only new characters;
+      reviews are uncapped** (you should always clear your reviews; the >100-due backlog
+      nudge above is the pressure valve).

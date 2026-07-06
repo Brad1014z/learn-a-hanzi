@@ -1,24 +1,30 @@
 # 02 — Data Sources
 
-> **Status:** DRAFT
-> This is one of the two riskiest specs. Every fact about an upstream format or license is
-> marked **⚠ verify** where it must be confirmed against the live source before the
-> corresponding ingestion code ships. The shape of the data is stable, but field names and
-> license clauses change over time — confirm, don't assume.
+> **Status:** ACCEPTED (reviewed 2026-07-05)
+> This is one of the two riskiest specs. Licenses and repository facts were **verified by
+> web research on 2026-07-05**; remaining **⚠ verify** flags are ingest-time checks (exact
+> field names, export formats) that the ingest tool confirms mechanically and fails loudly
+> on. The shape of the data is stable, but field names change over time — confirm, don't
+> assume.
 
 ## Source inventory
 
-| Source | Provides | License (⚠ verify) | Used for |
-|--------|----------|--------------------|----------|
-| [make-me-a-hanzi](https://github.com/chanind/make-me-a-hanzi) | stroke SVG paths, medians, dictionary | **Arphic Public License** (graphics) | stroke rendering + grading, definitions, decomposition |
-| [CC-CEDICT](https://www.mdbg.net/chinese/dictionary?page=cedict) | word list (trad/simpl/pinyin/english) | **CC-BY-SA 3.0** | definitions cross-check, multi-char words |
-| [hanzi-writer-data](https://github.com/chanind/hanzi-writer-data) | derived JSON per character | Arphic / same lineage | **reference / sanity check only** — we ingest make-me-a-hanzi directly |
-| [Unihan database](https://www.unicode.org/charts/unihan.html) | readings, frequency, radical info | Unicode Data Files agreement | frequency ranks, curriculum ordering |
-| [Tatoeba](https://tatoeba.org/en/downloads) | sentences + translation links | **CC-BY 2.0 FR** (⚠ verify current) | example sentences/phrases per character |
+| Source | Provides | License (verified 2026-07) | Used for |
+|--------|----------|----------------------------|----------|
+| [make-me-a-hanzi](https://github.com/skishore/makemeahanzi) `graphics.txt` | stroke SVG paths + medians | **Arphic Public License** | stroke rendering + grading |
+| [make-me-a-hanzi](https://github.com/skishore/makemeahanzi) `dictionary.txt` | per-char dictionary | **LGPL v3+** (derives from Unihan + CJKlib) | definitions, decomposition, radical |
+| [CC-CEDICT](https://www.mdbg.net/chinese/dictionary?page=cc-cedict) | word list (trad/simpl/pinyin/english) | **CC BY-SA 4.0** | multi-char words, definition cross-check |
+| [hanzi-writer-data](https://github.com/chanind/hanzi-writer-data) | derived JSON per character | same lineage (Arphic) | **Phase 0 prototype source** + ingest sanity check |
+| [Unihan database](https://www.unicode.org/charts/unihan.html) | stroke counts, radicals, readings | Unicode license (permissive, attribution) | cross-checks (`kTotalStrokes`, `kRSUnicode`) |
+| [Tatoeba](https://tatoeba.org/en/downloads) | sentences + translation links | **CC-BY 2.0 FR** (mostly; per-sentence — record it) | example sentences; **character frequency ranks** |
+
+> The two make-me-a-hanzi files carry **different licenses** (per the repo's `COPYING`):
+> the graphics are Arphic PL (copyleft for the font-derived data), the dictionary is
+> LGPLv3+. Both license texts ship with the app's credits and the repo.
 
 ## make-me-a-hanzi — primary source
 
-This is the backbone dataset. Repository: `chanind/make-me-a-hanzi`. Two files matter:
+This is the backbone dataset. Repository: `skishore/makemeahanzi`. Two files matter:
 
 ### `graphics.txt` — stroke geometry
 
@@ -41,9 +47,13 @@ shape is:
 
 - `character` — the single simplified character this record describes.
 - `strokes` — array of SVG path strings (`M`/`L`/`Q`/`C`/`Z`), **one per stroke**, in
-  correct writing order. Coordinate space is a **1024×1024** box (⚠ verify — historically
-  true; some derivations normalize differently). These define the *outline* of each stroke
-  for rendering the completed character and for the demo animation.
+  correct writing order. Coordinate space is a ~**1024×1024 font em-square with the Y axis
+  pointing up** (glyphs sit in a 900-unit box with the baseline offset below it; the
+  transform hanzi-writer applies is ≈ `translate(0, 900) scale(1, -1)`). **Rendering
+  without the Y-flip draws every character upside down** — the ingest tool applies and
+  validates this transform during normalization (see pipeline below). These paths define
+  the *outline* of each stroke for rendering the completed character and the demo
+  animation.
 - `medians` — array of polylines, **one per stroke** (parallel to `strokes`), each a list
   of `[x,y]` points tracing the stroke's **centerline / direction**. This is what the
   grading engine compares a user's stroke against (see `05-stroke-engine.md`).
@@ -75,6 +85,9 @@ One JSON object per line. **⚠ verify exact current field names.** Stable shape
 - `etymology`, `matches` — optional; we surface etymology hints if present, ignore
   `matches` (component-matching data) in MVP.
 
+License note: `dictionary.txt` is **LGPLv3+** (unlike `graphics.txt` — see the repo's
+`COPYING`); ship the LGPL text alongside the Arphic license in credits.
+
 ## CC-CEDICT — words & cross-check
 
 Format: one entry per line, `#`-prefixed comments are metadata.
@@ -88,37 +101,61 @@ Format: one entry per line, `#`-prefixed comments are metadata.
   shortest words containing each character to use as examples.
 - Also used to **cross-check / enrich** make-me-a-hanzi single-char definitions where the
   gloss is thin.
-- **⚠ verify attribution text** required by CC-BY-SA 3.0 (we'll ship a credits screen).
+- License: **CC BY-SA 4.0** (updated from the historical 3.0). Attribution ships on the
+  credits screen; share-alike governs the license of our *derived* dataset (see summary
+  below).
 
-## hanzi-writer-data — reference only
+## hanzi-writer-data — prototype source & sanity check
 
-`chanind/hanzi-writer-data` republishes make-me-a-hanzi data as per-character JSON
-(`all.json`, plus `traditional` / `simplified` subsets). We do **not** ingest from it; we
-use it to:
+`chanind/hanzi-writer-data` republishes make-me-a-hanzi data as per-character JSON files
+(same lineage, same Arphic terms). Two uses:
 
-- Sanity-check that our ingestion of `graphics.txt` produced identical stroke/median data
-  for a sample of characters.
-- Cross-reference the JSON field naming if make-me-a-hanzi's raw files have drifted.
+- **Phase 0 prototype source:** the stroke-engine prototype checks in ~10–20 per-character
+  JSON files directly (no ingest pipeline yet) — see `08-roadmap.md`.
+- **Ingest sanity check:** verify that our ingestion of `graphics.txt` produces identical
+  stroke/median data for a sample of characters, and cross-reference field naming if
+  make-me-a-hanzi's raw files have drifted.
 
-## Unihan — frequency & metadata
+The production pipeline still ingests make-me-a-hanzi directly, not this derivation.
 
-Unicode's Unihan database (`Unihan_IRGSources.txt`, `Unihan_OtherMappings.txt`, etc.).
-Key fields:
+## Unihan — cross-check metadata
 
-- `kFrequency` — a frequency tier (`1` = most frequent … `5` = rare). Drives curriculum
-  ordering within HSK levels and for the future frequency-only track.
+Unicode's Unihan database (`Unihan_IRGSources.txt`, etc.). Key fields:
+
 - `kTotalStrokes` — total stroke count (cross-check against `len(strokes)` from
   make-me-a-hanzi; flag mismatches).
 - `kRSUnicode` — radical/stroke count; cross-check radical.
 
-License: Unicode Data Files agreement (permissive with attribution). **⚠ verify current
-text.**
+> **`kFrequency` no longer exists.** The original plan ordered the curriculum by Unihan's
+> `kFrequency`, but that property was provisional and **has been removed from Unihan**
+> (and even when present it was a 5-bucket tier over a subset of characters, not a rank).
+> Frequency is now computed at ingest — next section.
+
+License: Unicode license (permissive with attribution); include the current text in the
+attribution manifest at ingest.
+
+## Character frequency — derived at ingest
+
+The ingest tool computes its own character frequency ranks (`Character.freqRank`):
+
+- Count each character's occurrences across the **full Tatoeba `cmn` corpus** (all
+  Mandarin sentences, not just the selected examples); rank descending. Ties broken by
+  CEDICT word-membership count, then by codepoint — fully deterministic.
+- A sentence corpus skews conversational. That's acceptable: the rank only orders ~174
+  HSK 1 characters *relative to each other* for teaching, it is not a published
+  linguistic artifact.
+- **Upgrade path:** Jun Da's Modern Chinese frequency list is the academic standard, but
+  its redistribution license is unclear (**⚠ verify before adopting**); swapping it in
+  later is a one-column change confined to the ingest tool.
 
 ## Tatoeba — example sentences
 
 Tatoeba publishes three relevant files:
 
-- `sentences.csv` — `sentence_id, lang, text`. We filter `lang = "cmn"` (Mandarin).
+- `sentences.csv` — `sentence_id, lang, text`. We filter `lang = "cmn"` (Mandarin). The
+  full filtered corpus also feeds the frequency ranks above. (Prefer
+  `sentences_detailed.csv`, which carries the contributing username for attribution;
+  ⚠ verify exact export columns at ingest.)
 - `links.csv` — pairs of `sentence_id`s that are translations of each other.
 - (optional) `tags.csv`, `user_lists.csv` — not needed for MVP.
 
@@ -133,36 +170,53 @@ and prefer sentences under a permissive license where the data exposes it.
 
 ## License obligations summary
 
-> This section is a checklist, not legal advice. Confirm each before public release.
+> This section is a checklist, not legal advice. The app is a **free/open product**
+> (constitution), so share-alike terms are workable — we comply rather than avoid.
+> Complete every box before the first public release (Phase 4).
 
-- [ ] **Arphic Public License** (make-me-a-hanzi graphics): read the full text; it has
-      specific attribution and (historically) distribution conditions. Display attribution
-      in-app (Credits screen) and in the repo. ⚠ verify
-- [ ] **CC-BY-SA 3.0** (CC-CEDICT): attribution + share-alike. Affects how we license any
-      *derived* dataset we redistribute. ⚠ verify
-- [ ] **Unicode Data Files** (Unihan): attribution, permissive. ⚠ verify
-- [ ] **Tatoeba** (sentences): CC-BY 2.0 FR or per-sentence; record per-sentence
-      attribution. ⚠ verify
-- [ ] Decision needed: under what license do **we** release the app and the *derived*
-      bundled dataset? Recommendation: app code under a permissive license (MIT/Apache-2.0);
-      derived data under whatever the most restrictive source (CC-BY-SA) requires.
+- [ ] **Arphic Public License** (`graphics.txt`): copyleft for the font-derived data —
+      ship the APL text + attribution in-app (Credits) and in the repo; derived stroke
+      data remains under APL.
+- [ ] **LGPL v3+** (`dictionary.txt`): ship the license text + attribution; keep the
+      derived dictionary data replaceable/extractable (the bundled SQLite is regenerable
+      from public sources via the ingest tool, which satisfies the spirit and letter).
+- [ ] **CC BY-SA 4.0** (CC-CEDICT): attribution + share-alike — CEDICT-derived rows in
+      our dataset are redistributed under CC BY-SA 4.0.
+- [ ] **Unicode license** (Unihan): permissive; include current text in the manifest.
+- [ ] **Tatoeba**: mostly CC-BY 2.0 FR but licensed **per sentence** — record sentence id
+      + contributor at ingest; credits screen lists contributors; skip sentences whose
+      license the export marks as non-permissive.
+- [ ] **Our releases:** app code under MIT or Apache-2.0; the *derived bundled dataset*
+      under the terms of its most restrictive inputs per component (APL for stroke data,
+      LGPL for dictionary-derived, CC BY-SA 4.0 for CEDICT/Tatoeba-derived), documented in
+      the attribution manifest the ingest tool emits.
 
 ## Ingestion pipeline
 
 A **JVM Kotlin tool** (Gradle subproject `:data-ingest`, **not shipped** in the APK) that:
 
 1. Reads the raw source files from a local `data/raw/` directory (checked in or downloaded
-   by a Gradle task; never fetched at app runtime).
-2. Parses and normalizes each into intermediate Kotlin data classes.
-3. **Joins on the simplified character** as the natural key:
-   make-me-a-hanzi `graphics` + `dictionary` ← CEDICT words ← Tatoeba sentences ← Unihan
-   frequency.
-4. Applies selection rules (one example phrase/sentence per char, shortest wins; words
-   ranked by frequency).
-5. Writes a **versioned SQLite file** (`hanzi_vN.sqlite`) into `app/src/main/assets/databases/`,
+   by a Gradle task; never fetched at app runtime). The HSK 1 word/character list is one
+   of these pinned inputs.
+2. Parses each into intermediate Kotlin data classes; **validates schema** (field names,
+   parallel `strokes`/`medians` arrays) and fails loudly with a diff on drift.
+3. **Normalizes geometry:** applies the Y-flip from make-me-a-hanzi's font space and
+   scales into the internal **1000×1000, Y-down** box (see `05`); validates by comparing
+   a rendered sample against hanzi-writer-data.
+4. **Joins on the simplified character** as the natural key:
+   make-me-a-hanzi `graphics` + `dictionary` ← CEDICT words ← Tatoeba sentences.
+5. Computes **frequency ranks** from the Tatoeba corpus (see above) and applies selection
+   rules (one example phrase/sentence per char, shortest wins; words ranked by frequency).
+6. Emits **`CurriculumEntry` rows** (`curriculumId="hsk"`, level, sequence — see `03`/`04`)
+   and tags all content rows `lang = "zh-Hans"` (BCP-47).
+7. **Fails the build** if any character in an MVP curriculum level lacks complete data
+   (strokes + medians + definition). Silent drops are allowed only for non-curriculum
+   characters, which are logged.
+8. Writes a **versioned SQLite file** (`hanzi_vN.sqlite`) into `app/src/main/assets/databases/`,
    matching the Room schema in `03-data-model.md`.
-6. Emits an **ingest report**: counts per source, characters dropped (no graphics, no
-   definition), license-attribution manifest, and the dataset version string.
+9. Emits an **ingest report**: counts per source, characters dropped, the
+   license-attribution manifest (including full APL + LGPL texts and per-sentence Tatoeba
+   contributors), and the dataset version string.
 
 ### Dataset versioning
 
@@ -179,7 +233,7 @@ A **JVM Kotlin tool** (Gradle subproject `:data-ingest`, **not shipped** in the 
 
 ## Data size & shape (estimates, ⚠ verify with real files)
 
-- ~10,000 characters in make-me-a-hanzi graphics; MVP uses ~178 (HSK 1).
+- ~10,000 characters in make-me-a-hanzi graphics; MVP uses ~174 (HSK 1).
 - `graphics.txt` for the full set is a few MB; the MVP slice (HSK 1 + examples) compresses
   to well under 1 MB. APK impact is negligible.
 - Tatoeba sentences for Mandarin: tens of thousands; we filter to one per character → tiny.
@@ -188,8 +242,9 @@ A **JVM Kotlin tool** (Gradle subproject `:data-ingest`, **not shipped** in the 
 
 | Risk | Mitigation |
 |------|------------|
-| Field names in make-me-a-hanzi drift from this spec | Ingest tool validates schema and fails loudly with a diff; ⚠ verify at Phase 0. |
-| Coordinate space isn't actually 1024×1024 | Tool auto-detects bounds from a sample and normalizes to our internal 1000×1000 space (see `05`). |
+| Field names in make-me-a-hanzi drift from this spec | Ingest tool validates schema and fails loudly with a diff; ⚠ verify at Phase 1 (data pipeline). |
+| Y-flip / coordinate assumptions wrong in detail | Tool auto-detects bounds from a sample, applies the documented transform, and diff-validates rendered geometry against hanzi-writer-data. |
 | A license forbids bundling (e.g. Arphic terms) | Keep ingestion swappable: if a source can't be bundled, fall back to on-first-launch download with attribution, still offline thereafter. Constitution allows one-time import. |
-| A character has no median data | Exclude from MVP curriculum; log in ingest report. |
+| An MVP-curriculum character lacks strokes/medians/definition | **Ingest fails the build** — the curriculum promise is "all of HSK 1" (constitution). Non-curriculum gaps are dropped + logged. |
+| Tatoeba-derived frequency skews conversational | Acceptable for intra-level ordering; Jun Da's list is the documented upgrade (license ⚠). |
 | Tatoeba attribution complex | Record per-sentence contributor + id; credits screen lists contributors. |

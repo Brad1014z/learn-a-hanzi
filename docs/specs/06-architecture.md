@@ -1,6 +1,6 @@
 # 06 — Architecture
 
-> **Status:** DRAFT
+> **Status:** ACCEPTED (reviewed 2026-07-05)
 > Module layout, layering, dependency rules, state ownership, and the SRS engine.
 
 ## Module layout
@@ -11,7 +11,7 @@ never depends on a feature.
 ```
 :app                  -- Application class, Hilt, nav host, theme wiring. Thin.
 :core:data            -- Room DB, DAOs, DataStore, repositories (interface + impl).
-:core:domain          -- Use cases, SRS engine, models (pure Kotlin, Android-light).
+:core:domain          -- Use cases, SRS engine, stroke-grading math, models (pure Kotlin).
 :core:ui              -- Shared Compose theme, design-system tokens, reusable components.
 :feature:practice     -- Stroke engine + practice screen (Canvas-heavy).
 :feature:review       -- SRS review queue screen.
@@ -19,8 +19,13 @@ never depends on a feature.
 :data-ingest          -- JVM tool (NOT shipped). Produces the bundled SQLite asset.
 ```
 
-- `:core:domain` has **no Android framework dependencies** (so it unit-tests purely),
-  except where it needs time/coroutine dispatchers, which are injected.
+- `:core:domain` is a **plain `kotlin("jvm")` module — the Android Gradle plugin is not
+  applied**, so `android.*` imports are impossible by construction. This is the
+  constitution's "portable core": converting it to a Kotlin Multiplatform module when iOS
+  work starts is mechanical (see `09-extension-paths.md`). Time and coroutine dispatchers
+  are injected. The **stroke-grading math** (polyline ops, scoring, the vendored SVG path
+  parser) lives here, not in `:feature:practice` — the feature module contributes only
+  Canvas rendering and touch capture.
 - `:feature:*` depend on `:core:domain`, `:core:ui`, and `:core:data` (via interfaces).
 - `:app` wires implementations (Hilt modules bind `Repository` impls from `:core:data` to
   interfaces declared in `:core:domain`).
@@ -80,21 +85,28 @@ A small, well-tested pure-Kotlin component.
   - 2 — incorrect, but the correct one seemed easy to recall
   - 1 — incorrect, but familiar
   - 0 — complete blackout
-  In practice the **drawing practice** maps to a coarse grade: clean accept → 5, sloppy
-  accept → 4, needed-a-hint → 3, failed-and-retried → 2, total fail → 1. The user never
-  sees the 0–5 number; the mapping is internal.
+  In practice the **drawing practice** maps to a coarse grade — the authoritative
+  outcome→grade table lives in `05` (clean → 5, sloppy → 4, hinted → 3, heavy retries →
+  2, abandoned → 1; grades < 3 are lapses). The user never sees the 0–5 number; the
+  mapping is internal.
 - **State machine** on top of SM-2 (the `state` column in `CharacterProgress`):
-  `NEW → LEARNING → REVIEW`, with `RELEARNING` on lapse. `LEARNING`/`RELEARNING` use short
-  steps (e.g. 1 day) before graduating to the SM-2 interval schedule.
+  `NEW → LEARNING → REVIEW`, with `RELEARNING` on lapse. `LEARNING`/`RELEARNING` use two
+  fixed steps — **re-test at the tail of the current session's queue, then 1 day** —
+  before graduating to the SM-2 interval schedule. (This is what `07` Flow A's "first
+  review" means; there is no same-minute timer.)
 - The engine is a **pure function** of `(progress, grade, now)` → new progress. Fully unit-
   tested, including edge cases (lapse chains, ease floor, interval caps).
+- **Upgrade path:** FSRS is the modern successor to SM-2. `ReviewLog` already captures the
+  full per-review history FSRS trains on, so a later swap is a domain-module change with
+  no schema migration. MVP ships SM-2 for simplicity.
 
 ## Repositories (interfaces in `:core:domain`)
 
 - `CharacterRepository` — character lookups, stroke paths, words, sentences; queries by
   HSK level / frequency / curriculum order.
 - `ProgressRepository` — get/upsert `CharacterProgress`, append `ReviewLog`, query due queue.
-- `CurriculumRepository` — what's unlocked, next new characters, daily cap enforcement.
+- `CurriculumRepository` — what's unlocked, next new characters, daily cap enforcement;
+  reads `CurriculumEntry` (see `03`).
 - `SettingsRepository` — over DataStore: daily cap, theme, TTS prefs, sound.
 
 Each returns `Flow` for observable data and `suspend` for writes.
@@ -106,7 +118,7 @@ Each returns `Flow` for observable data and `suspend` for writes.
 2. **First-launch DB setup** copies the asset DB (and runs any reseed logic if a newer
    dataset version is bundled than on disk). This is local I/O only.
 3. **No background services** in MVP. Reviews are computed from `dueAt` on foreground.
-4. Any future sync (Phase 3) layers over these interfaces and must remain optional.
+4. Any future sync (Phase 4, publish) layers over these interfaces and must remain optional.
 
 ## Navigation
 
@@ -143,5 +155,5 @@ Each returns `Flow` for observable data and `suspend` for writes.
       defer to when the component count grows.
 - [ ] Compose Navigation vs a typed-routing library (e.g. compose-destinations) — start
       with stock Compose Navigation, reassess if route boilerplate bites.
-- [ ] Whether `LEARNING`/`RELEARNING` step counts (e.g. 1 or 2 learning steps before
-      graduation) should be configurable. Lean: hardcode for MVP, expose later.
+- [x] ~~Configurable learning steps?~~ — **decided: hardcode the two steps
+      (end-of-session, 1 day) for MVP**; expose in Settings later if users ask.
