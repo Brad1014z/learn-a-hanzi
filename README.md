@@ -6,8 +6,21 @@ and sentences, driven by a spaced-repetition review loop — **and shaped as a g
 mastered characters join your collection, the curriculum unfolds as worlds, and each day
 brings a quest and a shareable challenge. Co-built by a father-son team.
 
-> **Status:** specs ACCEPTED (reviewed 2026-07); next up is the Phase 0 stroke-engine
-> prototype. No application code yet — see the [spec set](./docs/README.md).
+> **Status:** Phase 0 in progress — the family prototype builds and its engine test
+> suite passes; next up is on-device grading tuning and the co-designer's game-feel
+> sessions ([`11-family-prototype`](./docs/specs/11-family-prototype.md)).
+
+## Build & run
+
+Requirements: JDK 17+, Android SDK (a `local.properties` with `sdk.dir`, or Android Studio).
+
+```bash
+./gradlew test                 # engine unit tests incl. the grading golden corpus
+./gradlew :app:assembleDebug   # debug APK → app/build/outputs/apk/debug/
+```
+
+CI (GitHub Actions) runs the same on every push/PR — the APK artifact
+(`hanzi-prototype-debug-apk`) is only produced when all tests pass.
 
 ## What this is
 

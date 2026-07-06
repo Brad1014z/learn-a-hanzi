@@ -15,19 +15,23 @@ session-by-session plan):
 **Engine workstream (dad + AI):**
 
 - [x] Specs reviewed and marked `ACCEPTED` (2026-07-05, this document set).
-- [ ] Single-module Compose app. The *app structure* is throwaway; the **engine code is
-      not** — it's written as if already in `:core:domain`: pure Kotlin, no `android.*`
-      imports (see `06`).
-- [ ] ~10–20 HSK 1 characters as checked-in per-character JSON from hanzi-writer-data
-      (same lineage/license as make-me-a-hanzi; zero pipeline work — see `02`). The set
-      deliberately includes tricky shapes: dots, hooks, crossings (e.g. 一 人 我 火 心 小 乙).
-- [ ] Vendored pure-Kotlin SVG-path parser + Y-flip/normalization applied at load.
-- [ ] Practice canvas: rice-grid guide, demo animation (thick-median variant), quiz mode
+- [x] Prototype app skeleton: `:app` (Compose) + `:engine` — a plain `kotlin("jvm")`
+      module with no Android plugin, so the engine's purity rule (see `06`) holds by
+      construction; it graduates to `:core:domain` in Phase 1. CI (GitHub Actions) runs
+      the test suite and builds a debug APK artifact only when tests pass.
+- [x] 20 HSK 1 characters as checked-in per-character JSON from hanzi-writer-data
+      (same lineage/license as make-me-a-hanzi; zero pipeline work — see `02`), with
+      dots, hooks, and crossings (一 人 我 火 心 小 十 中 …).
+- [x] Vendored pure-Kotlin SVG-path parser + Y-flip/normalization applied at load
+      (with a regression test that 三's strokes run top-to-bottom on screen).
+- [x] Practice canvas: rice-grid guide, demo animation (thick-median variant), quiz mode
       with the full grading pipeline per `05` (capture → accidental-contact filter → RDP →
       resample → length guard → position + direction scores → verdict tiers → hint/undo).
 - [ ] `GradingConfig` v0 tuned on-device (finger, at least two screen sizes).
-- [ ] Golden stroke corpus started: recorded attempts (clean / sloppy / wrong-order /
-      wrong-stroke) checked in with expected verdicts + a replay unit test.
+- [x] Golden stroke corpus **started** (synthetic v0): clean / jittered / reversed /
+      out-of-order / displaced / truncated attempts derived from real medians, replayed
+      through the grader with asserted verdicts. Recorded real-finger strokes join it
+      during on-device tuning.
 
 **Game-feel workstream (son + AI, staged in `11`):**
 

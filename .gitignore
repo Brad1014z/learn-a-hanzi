@@ -11,6 +11,7 @@ captures/
 # --- Kotlin / JVM ---
 *.class
 hs_err_pid*
+.kotlin/
 
 # --- Android Studio / IntelliJ ---
 .idea/

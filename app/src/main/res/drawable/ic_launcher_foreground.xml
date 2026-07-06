@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A single bold brush stroke, placeholder until the real icon (docs/specs/11 backlog). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:pathData="M 30 38 Q 54 30 78 36 Q 80 37 79 40 Q 56 36 32 43 Q 29 41 30 38 Z M 51 30 Q 54 26 57 30 L 57 74 Q 56 80 50 78 Q 52 75 52 70 Z"
+        android:fillColor="#F4B942" />
+</vector>
