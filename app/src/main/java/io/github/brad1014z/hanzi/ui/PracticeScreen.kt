@@ -50,6 +50,7 @@ import io.github.brad1014z.hanzi.engine.grading.StrokeVerdict
 import io.github.brad1014z.hanzi.engine.quiz.QuizEngine
 import io.github.brad1014z.hanzi.engine.quiz.QuizState
 import io.github.brad1014z.hanzi.engine.quiz.toGrade
+import io.github.brad1014z.hanzi.engine.speech.SpeechService
 
 private enum class Mode { DEMO, QUIZ }
 
@@ -65,6 +66,8 @@ private enum class Mode { DEMO, QUIZ }
 fun PracticeScreen(
     character: CharacterData,
     sounds: SoundPlayer,
+    speech: SpeechService = SpeechService.Silent,
+    speechAvailable: Boolean = false,
     onExit: () -> Unit,
     onNext: () -> Unit,
 ) {
@@ -112,6 +115,14 @@ fun PracticeScreen(
         if (hintStrokeFlash) {
             kotlinx.coroutines.delay(900)
             hintStrokeFlash = false
+        }
+    }
+
+    // Hear the character as part of the completion moment (spec 07: reinforcement).
+    LaunchedEffect(quiz.isComplete) {
+        if (quiz.isComplete && speechAvailable) {
+            kotlinx.coroutines.delay(400) // let the completion sound land first
+            speech.speak(character.character, "zh-Hans")
         }
     }
 
@@ -179,13 +190,21 @@ fun PracticeScreen(
             Spacer(Modifier.weight(1f))
             TextButton(onClick = onExit) { Text("Exit") }
         }
-        // Pinyin + meaning: the character should always be more than a shape (spec 00).
-        Text(
-            text = "${character.pinyin.joinToString(", ")} · ${character.shortDefinition}",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(bottom = 4.dp),
-        )
+        // Pinyin + meaning + audio: the character should always be more than a shape
+        // (spec 00); the speaker hides when no Mandarin voice exists (spec 01 fallback).
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = "${character.pinyin.joinToString(", ")} · ${character.shortDefinition}",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = 4.dp),
+            )
+            if (speechAvailable) {
+                TextButton(onClick = { speech.speak(character.character, "zh-Hans") }) {
+                    Text("🔊", fontSize = 18.sp)
+                }
+            }
+        }
 
         Box {
             Canvas(

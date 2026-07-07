@@ -78,8 +78,9 @@ by every feature.
 - Controls: **Hint** (show next stroke), **Undo**, **Replay demo**, **Exit**.
 - Drawing input → live ink; on pointer-up, grading feedback (color + sound + optional
   haptic).
-- On completion: success state showing character · pinyin · meaning (one last
-  reinforcement), SRS grade recorded, "Next" / "Done".
+- On completion: success state showing character · pinyin · meaning — and the character
+  **spoken aloud** (one last reinforcement through a second sense), SRS grade recorded,
+  "Next" / "Done".
 
 ### 4. Review (SRS queue)
 - Presents due characters one at a time in the practice canvas (same engine as Practice,

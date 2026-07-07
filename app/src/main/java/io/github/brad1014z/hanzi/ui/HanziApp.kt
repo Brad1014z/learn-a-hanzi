@@ -41,7 +41,14 @@ fun HanziApp() {
             val meanings = remember { characters.associateWith { repository.load(it).shortDefinition } }
             val context = LocalContext.current
             val sounds = remember { SoundPlayer(context) }
-            DisposableEffect(Unit) { onDispose { sounds.release() } }
+            var ttsReady by remember { mutableStateOf(false) }
+            val speech = remember { AndroidSpeechService(context) { ttsReady = it } }
+            DisposableEffect(Unit) {
+                onDispose {
+                    sounds.release()
+                    speech.release()
+                }
+            }
             var selected by remember { mutableStateOf<String?>(null) }
 
             val current = selected
@@ -56,6 +63,10 @@ fun HanziApp() {
                 PracticeScreen(
                     character = remember(current) { repository.load(current) },
                     sounds = sounds,
+                    speech = speech,
+                    // Recomputed when TTS init lands (ttsReady flips) — hides the
+                    // speaker gracefully on devices without a Mandarin voice (spec 01).
+                    speechAvailable = ttsReady && speech.isAvailable("zh-Hans"),
                     onExit = { selected = null },
                     onNext = {
                         val idx = characters.indexOf(current)

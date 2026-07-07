@@ -31,6 +31,11 @@ session-by-session plan):
 - [x] **Verdict sounds** (added 2026-07-06): synthesized placeholder WAVs — accept ding,
       gentle reject tone, completion sparkle — via SoundPool with an on/off toggle
       (`07`). Final sounds are S4's job (`11`).
+- [x] **TTS** (added 2026-07-06): `SpeechService(text, lang)` interface in `:engine`
+      (pure, with a tested lang→locale mapping); Android `TextToSpeech` impl (zh-CN,
+      QUEUE_FLUSH debounce); speaker button on the practice meaning line + auto-speak on
+      completion; button hides when no Mandarin voice exists. The one-time
+      "install a TTS engine" hint from `01` is deferred to Phase 2.
 - [x] Practice canvas: rice-grid guide, demo animation (thick-median variant), quiz mode
       with the full grading pipeline per `05` (capture → accidental-contact filter → RDP →
       resample → length guard → position + direction scores → verdict tiers → hint/undo).
