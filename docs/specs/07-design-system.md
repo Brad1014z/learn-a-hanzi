@@ -98,11 +98,23 @@ by every feature.
 - Organized by world; tap a tile → Character Detail (with replay-the-strokes animation).
 - Stats live here too: characters mastered, review calendar heatmap, retention over time
   (MVP: mastered count + last-7-days activity).
+- **Badge shelf** (Phase 3): earned badges with transparent criteria — tap any badge to
+  see exactly what earned it or what's left (`10`). Unearned badges show as goals, never
+  as guilt.
 - MVP ships the simple grid + ranks; art/personality per character is a Phase 3 pass.
 
 ### 7. Settings
 - Daily new-character cap, theme (system/light/dark), dynamic color toggle, TTS engine
   picker + preview, sound/haptics toggles, credits (data sources + licenses), reset progress.
+- **Account** (Phase 4): sign in/out with Google, re-roll display name, pick avatar,
+  rotate friend code, delete account. Signed-out state is a calm single row, not a banner.
+
+### 8. Profile & Friends (Phase 4)
+- My card: generated name, avatar, weekly XP, badge count; **friend code** with share/QR.
+- Friends list (mutual only): name, avatar, weekly XP (ceilinged); remove silently.
+- Challenges: incoming (accept/ignore), active (play), finished (results + preset
+  reactions 👏 🔥 😮 🤝 — the only inter-user signal; no free text anywhere, per `00`/`12`).
+- Weekly friends board resets Monday; no relegation, no loss-framing.
 
 ## Key user flows
 
@@ -131,6 +143,17 @@ by every feature.
 2. User writes it from memory; per-stroke verdicts recorded.
 3. Result card: spoiler-free emoji grid of stroke verdicts (🟩🟨🟥) + day number.
 4. **Share** via the OS share sheet (no server, no account); or dismiss. Done for the day.
+
+### Flow E — Friend challenge (Phase 4, signed-in)
+1. Profile & Friends → pick a friend → "Challenge" → daily duel or set duel (`12`).
+2. Friend gets it on their next app open (no push nagging); accepts or lets it expire —
+   both consequence-free.
+3. Both play the same puzzle/set; results appear for both; optional preset reaction.
+4. Weekly friends board updates with ceilinged XP.
+
+### Flow F — Sign-in (Phase 4, always optional)
+1. Settings row, or a one-line card after a completed quest ("Back up your progress?").
+2. Google one-tap → generated name + avatar picker → done. Dismissing the card mutes it.
 
 ## Interaction details
 

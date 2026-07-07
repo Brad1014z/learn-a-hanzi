@@ -175,7 +175,7 @@ and prefer sentences under a permissive license where the data exposes it.
 
 > This section is a checklist, not legal advice. The app is a **free/open product**
 > (constitution), so share-alike terms are workable — we comply rather than avoid.
-> Complete every box before the first public release (Phase 4).
+> Complete every box before the first public release (Phase 5).
 
 - [ ] **Arphic Public License** (`graphics.txt`): copyleft for the font-derived data —
       ship the APL text + attribution in-app (Credits) and in the repo; derived stroke

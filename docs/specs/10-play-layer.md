@@ -1,6 +1,7 @@
 # 10 — Play Layer
 
-> **Status:** ACCEPTED (2026-07-05)
+> **Status:** ACCEPTED (2026-07-05; revised 2026-07-06 — badges added, cloud play layer
+> scheduled via `12`)
 > The game design of the app. The constitution (`00`) was amended to make the app a game
 > outright; this spec defines the game — its economy, its modes, and the guardrails that
 > keep it honest. The SRS engine (`06`) and curriculum (`04`) stay the source of truth;
@@ -132,15 +133,42 @@ demo available on demand, so the mode is never a dead end.
 - The learn/review writing moment remains untimed, always (`00` principle 2). Arcade is
   the *only* place a clock runs against a stroke, and only over what's already mastered.
 
-### Deliberately dropped
+## Badges (Phase 3 locally; backed up by the cloud layer)
 
-An earlier draft of this idea (a separate PR, since closed) added Google Sign-In,
-Firebase/Supabase, weekly anonymous leagues, a daily-challenge leaderboard, and an XP-sync
-outbox. That's a real, well-specified design for a *different* product shape — one with
-accounts and a backend. It doesn't fit this build: no-accounts/offline-first is a
-constitution principle (`00`), not a Phase-1 shortcut, and the father-son build (`11`)
-wants fast, local, demo-on-a-single-phone wins. If online competition is ever wanted, it
-re-enters as a new extension path (alongside `09`), not a retrofit of this section.
+Badges are the honest trophy case: every badge derives from real recorded state, is
+computed **locally** (signed-out users earn everything), never gates content, and is
+displayed on a shelf inside the Collection screen (`07`). Taxonomy:
+
+| Category | Examples | Derived from |
+|----------|----------|--------------|
+| **Mastery** | world completed; 10/50/all characters at Silver; first Gold; all-Gold world | `CharacterProgress` ranks (`04`) |
+| **Skill** | 10/50 clean grade-5 characters; a full world learned without hints | `ReviewLog` grades |
+| **Consistency** | 7/30/100 days *played* (pauses gracefully, never shames); **comeback** — returning after a break (framed as a win, not an apology) | days-played history |
+| **Explorer** | first Browse practice; every world sampled; daily challenge 7-day run | activity events |
+| **Social** (signed-in only) | first friend connected; first challenge completed; 5 challenge wins | `12` challenge records |
+
+Rules: badge criteria are **transparent** (each badge shows exactly what earned it or
+what's left); no badge is time-pressured or loss-framed; earning one is a celebration
+moment (`07` motion rules). The full badge list is finalized at implementation — the
+categories and honesty rules above are the contract. Naming/art: co-designer territory
+(`11`).
+
+## The cloud play layer (scheduled — see `12`)
+
+An earlier standalone draft (closed PR #1: Firebase, anonymous leagues, XP outbox) was
+parked because the constitution then banned accounts outright. The constitution was
+**amended 2026-07-06** to the optional-account model, and the bounded version is now
+scheduled as roadmap Phase 4, specified in `12-accounts-social.md`:
+
+- **Friends challenges** (mutual codes only, no free text): async score duels on the
+  daily challenge and fixed practice sets, plus a weekly friends XP board.
+- **What's comparable is bounded:** daily-challenge scores, duel results, and weekly XP
+  *with a per-session ceiling* — so grinding can't dominate a friends board, and the
+  mastery-truthfulness guardrail extends socially: you can't buy or grind your way past
+  a friend who actually learned more.
+- **Arcade scores stay local personal bests** — they never enter social comparison.
+- Anonymous **leagues** (the PR #1 design) remain archived as the natural second act
+  after friends challenges prove out.
 
 ## Guardrails (hard constraints — every phase, every feature)
 

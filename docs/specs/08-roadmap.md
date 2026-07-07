@@ -1,6 +1,7 @@
 # 08 — Roadmap
 
-> **Status:** ACCEPTED (reviewed 2026-07-05; amended 2026-07-05 — family prototype & play layer)
+> **Status:** ACCEPTED (reviewed 2026-07-05; amended 2026-07-05 — family prototype & play
+> layer; amended 2026-07-06 — cloud layer inserted as Phase 4, publish renumbered to 5)
 > Phased milestones. Each phase has a clear **definition of done** so "are we there?" is
 > answerable. Dates are not committed — quality over speed — but the destination is a
 > published, free/open product (constitution).
@@ -125,8 +126,12 @@ Goal: make it genuinely pleasant and deepen the content.
       accounts or server.
 - [ ] **Collection art pass:** pictographic personality for HSK 1 characters (etymology
       hints as flavor text; art style per son's direction).
+- [ ] **Badges** (local, per `10`): mastery/skill/consistency/explorer categories on the
+      Collection badge shelf; transparent criteria; earned fully offline.
+- [ ] **Pre-generated audio** (per `01`/`12`): ingest generates clips for all curriculum
+      characters/words via cloud TTS; `PregenAudioSpeechService` with device-TTS fallback.
 - [ ] Richer example sentences (multiple per character, curated shortlist).
-- [ ] Audio polish: better TTS handling, per-word/per-sentence playback.
+- [ ] Audio polish: per-word/per-sentence playback over the `SpeechService` interface.
 - [ ] Stats dashboard in Collection (heatmap, retention chart, mastered over time).
 - [ ] Custom decks / favorites ("star" a character) — user-side mirror of `CurriculumEntry`.
 - [ ] Frequency-only track (`curriculumId = "freq"`) + HSK 2/3 characters (new worlds).
@@ -138,21 +143,39 @@ Goal: make it genuinely pleasant and deepen the content.
 **Definition of done:** the app feels finished for daily use; content extends beyond HSK 1;
 progress is motivating without being manipulative.
 
-## Phase 4 — Publish
+## Phase 4 — Cloud layer (optional accounts, sync, friends)
+
+Goal: the additive online layer per `12-accounts-social.md` — nothing in Phases 0–3
+starts depending on it.
+
+- [ ] Google sign-in (Credential Manager + Firebase Auth); generated display name +
+      preset avatar; calm entry points (`07` Flow F).
+- [ ] Progress sync/backup: outbox + WorkManager drain; merge rules (latest-review wins,
+      append-only log union); restore on fresh install.
+- [ ] Friends via mutual code/QR; Profile & Friends screen (`07` #8).
+- [ ] Challenges: daily duel + set duel + weekly friends board (ceilinged XP); Cloud
+      Function bounds validation; preset reactions only.
+- [ ] Badge backup (badges stay locally earned).
+- [ ] Account deletion (hard purge function); security rules reviewed; fakes so all
+      social UI tests run offline.
+
+**Definition of done:** two phones with two accounts can befriend by code, run a duel
+end-to-end, and see the weekly board — while a third, signed-out phone loses nothing;
+the airplane-mode regression suite passes untouched.
+
+## Phase 5 — Publish
 
 Goal: ship to the Play Store as a free, open product with a clear conscience on privacy
 and data licensing.
 
 - [ ] License-obligation checklist in `02` fully closed; credits screen ships all
       attributions + license texts.
-- [ ] Final `applicationId` (owned namespace), Play listing, screenshots, privacy policy.
+- [ ] Final `applicationId` (owned namespace), Play listing, screenshots, privacy policy
+      (covering the `12` data practices); COPPA / Play Families posture reviewed.
 - [ ] Privacy-respecting, **opt-in** crash reporting.
-- [ ] Backup/restore (export/import a small JSON of progress).
-- [ ] Achievements / milestones (honest, non-dark-pattern).
+- [ ] Local backup/restore (export/import a progress JSON) — independent of cloud sync.
 - [ ] Wider curricula (HSK 4–6), traditional-character support (`zh-Hant` data addition —
       see `09`).
-- [ ] Optional: cloud sync of progress (accounts optional; layers over existing repository
-      interfaces). Optional recorded audio track (if licensing + size allow).
 
 **Definition of done:** live on the Play Store; privacy policy and data attribution are
 accurate; a stranger can install it and learn.
@@ -166,7 +189,9 @@ accurate; a stranger can install it and learn.
 - Every phase respects the play-layer guardrails (`10`): the writing moment is never
   timed in learn/review, game signals stay mastery-truthful, no dark patterns.
 - Remaining ⚠ verify flags in `02` (field names, export formats) are resolved during
-  Phase 1 ingestion work; license compliance closes before Phase 4 ships.
+  Phase 1 ingestion work; license compliance closes before Phase 5 ships.
+- The cloud layer (Phase 4) never becomes a dependency of earlier phases: the
+  airplane-mode, signed-out experience is a permanent regression target (`00`, `12`).
 
 ## Directions deliberately not scheduled (but designed for)
 

@@ -52,8 +52,9 @@ order:
 8. [`07-design-system`](./docs/specs/07-design-system.md) — screens & flows
 9. [`08-roadmap`](./docs/specs/08-roadmap.md) — phased milestones
 10. [`09-extension-paths`](./docs/specs/09-extension-paths.md) — iOS/KMP, Japanese, Korean
-11. [`10-play-layer`](./docs/specs/10-play-layer.md) — the game design (XP, collection, worlds, quest)
+11. [`10-play-layer`](./docs/specs/10-play-layer.md) — the game design (XP, collection, worlds, quest, badges)
 12. [`11-family-prototype`](./docs/specs/11-family-prototype.md) — the kid co-creator's Phase 0 mini-spec
+13. [`12-accounts-social`](./docs/specs/12-accounts-social.md) — optional cloud layer: sign-in, sync, friends challenges
 
 The two ⚠ docs carry the most technical/licensing risk and should be reviewed first.
 
@@ -66,8 +67,9 @@ Following [`08-roadmap`](./docs/specs/08-roadmap.md):
 - [ ] Phase 0 — family prototype (grading engine + game feel, on-device)
 - [ ] Phase 1 — foundation (module skeleton, data-ingest pipeline, CI)
 - [ ] Phase 2 — MVP (HSK 1 learn → practice → review loop, offline)
-- [ ] Phase 3 — polish & depth
-- [ ] Phase 4 — publish (Play Store)
+- [ ] Phase 3 — polish & depth (badges, pre-generated audio, arcade)
+- [ ] Phase 4 — cloud layer (optional sign-in, sync, friends challenges)
+- [ ] Phase 5 — publish (Play Store)
 
 ## License
 
