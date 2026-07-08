@@ -49,7 +49,7 @@ fun HanziApp() {
                     speech.release()
                 }
             }
-            // Flow (spec 07 Flow A): grid → Character Detail (intro) → Practice.
+            // Flow: grid → Practice (demo → writing) → Character Detail (phrases recap) → next.
             var detailChar by remember { mutableStateOf<String?>(null) }
             var practiceChar by remember { mutableStateOf<String?>(null) }
             // Auto-play the reading on intro/demo; a session-level toggle (default on).
@@ -62,7 +62,7 @@ fun HanziApp() {
             when {
                 practiceChar != null -> {
                     val c = practiceChar!!
-                    BackHandler { practiceChar = null } // back to this character's detail
+                    BackHandler { practiceChar = null } // back to grid
                     PracticeScreen(
                         character = remember(c) { repository.load(c) },
                         sounds = sounds,
@@ -72,7 +72,7 @@ fun HanziApp() {
                         onExit = { practiceChar = null },
                         onNext = {
                             practiceChar = null
-                            detailChar = nextChar(c)
+                            detailChar = c // after writing, recap the phrases for this character
                         },
                     )
                 }
@@ -87,7 +87,7 @@ fun HanziApp() {
                         onToggleAutoPlay = { autoPlay = it },
                         onPractice = {
                             detailChar = null
-                            practiceChar = c
+                            practiceChar = nextChar(c)
                         },
                         onExit = { detailChar = null },
                     )
@@ -95,7 +95,7 @@ fun HanziApp() {
                 else -> CharacterGridScreen(
                     characters = characters,
                     meanings = meanings,
-                    onCharacterTap = { detailChar = it },
+                    onCharacterTap = { detailChar = null; practiceChar = it },
                 )
             }
         }

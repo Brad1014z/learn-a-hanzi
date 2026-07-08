@@ -29,9 +29,9 @@ import io.github.brad1014z.hanzi.engine.data.Phrase
 import io.github.brad1014z.hanzi.engine.speech.SpeechService
 
 /**
- * Character Detail — the "intro" step of learning a character (spec 07 screen 2 / Flow A).
- * Read it before you write it: big character (tap to hear), pinyin, meaning, and 2-3
- * common phrases each with tap-to-play audio to teach reading. Then "Practice" to write.
+ * Character Detail — the recap step shown after writing practice (spec 07 screen 2).
+ * Reinforces what was just written: big character (tap to hear), pinyin, meaning, and
+ * 2-3 common phrases each with tap-to-play audio to teach reading. Then on to the next one.
  */
 @Composable
 fun CharacterDetailScreen(
@@ -126,7 +126,7 @@ fun CharacterDetailScreen(
         Button(
             onClick = onPractice,
             modifier = Modifier.fillMaxWidth(),
-        ) { Text("Practice writing ${character.character}") }
+        ) { Text("Next character") }
     }
 }
 
