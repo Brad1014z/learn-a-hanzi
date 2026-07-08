@@ -49,29 +49,53 @@ fun HanziApp() {
                     speech.release()
                 }
             }
-            var selected by remember { mutableStateOf<String?>(null) }
+            // Flow (spec 07 Flow A): grid → Character Detail (intro) → Practice.
+            var detailChar by remember { mutableStateOf<String?>(null) }
+            var practiceChar by remember { mutableStateOf<String?>(null) }
+            // Auto-play the reading on intro/demo; a session-level toggle (default on).
+            // Real persistence (DataStore) is Phase 2; in-memory is fine for the prototype.
+            var autoPlay by remember { mutableStateOf(true) }
+            val speechAvailable = ttsReady && speech.isAvailable("zh-Hans")
 
-            val current = selected
-            if (current == null) {
-                CharacterGridScreen(
+            fun nextChar(c: String) = characters[(characters.indexOf(c) + 1) % characters.size]
+
+            when {
+                practiceChar != null -> {
+                    val c = practiceChar!!
+                    BackHandler { practiceChar = null } // back to this character's detail
+                    PracticeScreen(
+                        character = remember(c) { repository.load(c) },
+                        sounds = sounds,
+                        speech = speech,
+                        speechAvailable = speechAvailable,
+                        autoPlay = autoPlay,
+                        onExit = { practiceChar = null },
+                        onNext = {
+                            practiceChar = null
+                            detailChar = nextChar(c)
+                        },
+                    )
+                }
+                detailChar != null -> {
+                    val c = detailChar!!
+                    BackHandler { detailChar = null } // back to grid
+                    CharacterDetailScreen(
+                        character = remember(c) { repository.load(c) },
+                        speech = speech,
+                        speechAvailable = speechAvailable,
+                        autoPlay = autoPlay,
+                        onToggleAutoPlay = { autoPlay = it },
+                        onPractice = {
+                            detailChar = null
+                            practiceChar = c
+                        },
+                        onExit = { detailChar = null },
+                    )
+                }
+                else -> CharacterGridScreen(
                     characters = characters,
                     meanings = meanings,
-                    onCharacterTap = { selected = it },
-                )
-            } else {
-                BackHandler { selected = null }
-                PracticeScreen(
-                    character = remember(current) { repository.load(current) },
-                    sounds = sounds,
-                    speech = speech,
-                    // Recomputed when TTS init lands (ttsReady flips) — hides the
-                    // speaker gracefully on devices without a Mandarin voice (spec 01).
-                    speechAvailable = ttsReady && speech.isAvailable("zh-Hans"),
-                    onExit = { selected = null },
-                    onNext = {
-                        val idx = characters.indexOf(current)
-                        selected = characters[(idx + 1) % characters.size]
-                    },
+                    onCharacterTap = { detailChar = it },
                 )
             }
         }

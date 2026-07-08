@@ -68,6 +68,7 @@ fun PracticeScreen(
     sounds: SoundPlayer,
     speech: SpeechService = SpeechService.Silent,
     speechAvailable: Boolean = false,
+    autoPlay: Boolean = true,
     onExit: () -> Unit,
     onNext: () -> Unit,
 ) {
@@ -87,6 +88,8 @@ fun PracticeScreen(
     // Demo animation driver: strokes grow along their medians one by one.
     LaunchedEffect(character, demoRun, mode) {
         if (mode != Mode.DEMO) return@LaunchedEffect
+        // Hear the character as the demo begins (spec: auto-play on demo, gated).
+        if (autoPlay && speechAvailable) speech.speak(character.character, "zh-Hans")
         for (i in character.medians.indices) {
             demoStrokeIndex = i
             demoProgress.snapTo(0f)

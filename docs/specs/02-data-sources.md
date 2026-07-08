@@ -101,6 +101,11 @@ Format: one entry per line, `#`-prefixed comments are metadata.
   shortest words containing each character to use as examples.
 - Also used to **cross-check / enrich** make-me-a-hanzi single-char definitions where the
   gloss is thin.
+- **Phase 0 prototype slice:** a `phrases.json` (2-3 phrases per prototype character) was
+  produced from CC-CEDICT by auto-ranking candidate words (containing the character,
+  short, proper-nouns/vulgar entries filtered) then a manual final pick for
+  kid-appropriateness — authentic CEDICT pinyin/gloss, human-curated selection. This is
+  the small-scale rehearsal of the eventual `Word`-table selection rule.
 - License: **CC BY-SA 4.0** (updated from the historical 3.0). Attribution ships on the
   credits screen; share-alike governs the license of our *derived* dataset (see summary
   below).

@@ -59,12 +59,17 @@ by every feature.
 - **Streak / XP** summary — days played and learner level; honest, pauses gracefully.
 - Quick entry to Browse, Collection, and Settings.
 
-### 2. Character Detail
-- Large character display (rendered from stroke outlines).
-- Pinyin (tone-marked) + audio button (TTS).
-- Short English definition + decomposition/radical (+ etymology hint if present).
-- **Example phrase**: one short word/sentence containing the character, with translation.
-- Buttons: **Practice** (start quiz), **Show stroke order** (demo).
+### 2. Character Detail — the "intro" step (read before you write)
+- Large character display; **tap to hear it** (TTS), with a speaker icon.
+- Pinyin (tone-marked) + short English definition (+ decomposition/radical/etymology
+  hint if present).
+- **Words with this character**: 2-3 common phrases (word or idiom) each shown as
+  hanzi + tone-marked pinyin + English gloss, in a row that is **tap-anywhere-to-play**
+  (a big kid-friendly target) with its own play icon — this is where reading is taught.
+- **Auto-play**: the character is spoken automatically when this screen opens, gated by
+  an "Auto-play audio" toggle (default on) shown here; phrases stay tap-only.
+- Buttons: **Practice** (→ demo then quiz). (A separate "Show stroke order" is folded
+  into Practice, which opens in demo mode.)
 
 ### 3. Practice (stroke quiz) — the centerpiece
 - Full-bleed **Canvas** with the rice-grid guide; minimal chrome.
@@ -168,6 +173,11 @@ by every feature.
   on reject — never harsh, per `00`'s feedback-that-teaches principle — and an ascending
   sparkle on character completion) — toggleable, independent of TTS. Phase 0 ships
   synthesized placeholders; the final sounds are the co-designer's call (`11`, S4).
+- **Auto-play audio** (spoken pronunciation): the character is spoken when its Detail
+  intro opens and when the practice demo begins, behind an "Auto-play audio" toggle
+  (default on) — respects that repeat views or quiet settings may want it off (calm-
+  screens value, `00`). Tapping a character or phrase always plays regardless of the
+  toggle.
 - **Haptics** on grading verdicts (light tick on accept, stronger on reject) — toggleable.
 - **Offline indicators**: none needed in normal use (always offline-first); a one-time
   hint if no Mandarin TTS engine is installed.

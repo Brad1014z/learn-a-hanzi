@@ -25,6 +25,14 @@ object HanziCoordinates {
     fun normalize(p: Point) = Point(p.x * SCALE, (BASELINE_OFFSET - p.y) * SCALE)
 }
 
+/** A multi-char word/idiom containing the character, for reading practice (spec 07). */
+@Serializable
+data class Phrase(
+    val phrase: String,   // e.g. "小心翼翼"
+    val pinyin: String,   // tone-marked, e.g. "xiǎo xīn yì yì"
+    val english: String,  // gloss, e.g. "(idiom) cautious; careful"
+)
+
 /** One teachable character: per-stroke outline commands (rendering) + medians (grading). */
 data class CharacterData(
     val character: String,
@@ -36,6 +44,8 @@ data class CharacterData(
     val pinyin: List<String> = emptyList(),
     /** English gloss, often ;-separated clauses; UI may shorten (spec 02). */
     val definition: String = "",
+    /** 2-3 common words/idioms containing the character (from CC-CEDICT — spec 02). */
+    val phrases: List<Phrase> = emptyList(),
 ) {
     /** First clause of the gloss — fits small UI (e.g. "fire" from "fire, flame; to burn"). */
     val shortDefinition: String
@@ -75,6 +85,9 @@ class CharacterRepository {
     private val dictionary: Map<String, DictionaryEntry> by lazy {
         json.decodeFromString<Map<String, DictionaryEntry>>(readResource("dictionary.json"))
     }
+    private val phrases: Map<String, List<Phrase>> by lazy {
+        json.decodeFromString<Map<String, List<Phrase>>>(readResource("phrases.json"))
+    }
 
     /** Characters included in the prototype, in teaching order. */
     fun listCharacters(): List<String> =
@@ -96,6 +109,7 @@ class CharacterRepository {
             },
             pinyin = entry?.pinyin.orEmpty(),
             definition = entry?.definition.orEmpty(),
+            phrases = phrases[character].orEmpty(),
         )
     }
 

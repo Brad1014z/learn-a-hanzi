@@ -47,6 +47,21 @@ class CharacterRepositoryTest {
     }
 
     @Test
+    fun `every character has 2-3 phrases, each containing the character`() {
+        for (char in repo.listCharacters()) {
+            val phrases = repo.load(char).phrases
+            assertTrue(phrases.size in 2..3, "$char has ${phrases.size} phrases")
+            for (p in phrases) {
+                assertTrue(char in p.phrase, "${p.phrase} should contain $char")
+                assertTrue(p.pinyin.isNotBlank() && p.english.isNotBlank(), "${p.phrase} data")
+            }
+        }
+        // The idiom explicitly requested for 小.
+        assertTrue(repo.load("小").phrases.any { it.phrase == "小心翼翼" })
+        assertTrue(repo.load("火").phrases.any { it.phrase == "火车" })
+    }
+
+    @Test
     fun `normalized geometry stays within the 1000-space box`() {
         // Small tolerance: some glyphs overshoot the em-square slightly.
         val range = -60.0..1060.0

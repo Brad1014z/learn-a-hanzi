@@ -12,6 +12,11 @@ that license: https://github.com/skishore/makemeahanzi/blob/master/APL/english
 extracted from make-me-a-hanzi's `dictionary.txt`, which is licensed **LGPL v3+**
 (it derives from Unihan and CJKlib — see the repo's COPYING).
 
+`phrases.json` (2-3 example words/idioms per character, with pinyin + English) is
+extracted from **[CC-CEDICT](https://www.mdbg.net/chinese/dictionary?page=cc-cedict)**,
+licensed **CC BY-SA 4.0**. Redistribution of this derived data must credit CC-CEDICT and
+keep the share-alike terms.
+
 This is the Phase 0 prototype slice (20 HSK 1 characters, checked in per
-`docs/specs/08-roadmap.md`). The full APL text ships with any public release
-(license checklist in `docs/specs/02-data-sources.md`, closed in Phase 4).
+`docs/specs/08-roadmap.md`). The full license texts ship with any public release
+(license checklist in `docs/specs/02-data-sources.md`, closed in Phase 5).

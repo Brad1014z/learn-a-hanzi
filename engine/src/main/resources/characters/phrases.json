@@ -1,0 +1,342 @@
+{
+ "一": [
+  {
+   "phrase": "一起",
+   "pinyin": "yī qǐ",
+   "english": "together; in company (with)"
+  },
+  {
+   "phrase": "一个",
+   "pinyin": "yī ge",
+   "english": "a; an; one"
+  },
+  {
+   "phrase": "一下",
+   "pinyin": "yī xià",
+   "english": "(after a verb) a bit; a little (indicating brief duration, or softening the tone, or suggesting giving sth a try)"
+  }
+ ],
+ "二": [
+  {
+   "phrase": "二十",
+   "pinyin": "èr shí",
+   "english": "twenty; 20"
+  },
+  {
+   "phrase": "第二",
+   "pinyin": "dì èr",
+   "english": "second"
+  },
+  {
+   "phrase": "二月",
+   "pinyin": "èr yuè",
+   "english": "February"
+  }
+ ],
+ "三": [
+  {
+   "phrase": "三十",
+   "pinyin": "sān shí",
+   "english": "thirty"
+  },
+  {
+   "phrase": "三月",
+   "pinyin": "sān yuè",
+   "english": "March"
+  },
+  {
+   "phrase": "三角形",
+   "pinyin": "sān jiǎo xíng",
+   "english": "triangle"
+  }
+ ],
+ "十": [
+  {
+   "phrase": "十二",
+   "pinyin": "shí èr",
+   "english": "twelve"
+  },
+  {
+   "phrase": "十月",
+   "pinyin": "shí yuè",
+   "english": "October"
+  },
+  {
+   "phrase": "十分",
+   "pinyin": "shí fēn",
+   "english": "very"
+  }
+ ],
+ "人": [
+  {
+   "phrase": "大人",
+   "pinyin": "dà ren",
+   "english": "adult"
+  },
+  {
+   "phrase": "人口",
+   "pinyin": "rén kǒu",
+   "english": "population"
+  },
+  {
+   "phrase": "好人",
+   "pinyin": "hǎo rén",
+   "english": "good person"
+  }
+ ],
+ "大": [
+  {
+   "phrase": "大家",
+   "pinyin": "dà jiā",
+   "english": "everyone"
+  },
+  {
+   "phrase": "大小",
+   "pinyin": "dà xiǎo",
+   "english": "large and small"
+  },
+  {
+   "phrase": "大人",
+   "pinyin": "dà ren",
+   "english": "adult"
+  }
+ ],
+ "小": [
+  {
+   "phrase": "小孩",
+   "pinyin": "xiǎo hái",
+   "english": "child"
+  },
+  {
+   "phrase": "大小",
+   "pinyin": "dà xiǎo",
+   "english": "large and small"
+  },
+  {
+   "phrase": "小心翼翼",
+   "pinyin": "xiǎo xīn yì yì",
+   "english": "(idiom) cautious; careful; prudent"
+  }
+ ],
+ "上": [
+  {
+   "phrase": "早上",
+   "pinyin": "zǎo shang",
+   "english": "early morning"
+  },
+  {
+   "phrase": "上下",
+   "pinyin": "shàng xià",
+   "english": "to go up and down"
+  },
+  {
+   "phrase": "上山",
+   "pinyin": "shàng shān",
+   "english": "to climb a hill"
+  }
+ ],
+ "口": [
+  {
+   "phrase": "出口",
+   "pinyin": "chū kǒu",
+   "english": "an exit"
+  },
+  {
+   "phrase": "入口",
+   "pinyin": "rù kǒu",
+   "english": "entrance"
+  },
+  {
+   "phrase": "门口",
+   "pinyin": "mén kǒu",
+   "english": "doorway"
+  }
+ ],
+ "中": [
+  {
+   "phrase": "中国",
+   "pinyin": "zhōng guó",
+   "english": "China"
+  },
+  {
+   "phrase": "中心",
+   "pinyin": "zhōng xīn",
+   "english": "center; heart; core"
+  },
+  {
+   "phrase": "中午",
+   "pinyin": "zhōng wǔ",
+   "english": "noon"
+  }
+ ],
+ "日": [
+  {
+   "phrase": "生日",
+   "pinyin": "shēng rì",
+   "english": "birthday"
+  },
+  {
+   "phrase": "今日",
+   "pinyin": "jīn rì",
+   "english": "today"
+  },
+  {
+   "phrase": "日子",
+   "pinyin": "rì zi",
+   "english": "day"
+  }
+ ],
+ "月": [
+  {
+   "phrase": "月亮",
+   "pinyin": "yuè liang",
+   "english": "the moon"
+  },
+  {
+   "phrase": "月光",
+   "pinyin": "yuè guāng",
+   "english": "moonlight"
+  },
+  {
+   "phrase": "下月",
+   "pinyin": "xià yuè",
+   "english": "next month"
+  }
+ ],
+ "山": [
+  {
+   "phrase": "上山",
+   "pinyin": "shàng shān",
+   "english": "to climb a hill"
+  },
+  {
+   "phrase": "下山",
+   "pinyin": "xià shān",
+   "english": "to go down a hill"
+  },
+  {
+   "phrase": "山羊",
+   "pinyin": "shān yáng",
+   "english": "goat"
+  }
+ ],
+ "水": [
+  {
+   "phrase": "水果",
+   "pinyin": "shuǐ guǒ",
+   "english": "fruit"
+  },
+  {
+   "phrase": "冷水",
+   "pinyin": "lěng shuǐ",
+   "english": "cold water"
+  },
+  {
+   "phrase": "口水",
+   "pinyin": "kǒu shuǐ",
+   "english": "saliva"
+  }
+ ],
+ "火": [
+  {
+   "phrase": "火车",
+   "pinyin": "huǒ chē",
+   "english": "train"
+  },
+  {
+   "phrase": "火山",
+   "pinyin": "huǒ shān",
+   "english": "volcano"
+  },
+  {
+   "phrase": "大火",
+   "pinyin": "dà huǒ",
+   "english": "conflagration; large fire"
+  }
+ ],
+ "木": [
+  {
+   "phrase": "木头",
+   "pinyin": "mù tou",
+   "english": "wood; log"
+  },
+  {
+   "phrase": "树木",
+   "pinyin": "shù mù",
+   "english": "tree"
+  },
+  {
+   "phrase": "木马",
+   "pinyin": "mù mǎ",
+   "english": "wooden horse"
+  }
+ ],
+ "心": [
+  {
+   "phrase": "开心",
+   "pinyin": "kāi xīn",
+   "english": "to feel happy"
+  },
+  {
+   "phrase": "小心",
+   "pinyin": "xiǎo xīn",
+   "english": "to be careful"
+  },
+  {
+   "phrase": "中心",
+   "pinyin": "zhōng xīn",
+   "english": "center; heart; core"
+  }
+ ],
+ "我": [
+  {
+   "phrase": "我们",
+   "pinyin": "wǒ men",
+   "english": "we; us; ourselves; our"
+  },
+  {
+   "phrase": "你我",
+   "pinyin": "nǐ wǒ",
+   "english": "you and I"
+  },
+  {
+   "phrase": "自我",
+   "pinyin": "zì wǒ",
+   "english": "the self; oneself; self-"
+  }
+ ],
+ "你": [
+  {
+   "phrase": "你好",
+   "pinyin": "nǐ hǎo",
+   "english": "hello; hi"
+  },
+  {
+   "phrase": "你们",
+   "pinyin": "nǐ men",
+   "english": "you (plural)"
+  },
+  {
+   "phrase": "迷你",
+   "pinyin": "mí nǐ",
+   "english": "mini (as in mini-skirt or Mini Cooper) (loanword)"
+  }
+ ],
+ "好": [
+  {
+   "phrase": "你好",
+   "pinyin": "nǐ hǎo",
+   "english": "hello; hi"
+  },
+  {
+   "phrase": "好吃",
+   "pinyin": "hǎo chī",
+   "english": "tasty; delicious"
+  },
+  {
+   "phrase": "好看",
+   "pinyin": "hǎo kàn",
+   "english": "good-looking; nice-looking"
+  }
+ ]
+}

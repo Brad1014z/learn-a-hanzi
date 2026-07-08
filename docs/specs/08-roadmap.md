@@ -36,6 +36,11 @@ session-by-session plan):
       QUEUE_FLUSH debounce); speaker button on the practice meaning line + auto-speak on
       completion; button hides when no Mandarin voice exists. The one-time
       "install a TTS engine" hint from `01` is deferred to Phase 2.
+- [x] **Character Detail intro + phrases + auto-play** (added 2026-07-08): a Character
+      Detail screen (grid → detail → practice, spec 07 Flow A) showing 2-3 CC-CEDICT
+      phrases per character (auto-ranked, hand-picked, checked in as `phrases.json`) each
+      with tap-to-play; the character auto-speaks on intro open and demo start behind an
+      "Auto-play audio" toggle (default on).
 - [x] Practice canvas: rice-grid guide, demo animation (thick-median variant), quiz mode
       with the full grading pipeline per `05` (capture → accidental-contact filter → RDP →
       resample → length guard → position + direction scores → verdict tiers → hint/undo).
