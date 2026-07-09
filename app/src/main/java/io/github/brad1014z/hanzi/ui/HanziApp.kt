@@ -10,11 +10,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.brad1014z.hanzi.data.HanziDatabase
+import io.github.brad1014z.hanzi.data.RoomProgressRepository
+import io.github.brad1014z.hanzi.data.SettingsStore
 import io.github.brad1014z.hanzi.engine.data.CharacterRepository
+import io.github.brad1014z.hanzi.engine.progress.ProgressRepository
+import kotlinx.coroutines.launch
 
 /**
  * Semantic colors for the practice engine (spec 07). TODO(son, S1): these are yours —
@@ -40,6 +48,7 @@ fun HanziApp() {
             val characters = remember { repository.listCharacters() }
             val meanings = remember { characters.associateWith { repository.load(it).shortDefinition } }
             val context = LocalContext.current
+            val scope = rememberCoroutineScope()
             val sounds = remember { SoundPlayer(context) }
             var ttsReady by remember { mutableStateOf(false) }
             val speech = remember { AndroidSpeechService(context) { ttsReady = it } }
@@ -49,12 +58,19 @@ fun HanziApp() {
                     speech.release()
                 }
             }
+            // M1 "It remembers you": progress + settings survive restarts (specs 03, 08).
+            val progressRepository: ProgressRepository =
+                remember { RoomProgressRepository(HanziDatabase.get(context)) }
+            val settings = remember { SettingsStore(context) }
+            val progressFlow = remember(progressRepository) { progressRepository.observeAll() }
+            val progress by progressFlow.collectAsStateWithLifecycle(emptyMap())
+            val autoPlay by settings.autoPlay.collectAsStateWithLifecycle(true)
+            val soundOn by settings.sound.collectAsStateWithLifecycle(true)
+            LaunchedEffect(soundOn) { sounds.enabled = soundOn }
+
             // Flow: grid → Practice (demo → writing) → Character Detail (phrases recap) → next.
             var detailChar by remember { mutableStateOf<String?>(null) }
             var practiceChar by remember { mutableStateOf<String?>(null) }
-            // Auto-play the reading on intro/demo; a session-level toggle (default on).
-            // Real persistence (DataStore) is Phase 2; in-memory is fine for the prototype.
-            var autoPlay by remember { mutableStateOf(true) }
             val speechAvailable = ttsReady && speech.isAvailable("zh-Hans")
 
             fun nextChar(c: String) = characters[(characters.indexOf(c) + 1) % characters.size]
@@ -69,6 +85,8 @@ fun HanziApp() {
                         speech = speech,
                         speechAvailable = speechAvailable,
                         autoPlay = autoPlay,
+                        onRecord = { record -> scope.launch { progressRepository.recordPractice(record) } },
+                        onSoundToggle = { on -> scope.launch { settings.setSound(on) } },
                         onExit = { practiceChar = null },
                         onNext = {
                             practiceChar = null
@@ -84,7 +102,7 @@ fun HanziApp() {
                         speech = speech,
                         speechAvailable = speechAvailable,
                         autoPlay = autoPlay,
-                        onToggleAutoPlay = { autoPlay = it },
+                        onToggleAutoPlay = { on -> scope.launch { settings.setAutoPlay(on) } },
                         onPractice = {
                             detailChar = null
                             practiceChar = nextChar(c)
@@ -95,6 +113,7 @@ fun HanziApp() {
                 else -> CharacterGridScreen(
                     characters = characters,
                     meanings = meanings,
+                    progress = progress,
                     onCharacterTap = { detailChar = null; practiceChar = it },
                 )
             }
