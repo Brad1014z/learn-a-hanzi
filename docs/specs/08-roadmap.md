@@ -1,6 +1,7 @@
 # 08 — Roadmap
 
-> **Status:** ACCEPTED (reviewed 2026-07-05; amended 2026-07-05 — family prototype & play layer)
+> **Status:** ACCEPTED (reviewed 2026-07-05; amended 2026-07-05 — family prototype & play
+> layer; amended 2026-07-06 — cloud layer inserted as Phase 4, publish renumbered to 5)
 > Phased milestones. Each phase has a clear **definition of done** so "are we there?" is
 > answerable. Dates are not committed — quality over speed — but the destination is a
 > published, free/open product (constitution).
@@ -15,19 +16,39 @@ session-by-session plan):
 **Engine workstream (dad + AI):**
 
 - [x] Specs reviewed and marked `ACCEPTED` (2026-07-05, this document set).
-- [ ] Single-module Compose app. The *app structure* is throwaway; the **engine code is
-      not** — it's written as if already in `:core:domain`: pure Kotlin, no `android.*`
-      imports (see `06`).
-- [ ] ~10–20 HSK 1 characters as checked-in per-character JSON from hanzi-writer-data
-      (same lineage/license as make-me-a-hanzi; zero pipeline work — see `02`). The set
-      deliberately includes tricky shapes: dots, hooks, crossings (e.g. 一 人 我 火 心 小 乙).
-- [ ] Vendored pure-Kotlin SVG-path parser + Y-flip/normalization applied at load.
-- [ ] Practice canvas: rice-grid guide, demo animation (thick-median variant), quiz mode
+- [x] Prototype app skeleton: `:app` (Compose) + `:engine` — a plain `kotlin("jvm")`
+      module with no Android plugin, so the engine's purity rule (see `06`) holds by
+      construction; it graduates to `:core:domain` in Phase 1. CI (GitHub Actions) runs
+      the test suite and builds a debug APK artifact only when tests pass.
+- [x] 20 HSK 1 characters as checked-in per-character JSON from hanzi-writer-data
+      (same lineage/license as make-me-a-hanzi; zero pipeline work — see `02`), with
+      dots, hooks, and crossings (一 人 我 火 心 小 十 中 …).
+- [x] Vendored pure-Kotlin SVG-path parser + Y-flip/normalization applied at load
+      (with a regression test that 三's strokes run top-to-bottom on screen).
+- [x] **Meanings** (added 2026-07-06): a 20-entry dictionary slice (pinyin + definitions
+      from make-me-a-hanzi `dictionary.txt`, LGPL — see `02`) shown on grid tiles, in the
+      practice header, and on the completion overlay.
+- [x] **Verdict sounds** (added 2026-07-06): synthesized placeholder WAVs — accept ding,
+      gentle reject tone, completion sparkle — via SoundPool with an on/off toggle
+      (`07`). Final sounds are S4's job (`11`).
+- [x] **TTS** (added 2026-07-06): `SpeechService(text, lang)` interface in `:engine`
+      (pure, with a tested lang→locale mapping); Android `TextToSpeech` impl (zh-CN,
+      QUEUE_FLUSH debounce); speaker button on the practice meaning line + auto-speak on
+      completion; button hides when no Mandarin voice exists. The one-time
+      "install a TTS engine" hint from `01` is deferred to Phase 2.
+- [x] **Character Detail intro + phrases + auto-play** (added 2026-07-08): a Character
+      Detail screen (grid → detail → practice, spec 07 Flow A) showing 2-3 CC-CEDICT
+      phrases per character (auto-ranked, hand-picked, checked in as `phrases.json`) each
+      with tap-to-play; the character auto-speaks on intro open and demo start behind an
+      "Auto-play audio" toggle (default on).
+- [x] Practice canvas: rice-grid guide, demo animation (thick-median variant), quiz mode
       with the full grading pipeline per `05` (capture → accidental-contact filter → RDP →
       resample → length guard → position + direction scores → verdict tiers → hint/undo).
 - [ ] `GradingConfig` v0 tuned on-device (finger, at least two screen sizes).
-- [ ] Golden stroke corpus started: recorded attempts (clean / sloppy / wrong-order /
-      wrong-stroke) checked in with expected verdicts + a replay unit test.
+- [x] Golden stroke corpus **started** (synthetic v0): clean / jittered / reversed /
+      out-of-order / displaced / truncated attempts derived from real medians, replayed
+      through the grader with asserted verdicts. Recorded real-finger strokes join it
+      during on-device tuning.
 
 **Game-feel workstream (son + AI, staged in `11`):**
 
@@ -53,8 +74,9 @@ engine moves into its permanent home.
 - [ ] Gradle multi-module skeleton: `:app`, `:core:data`, `:core:domain`, `:core:ui`,
       `:feature:practice`, `:feature:review`, `:feature:browser`, `:data-ingest`.
       `:core:domain` is a plain `kotlin("jvm")` module (see `06`).
-- [ ] Version catalog (`gradle/libs.versions.toml`) with pinned dependency versions.
-- [ ] CI: GitHub Actions — assemble + unit tests on every push.
+- [x] Version catalog (`gradle/libs.versions.toml`) with pinned dependency versions
+      (landed with the Phase 0 prototype).
+- [x] CI: GitHub Actions — unit tests gate a debug-APK artifact (landed in Phase 0).
 - [ ] Prototype engine code + golden corpus land in `:core:domain` unchanged, tests green.
 - [ ] Hilt + Compose + Room wired in `:app` so it launches to a blank screen.
 - [ ] `:data-ingest` tool (see `02` for the full pipeline):
@@ -114,8 +136,12 @@ Goal: make it genuinely pleasant and deepen the content.
       accounts or server.
 - [ ] **Collection art pass:** pictographic personality for HSK 1 characters (etymology
       hints as flavor text; art style per son's direction).
+- [ ] **Badges** (local, per `10`): mastery/skill/consistency/explorer categories on the
+      Collection badge shelf; transparent criteria; earned fully offline.
+- [ ] **Pre-generated audio** (per `01`/`12`): ingest generates clips for all curriculum
+      characters/words via cloud TTS; `PregenAudioSpeechService` with device-TTS fallback.
 - [ ] Richer example sentences (multiple per character, curated shortlist).
-- [ ] Audio polish: better TTS handling, per-word/per-sentence playback.
+- [ ] Audio polish: per-word/per-sentence playback over the `SpeechService` interface.
 - [ ] Stats dashboard in Collection (heatmap, retention chart, mastered over time).
 - [ ] Custom decks / favorites ("star" a character) — user-side mirror of `CurriculumEntry`.
 - [ ] Frequency-only track (`curriculumId = "freq"`) + HSK 2/3 characters (new worlds).
@@ -127,21 +153,39 @@ Goal: make it genuinely pleasant and deepen the content.
 **Definition of done:** the app feels finished for daily use; content extends beyond HSK 1;
 progress is motivating without being manipulative.
 
-## Phase 4 — Publish
+## Phase 4 — Cloud layer (optional accounts, sync, friends)
+
+Goal: the additive online layer per `12-accounts-social.md` — nothing in Phases 0–3
+starts depending on it.
+
+- [ ] Google sign-in (Credential Manager + Firebase Auth); generated display name +
+      preset avatar; calm entry points (`07` Flow F).
+- [ ] Progress sync/backup: outbox + WorkManager drain; merge rules (latest-review wins,
+      append-only log union); restore on fresh install.
+- [ ] Friends via mutual code/QR; Profile & Friends screen (`07` #8).
+- [ ] Challenges: daily duel + set duel + weekly friends board (ceilinged XP); Cloud
+      Function bounds validation; preset reactions only.
+- [ ] Badge backup (badges stay locally earned).
+- [ ] Account deletion (hard purge function); security rules reviewed; fakes so all
+      social UI tests run offline.
+
+**Definition of done:** two phones with two accounts can befriend by code, run a duel
+end-to-end, and see the weekly board — while a third, signed-out phone loses nothing;
+the airplane-mode regression suite passes untouched.
+
+## Phase 5 — Publish
 
 Goal: ship to the Play Store as a free, open product with a clear conscience on privacy
 and data licensing.
 
 - [ ] License-obligation checklist in `02` fully closed; credits screen ships all
       attributions + license texts.
-- [ ] Final `applicationId` (owned namespace), Play listing, screenshots, privacy policy.
+- [ ] Final `applicationId` (owned namespace), Play listing, screenshots, privacy policy
+      (covering the `12` data practices); COPPA / Play Families posture reviewed.
 - [ ] Privacy-respecting, **opt-in** crash reporting.
-- [ ] Backup/restore (export/import a small JSON of progress).
-- [ ] Achievements / milestones (honest, non-dark-pattern).
+- [ ] Local backup/restore (export/import a progress JSON) — independent of cloud sync.
 - [ ] Wider curricula (HSK 4–6), traditional-character support (`zh-Hant` data addition —
       see `09`).
-- [ ] Optional: cloud sync of progress (accounts optional; layers over existing repository
-      interfaces). Optional recorded audio track (if licensing + size allow).
 
 **Definition of done:** live on the Play Store; privacy policy and data attribution are
 accurate; a stranger can install it and learn.
@@ -155,7 +199,9 @@ accurate; a stranger can install it and learn.
 - Every phase respects the play-layer guardrails (`10`): the writing moment is never
   timed in learn/review, game signals stay mastery-truthful, no dark patterns.
 - Remaining ⚠ verify flags in `02` (field names, export formats) are resolved during
-  Phase 1 ingestion work; license compliance closes before Phase 4 ships.
+  Phase 1 ingestion work; license compliance closes before Phase 5 ships.
+- The cloud layer (Phase 4) never becomes a dependency of earlier phases: the
+  airplane-mode, signed-out experience is a permanent regression target (`00`, `12`).
 
 ## Directions deliberately not scheduled (but designed for)
 

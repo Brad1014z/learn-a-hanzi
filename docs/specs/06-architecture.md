@@ -19,6 +19,20 @@ never depends on a feature.
 :data-ingest          -- JVM tool (NOT shipped). Produces the bundled SQLite asset.
 ```
 
+Phase 4 adds the optional cloud modules, all behind interfaces declared in `:core:domain`
+(see `12`; adapted from the closed PR #1 architecture):
+
+```
+:core:account         -- AccountRepository impl (Credential Manager + Firebase Auth).
+:core:sync            -- SyncRepository/SocialRepository impls (Firestore) + outbox worker.
+:feature:social       -- Profile & Friends screen, challenge flows, weekly board.
+```
+
+- Feature modules depend only on the **interfaces**; the Firebase impls are single
+  swappable modules bound via Hilt. Fakes exist so all social UI tests run offline.
+- If no user is signed in, the impls are inert no-ops — the app behaves exactly like the
+  signed-out experience (constitution principle 1).
+
 - `:core:domain` is a **plain `kotlin("jvm")` module — the Android Gradle plugin is not
   applied**, so `android.*` imports are impossible by construction. This is the
   constitution's "portable core": converting it to a Kotlin Multiplatform module when iOS
@@ -26,6 +40,9 @@ never depends on a feature.
   are injected. The **stroke-grading math** (polyline ops, scoring, the vendored SVG path
   parser) lives here, not in `:feature:practice` — the feature module contributes only
   Canvas rendering and touch capture.
+- *Phase 0 note:* the family prototype already applies this rule — its `:engine` module
+  is exactly this pure-JVM shape (geometry, parser, grader, quiz state machine, character
+  loading) and graduates to `:core:domain` in Phase 1 with its tests.
 - `:feature:*` depend on `:core:domain`, `:core:ui`, and `:core:data` (via interfaces).
 - `:app` wires implementations (Hilt modules bind `Repository` impls from `:core:data` to
   interfaces declared in `:core:domain`).
@@ -111,6 +128,15 @@ A small, well-tested pure-Kotlin component.
 
 Each returns `Flow` for observable data and `suspend` for writes.
 
+Platform services follow the same pattern: **`SpeechService.speak(text, lang)`** is a
+pure interface in `:core:domain` (BCP-47 lang), implemented by Android `TextToSpeech`
+now and by the pre-generated-audio player in Phase 3 (`01`), so pronunciation is
+language- and backend-agnostic by construction.
+
+Phase 4 adds `AccountRepository`, `SocialRepository` (friends, challenges, boards), and
+`SyncRepository` (progress backup/restore, outbox) — interfaces in `:core:domain`,
+Firebase impls behind them (`12`).
+
 ## Offline-first rules (constitution → architecture)
 
 1. **No runtime network dependency.** The app launches and is fully usable with airplane
@@ -118,7 +144,7 @@ Each returns `Flow` for observable data and `suspend` for writes.
 2. **First-launch DB setup** copies the asset DB (and runs any reseed logic if a newer
    dataset version is bundled than on disk). This is local I/O only.
 3. **No background services** in MVP. Reviews are computed from `dueAt` on foreground.
-4. Any future sync (Phase 4, publish) layers over these interfaces and must remain optional.
+4. Sync (Phase 4, cloud layer — `12`) layers over these interfaces and must remain optional.
 
 ## Navigation
 

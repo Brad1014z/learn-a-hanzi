@@ -1,6 +1,7 @@
 # 00 — Constitution
 
-> **Status:** ACCEPTED (reviewed 2026-07-05; amended 2026-07-05 — play-layer reframe, see `10`)
+> **Status:** ACCEPTED (reviewed 2026-07-05; amended 2026-07-05 — play-layer reframe, see `10`;
+> amended 2026-07-06 — optional cloud layer: accounts, friends challenges, audio path, see `12`)
 > The constitution is the highest-level spec. Every other document must be consistent
 > with it. If a later spec contradicts something here, the constitution wins — or the
 > constitution is amended explicitly.
@@ -39,9 +40,11 @@ future characters easier to learn. So: we grade writing, not just recognition.
 
 ## Core principles
 
-1. **Offline-first.** The app works fully without a network. All learning content is
-   bundled. No feature may hard-depend on a live server. A network is a convenience
-   (future sync), never a requirement to learn.
+1. **Offline-first learning.** The app works fully without a network: all learning
+   content is bundled, and the entire learning **and play** loop — SRS, quests, XP,
+   collection, worlds, arcade — functions offline and signed-out, forever. The optional
+   **cloud layer** (sync, friends challenges — see `12`) is additive by definition: no
+   learning or progression feature may hard-depend on a live server.
 
 2. **Correctness over speed — where it matters: the stroke.** The moment of writing is
    protected: while learning or reviewing, no countdown ever runs against a moving hand,
@@ -55,9 +58,11 @@ future characters easier to learn. So: we grade writing, not just recognition.
    reproducible. No proprietary content lock-in. A user could rebuild the dataset
    themselves from public sources.
 
-4. **Minimal permissions, minimal footprint.** No accounts required to start. No ads, no
-   trackers, no background data collection in the MVP. We ask for only what a feature
-   needs.
+4. **Minimal permissions, minimal footprint.** No account is ever *required* — the app is
+   fully usable signed-out. An **optional** Google sign-in unlocks cloud sync, friends
+   challenges, and badge backup (`12`); signing out loses nothing local. No ads, no
+   trackers, no background data collection. We ask for only what a feature needs —
+   friend connections use mutual codes/QR, never contact-list access.
 
 5. **Feedback that teaches, not punishes.** Grading is forgiving within reason and always
    shows the correct path on failure. The goal is to leave every session having written
@@ -95,9 +100,12 @@ These are things we are **deliberately not building**. Listing them prevents sco
 - **A general Chinese course / grammar curriculum.** We teach characters and their
   immediate context, not sentence construction rules, grammar drills, or listening
   comprehension exercises.
-- **Social / community features.** No friends, global leaderboards, or accounts-required
-  collaboration in the MVP. (The daily challenge's **share card** is OS-level sharing of
-  a result image/text — no server, no accounts, no in-app social graph — and is allowed.)
+- **Open social.** A *bounded* friends system is in scope (amended 2026-07-06; see `12`):
+  friends by **mutual code/QR only**, generated display names + preset avatars, async
+  score challenges, preset reactions. Still banned, forever: chat/DMs or **any free-text
+  channel between users**, stranger discovery/search, contact-list access, follower
+  counts, real-time multiplayer. (The daily challenge's share card remains OS-level
+  sharing and needs no account.)
 - **iOS, web, or desktop — in the MVP.** Android ships first, alone. iOS is a real
   candidate *after* the Android MVP validates; the pure-Kotlin core stays KMP-ready to keep
   that option cheap (see `09-extension-paths.md`). No cross-platform UI framework
@@ -105,8 +113,10 @@ These are things we are **deliberately not building**. Listing them prevents sco
 - **Japanese / Korean — in the MVP.** The engine and pipeline are designed to generalize
   (KanjiVG is a drop-in analog for kanji), and the extension path is documented in
   `09-extension-paths.md`, but MVP content is Simplified Chinese only.
-- **A custom TTS voice or recorded audio library.** MVP uses the system TTS engine. We do
-  not bundle or license recordings.
+- **A custom TTS voice or *licensed* recordings.** MVP uses the system TTS engine behind
+  a language-agnostic interface (`06`). **Pre-generated TTS audio shipped as data**
+  (created once at ingest — see `12`) is the allowed quality upgrade; licensing or
+  recording human audio stays out.
 - **Editor / authoring tools for users.** Content is curated from datasets, not user-
   generated.
 

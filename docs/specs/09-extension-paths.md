@@ -67,6 +67,10 @@ Engine and pipeline implications:
   that point; the MVP deliberately does **not** pre-abstract this (`03`).
 - **Kana track:** KanjiVG covers hiragana/katakana, so a "learn the kana" starter
   curriculum is nearly free and is the natural first Japanese offering.
+- **Audio:** nothing new to design — `SpeechService(text, lang)` (`01`/`06`) takes
+  `ja-JP` via device TTS immediately, and the pre-generated-audio pipeline (`12`) runs
+  per language at ingest, so Japanese clips are one more generation pass. Korean (ko-KR)
+  identical.
 
 ## Korean (hangul) — furthest out, structurally different
 
@@ -92,7 +96,7 @@ Not a schema change — a **data addition**: make-me-a-hanzi and CC-CEDICT both 
 traditional forms, so a `zh-Hant` content set plus a curriculum (e.g. TOCFL) slots into
 the existing `lang` + `CurriculumEntry` mechanics. The same codepoint-collision note as
 Japanese applies (many characters are shared between Hans/Hant sets). Scheduled loosely
-under Phase 4 (`08`).
+under Phase 5 (`08`).
 
 ## Branding note
 

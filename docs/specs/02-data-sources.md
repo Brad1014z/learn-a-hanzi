@@ -101,6 +101,11 @@ Format: one entry per line, `#`-prefixed comments are metadata.
   shortest words containing each character to use as examples.
 - Also used to **cross-check / enrich** make-me-a-hanzi single-char definitions where the
   gloss is thin.
+- **Phase 0 prototype slice:** a `phrases.json` (2-3 phrases per prototype character) was
+  produced from CC-CEDICT by auto-ranking candidate words (containing the character,
+  short, proper-nouns/vulgar entries filtered) then a manual final pick for
+  kid-appropriateness — authentic CEDICT pinyin/gloss, human-curated selection. This is
+  the small-scale rehearsal of the eventual `Word`-table selection rule.
 - License: **CC BY-SA 4.0** (updated from the historical 3.0). Attribution ships on the
   credits screen; share-alike governs the license of our *derived* dataset (see summary
   below).
@@ -110,8 +115,11 @@ Format: one entry per line, `#`-prefixed comments are metadata.
 `chanind/hanzi-writer-data` republishes make-me-a-hanzi data as per-character JSON files
 (same lineage, same Arphic terms). Two uses:
 
-- **Phase 0 prototype source:** the stroke-engine prototype checks in ~10–20 per-character
-  JSON files directly (no ingest pipeline yet) — see `08-roadmap.md`.
+- **Phase 0 prototype source:** the stroke-engine prototype checks in 20 per-character
+  JSON files directly (no ingest pipeline yet) — see `08-roadmap.md`. The prototype also
+  checks in a **20-entry dictionary slice** (pinyin + English definitions) extracted from
+  make-me-a-hanzi's `dictionary.txt` (LGPL v3+ — attribution ships in the data NOTICE),
+  so characters are never shown as bare shapes even before the real pipeline exists.
 - **Ingest sanity check:** verify that our ingestion of `graphics.txt` produces identical
   stroke/median data for a sample of characters, and cross-reference field naming if
   make-me-a-hanzi's raw files have drifted.
@@ -172,7 +180,7 @@ and prefer sentences under a permissive license where the data exposes it.
 
 > This section is a checklist, not legal advice. The app is a **free/open product**
 > (constitution), so share-alike terms are workable — we comply rather than avoid.
-> Complete every box before the first public release (Phase 4).
+> Complete every box before the first public release (Phase 5).
 
 - [ ] **Arphic Public License** (`graphics.txt`): copyleft for the font-derived data —
       ship the APL text + attribution in-app (Credits) and in the repo; derived stroke

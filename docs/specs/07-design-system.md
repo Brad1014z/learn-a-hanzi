@@ -59,22 +59,33 @@ by every feature.
 - **Streak / XP** summary — days played and learner level; honest, pauses gracefully.
 - Quick entry to Browse, Collection, and Settings.
 
-### 2. Character Detail
-- Large character display (rendered from stroke outlines).
-- Pinyin (tone-marked) + audio button (TTS).
-- Short English definition + decomposition/radical (+ etymology hint if present).
-- **Example phrase**: one short word/sentence containing the character, with translation.
-- Buttons: **Practice** (start quiz), **Show stroke order** (demo).
+### 2. Character Detail — the "intro" step (read before you write)
+- Large character display; **tap to hear it** (TTS), with a speaker icon.
+- Pinyin (tone-marked) + short English definition (+ decomposition/radical/etymology
+  hint if present).
+- **Words with this character**: 2-3 common phrases (word or idiom) each shown as
+  hanzi + tone-marked pinyin + English gloss, in a row that is **tap-anywhere-to-play**
+  (a big kid-friendly target) with its own play icon — this is where reading is taught.
+- **Auto-play**: the character is spoken automatically when this screen opens, gated by
+  an "Auto-play audio" toggle (default on) shown here; phrases stay tap-only.
+- Buttons: **Practice** (→ demo then quiz). (A separate "Show stroke order" is folded
+  into Practice, which opens in demo mode.)
 
 ### 3. Practice (stroke quiz) — the centerpiece
 - Full-bleed **Canvas** with the rice-grid guide; minimal chrome.
-- Top bar: target character (faint), pinyin, audio, progress (stroke x of n).
+- Top bar: target character (faint), progress (stroke x of n), audio.
+- **Meaning line** under the top bar: tone-marked pinyin + short English gloss
+  ("yī · one") — the character is always more than a shape, even mid-quiz. The gloss is
+  the first clause of the full definition (definitions are `;`-separated, see `02`).
 - **Tracing guide** (faint full character on the canvas): defaults **on during
   first-learn**, **off during review** — scaffolding that fades as recall takes over;
   overridable in Settings (see `05`).
 - Controls: **Hint** (show next stroke), **Undo**, **Replay demo**, **Exit**.
-- Drawing input → live ink; on pointer-up, grading feedback (color + optional haptic).
-- On completion: success state, SRS grade recorded, "Next" / "Done".
+- Drawing input → live ink; on pointer-up, grading feedback (color + sound + optional
+  haptic).
+- On completion: success state showing character · pinyin · meaning — and the character
+  **spoken aloud** (one last reinforcement through a second sense), SRS grade recorded,
+  "Next" / "Done".
 
 ### 4. Review (SRS queue)
 - Presents due characters one at a time in the practice canvas (same engine as Practice,
@@ -93,11 +104,23 @@ by every feature.
 - Organized by world; tap a tile → Character Detail (with replay-the-strokes animation).
 - Stats live here too: characters mastered, review calendar heatmap, retention over time
   (MVP: mastered count + last-7-days activity).
+- **Badge shelf** (Phase 3): earned badges with transparent criteria — tap any badge to
+  see exactly what earned it or what's left (`10`). Unearned badges show as goals, never
+  as guilt.
 - MVP ships the simple grid + ranks; art/personality per character is a Phase 3 pass.
 
 ### 7. Settings
 - Daily new-character cap, theme (system/light/dark), dynamic color toggle, TTS engine
   picker + preview, sound/haptics toggles, credits (data sources + licenses), reset progress.
+- **Account** (Phase 4): sign in/out with Google, re-roll display name, pick avatar,
+  rotate friend code, delete account. Signed-out state is a calm single row, not a banner.
+
+### 8. Profile & Friends (Phase 4)
+- My card: generated name, avatar, weekly XP, badge count; **friend code** with share/QR.
+- Friends list (mutual only): name, avatar, weekly XP (ceilinged); remove silently.
+- Challenges: incoming (accept/ignore), active (play), finished (results + preset
+  reactions 👏 🔥 😮 🤝 — the only inter-user signal; no free text anywhere, per `00`/`12`).
+- Weekly friends board resets Monday; no relegation, no loss-framing.
 
 ## Key user flows
 
@@ -127,6 +150,17 @@ by every feature.
 3. Result card: spoiler-free emoji grid of stroke verdicts (🟩🟨🟥) + day number.
 4. **Share** via the OS share sheet (no server, no account); or dismiss. Done for the day.
 
+### Flow E — Friend challenge (Phase 4, signed-in)
+1. Profile & Friends → pick a friend → "Challenge" → daily duel or set duel (`12`).
+2. Friend gets it on their next app open (no push nagging); accepts or lets it expire —
+   both consequence-free.
+3. Both play the same puzzle/set; results appear for both; optional preset reaction.
+4. Weekly friends board updates with ceilinged XP.
+
+### Flow F — Sign-in (Phase 4, always optional)
+1. Settings row, or a one-line card after a completed quest ("Back up your progress?").
+2. Google one-tap → generated name + avatar picker → done. Dismissing the card mutes it.
+
 ## Interaction details
 
 - **Audio button** anywhere a character/word/sentence appears → TTS speaks it. Debounced
@@ -135,6 +169,15 @@ by every feature.
   readings (e.g. 了, 长), TTS on the bare glyph may pick a reading that contradicts the
   pinyin on screen — so the character's audio button speaks it **inside its example word**
   instead (see `01`). Word/sentence audio is unaffected.
+- **Verdict sound effects** on grading (bright short ding on accept, **gentle** low tone
+  on reject — never harsh, per `00`'s feedback-that-teaches principle — and an ascending
+  sparkle on character completion) — toggleable, independent of TTS. Phase 0 ships
+  synthesized placeholders; the final sounds are the co-designer's call (`11`, S4).
+- **Auto-play audio** (spoken pronunciation): the character is spoken when its Detail
+  intro opens and when the practice demo begins, behind an "Auto-play audio" toggle
+  (default on) — respects that repeat views or quiet settings may want it off (calm-
+  screens value, `00`). Tapping a character or phrase always plays regardless of the
+  toggle.
 - **Haptics** on grading verdicts (light tick on accept, stronger on reject) — toggleable.
 - **Offline indicators**: none needed in normal use (always offline-first); a one-time
   hint if no Mandarin TTS engine is installed.
