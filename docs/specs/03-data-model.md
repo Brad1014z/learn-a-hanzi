@@ -1,9 +1,15 @@
 # 03 — Data Model
 
-> **Status:** ACCEPTED (reviewed 2026-07-05)
+> **Status:** ACCEPTED (reviewed 2026-07-05; amended 2026-07-09 — `Sentence.source`
+> gains `"llm"`; user tables land first, in milestone M1, ahead of content tables)
 > Room (SQLite) schema. Two classes of data: **content** (read-only, seeded by the ingest
 > tool — see `02`) and **user** (mutated at runtime). The split matters because a dataset
 > update replaces content tables but must preserve user tables.
+>
+> **M1 note (2026-07-09):** the **user tables** below ship first, inside the Phase 0
+> prototype app (roadmap milestone M1), shaped exactly as specified here — so the SRS
+> milestone (M3) is an engine change, not a schema migration. Content tables arrive with
+> the ingest pipeline (M2).
 
 ## Design rules
 
@@ -53,7 +59,7 @@ FOREIGN KEY (character) REFERENCES Character(character)
 ```
 > `sequence` is the deterministic teaching order `04-curriculum.md` defines (frequency,
 > then stroke count, then radical grouping) — computed once by the ingest tool, never at
-> runtime. User-built custom decks (Phase 3+) would mirror this shape in a *user* table
+> runtime. User-built custom decks (M5+) would mirror this shape in a *user* table
 > rather than extending this content table.
 
 #### `StrokePath` — one row per stroke of a character
@@ -82,14 +88,15 @@ freqRank      INTEGER              -- for ranking examples (nullable)
 Plus join table `WordCharacter(wordId, character, position)` so we can query
 "words containing character X, ranked."
 
-#### `Sentence` — example sentences (from Tatoeba)
+#### `Sentence` — example sentences (LLM-generated primary, Tatoeba fallback — see `02`)
 ```
-id            INTEGER PRIMARY KEY                  -- Tatoeba sentence id
+id            INTEGER PRIMARY KEY                  -- Tatoeba sentence id, or synthetic for llm rows
 lang          TEXT NOT NULL                        -- BCP-47, "zh-Hans" in MVP
 text          TEXT NOT NULL                        -- Mandarin sentence
-english       TEXT                                 -- linked English translation (nullable)
-source        TEXT NOT NULL                        -- "tatoeba"
-contributor   TEXT                                 -- for attribution (nullable)
+english       TEXT                                 -- English translation (nullable)
+source        TEXT NOT NULL                        -- "tatoeba" | "llm"
+contributor   TEXT                                 -- attribution: Tatoeba username, or the
+                                                   -- pinned model id for source="llm" (nullable)
 ```
 Plus join table `SentenceCharacter(sentenceId, character, position)`.
 

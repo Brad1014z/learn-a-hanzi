@@ -19,7 +19,7 @@ never depends on a feature.
 :data-ingest          -- JVM tool (NOT shipped). Produces the bundled SQLite asset.
 ```
 
-Phase 4 adds the optional cloud modules, all behind interfaces declared in `:core:domain`
+Milestone M4 adds the optional cloud modules, all behind interfaces declared in `:core:domain`
 (see `12`; adapted from the closed PR #1 architecture):
 
 ```
@@ -42,7 +42,7 @@ Phase 4 adds the optional cloud modules, all behind interfaces declared in `:cor
   Canvas rendering and touch capture.
 - *Phase 0 note:* the family prototype already applies this rule — its `:engine` module
   is exactly this pure-JVM shape (geometry, parser, grader, quiz state machine, character
-  loading) and graduates to `:core:domain` in Phase 1 with its tests.
+  loading) and graduates to `:core:domain` when the module split earns its keep (M2 — see `08`), with its tests.
 - `:feature:*` depend on `:core:domain`, `:core:ui`, and `:core:data` (via interfaces).
 - `:app` wires implementations (Hilt modules bind `Repository` impls from `:core:data` to
   interfaces declared in `:core:domain`).
@@ -130,10 +130,10 @@ Each returns `Flow` for observable data and `suspend` for writes.
 
 Platform services follow the same pattern: **`SpeechService.speak(text, lang)`** is a
 pure interface in `:core:domain` (BCP-47 lang), implemented by Android `TextToSpeech`
-now and by the pre-generated-audio player in Phase 3 (`01`), so pronunciation is
+now and by the pre-generated-audio player in M2 (`01`), so pronunciation is
 language- and backend-agnostic by construction.
 
-Phase 4 adds `AccountRepository`, `SocialRepository` (friends, challenges, boards), and
+M4 adds `AccountRepository`, `SocialRepository` (friends, challenges, boards), and
 `SyncRepository` (progress backup/restore, outbox) — interfaces in `:core:domain`,
 Firebase impls behind them (`12`).
 
@@ -144,7 +144,7 @@ Firebase impls behind them (`12`).
 2. **First-launch DB setup** copies the asset DB (and runs any reseed logic if a newer
    dataset version is bundled than on disk). This is local I/O only.
 3. **No background services** in MVP. Reviews are computed from `dueAt` on foreground.
-4. Sync (Phase 4, cloud layer — `12`) layers over these interfaces and must remain optional.
+4. Sync (M4, cloud layer — `12`) layers over these interfaces and must remain optional.
 
 ## Navigation
 

@@ -1,7 +1,8 @@
 # 00 — Constitution
 
 > **Status:** ACCEPTED (reviewed 2026-07-05; amended 2026-07-05 — play-layer reframe, see `10`;
-> amended 2026-07-06 — optional cloud layer: accounts, friends challenges, audio path, see `12`)
+> amended 2026-07-06 — optional cloud layer: accounts, friends challenges, audio path, see `12`;
+> amended 2026-07-09 — LLM-assisted, human-curated content as an allowed ingest-time source, see `02`)
 > The constitution is the highest-level spec. Every other document must be consistent
 > with it. If a later spec contradicts something here, the constitution wins — or the
 > constitution is amended explicitly.
@@ -57,6 +58,12 @@ future characters easier to learn. So: we grade writing, not just recognition.
    CC-CEDICT, Unihan, Tatoeba). We name them, attribute them, and keep ingestion
    reproducible. No proprietary content lock-in. A user could rebuild the dataset
    themselves from public sources.
+   *Amendment (2026-07-09):* example sentences may additionally be **LLM-assisted,
+   human-curated** — generated at ingest time (never at runtime), constrained to
+   level-appropriate vocabulary, reviewed by a human before check-in, and marked with
+   their provenance in the data. The transparency bar holds: prompts and model versions
+   are pinned in the repo, and the generated sentences ship as inspectable checked-in
+   data like every other source (see `02`).
 
 4. **Minimal permissions, minimal footprint.** No account is ever *required* — the app is
    fully usable signed-out. An **optional** Google sign-in unlocks cloud sync, friends

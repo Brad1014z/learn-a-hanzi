@@ -75,7 +75,7 @@ Wordle-shaped, offline, serverless:
   (🟩 clean / 🟨 sloppy / 🟥 miss), never the character itself. Shared via the OS share
   sheet: no accounts, no server, no in-app social graph (`00` non-goals hold).
 
-## The arcade (opt-in, Phase 3)
+## The arcade (opt-in, M5)
 
 A clearly separated corner where **speed is celebration of mastery** — entirely local,
 entirely offline, no account, no server. (This section absorbs and simplifies an earlier,
@@ -133,7 +133,7 @@ demo available on demand, so the mode is never a dead end.
 - The learn/review writing moment remains untimed, always (`00` principle 2). Arcade is
   the *only* place a clock runs against a stroke, and only over what's already mastered.
 
-## Badges (Phase 3 locally; backed up by the cloud layer)
+## Badges (M5 locally; backed up by the cloud layer)
 
 Badges are the honest trophy case: every badge derives from real recorded state, is
 computed **locally** (signed-out users earn everything), never gates content, and is
@@ -158,7 +158,7 @@ categories and honesty rules above are the contract. Naming/art: co-designer ter
 An earlier standalone draft (closed PR #1: Firebase, anonymous leagues, XP outbox) was
 parked because the constitution then banned accounts outright. The constitution was
 **amended 2026-07-06** to the optional-account model, and the bounded version is now
-scheduled as roadmap Phase 4, specified in `12-accounts-social.md`:
+scheduled as roadmap milestone M4, specified in `12-accounts-social.md`:
 
 - **Friends challenges** (mutual codes only, no free text): async score duels on the
   daily challenge and fixed practice sets, plus a weekly friends XP board.
@@ -191,15 +191,15 @@ scheduled as roadmap Phase 4, specified in `12-accounts-social.md`:
 - Daily-challenge attempts — reuse `ReviewLog` with a `session` tag (`"daily-YYYY-MM-DD"`),
   no new table expected.
 - `LocalHighScore(mode TEXT PRIMARY KEY, bestScore INTEGER, achievedAt INTEGER)` — one row
-  per arcade mode, local-only, added at Phase 3 implementation.
+  per arcade mode, local-only, added at M5 implementation.
 - Everything else (ranks, world progress, dimming) is **derived**, not stored.
 
 ## Open questions
 
 - [ ] Names for collection/worlds/quest/boss/chest — the co-designer decides (`11`).
 - [ ] World curation for HSK 1: hand-tag ~174 chars into 8–12 thematic worlds (one-time
-      content task at Phase 1 ingest).
-- [ ] Collection art style (Phase 3 pass): pictograph-flavored glyph art vs. mascot
+      content task at M2 ingest).
+- [ ] Collection art style (M5 pass): pictograph-flavored glyph art vs. mascot
       illustrations — prototype both cheaply in Phase 0 sessions.
 - [ ] Daily-challenge eligible pool: HSK 1 only at first, or all characters with data?
-      Lean: HSK 1 pool until Phase 3.
+      Lean: HSK 1 pool until M5.

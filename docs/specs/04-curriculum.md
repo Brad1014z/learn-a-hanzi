@@ -6,7 +6,7 @@
 ## Scope
 
 - **MVP:** **HSK 1** — the ~174 unique characters of the HSK 1 (2.0) 150-word vocabulary
-  set. (⚠ pin the exact list snapshot at Phase 1 (data pipeline), since HSK restructured
+  set. (⚠ pin the exact list snapshot at M2 (data pipeline), since HSK restructured
   into 9 levels in 2021. We target the well-known HSK 2.0 level-1 set regardless of what
   it's called now.)
 - **MVP+:** HSK 2, then HSK 3 (≈150 / ≈300 chars). Added after the MVP loop is validated.
@@ -109,7 +109,7 @@ order is unchanged from sound SRS practice:
    celebration, and the day's share card. Failing it costs nothing (the character just
    re-queues); the chest still opens on quest completion.
 5. **Optional extra practice.** Free practice on any character in Browse; the opt-in
-   arcade (Phase 3) lives outside the quest.
+   arcade (M5) lives outside the quest.
 
 ## Reordering / resets
 
@@ -123,7 +123,7 @@ order is unchanged from sound SRS practice:
 - **No adaptive reordering** based on which characters the user finds hard (possible later;
   the data is captured in `ReviewLog` to enable it). MVP uses the fixed sequence.
 - **No multi-character "words" as first-class cards.** Words/sentences are *context* shown
-  alongside a character, not separate SRS cards. (Considered for Phase 3, polish.)
+  alongside a character, not separate SRS cards. (Considered for M5, polish.)
 - **No grammar sequencing.** Example sentences are chosen for shortness + containing the
   character, not for grammatical progression.
 
@@ -139,7 +139,7 @@ Concretely:
 
 ## Open questions
 
-- [ ] HSK 1 ~174: confirm the exact character list + count at Phase 1 (list is stable, but
+- [ ] HSK 1 ~174: confirm the exact character list + count at M2 (list is stable, but
       pin the source snapshot in `data/raw/`). ⚠ verify
 - [x] ~~Cap new chars/day or total cards/day?~~ — **decided: cap only new characters;
       reviews are uncapped** (you should always clear your reviews; the >100-due backlog

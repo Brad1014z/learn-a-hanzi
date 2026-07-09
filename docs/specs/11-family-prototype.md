@@ -1,6 +1,8 @@
 # 11 — Family Prototype (the son's mini-spec)
 
-> **Status:** ACCEPTED (2026-07-05)
+> **Status:** ACCEPTED (2026-07-05; amended 2026-07-09 — the sessions now interleave
+> with the milestone lane of the rewritten roadmap, and the son gains the **art
+> director** role in the mockup-first design workflow, see `07`/`08`)
 > Phase 0 (`08`) is a **father-son build**: one app, two workstreams. Dad (+ AI) builds
 > the grading engine — the hard, testable core. The 12-year-old co-creator (+ AI) owns
 > **game feel**. This spec is his: it stages the work into sessions that each end with
@@ -36,6 +38,14 @@ If a session risks ending in plumbing, dad pre-bakes the plumbing beforehand.
   review culture from day one, gently.
 - **Both:** weekly playtest ("family demo day") — play the current build, pick the next
   session's target together.
+
+*Amendment (2026-07-09):* the roadmap was re-sliced into milestone lanes (`08`). The
+sessions below are unchanged, but they now run as **the son's lane, interleaved** with
+dad's milestone lane (M1 persistence, M2 content, M3 game loop, M4 family board) — the
+two lanes merge at family demo day, and nothing in his lane ever waits on dad's
+plumbing. He also gains a standing role: **art director** in the mockup-first design
+workflow (`07`) — every new screen starts as 2–3 Claude-generated mockups, and he picks
+and tweaks the direction before any Compose code is written.
 
 ## The sessions
 
