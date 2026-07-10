@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.brad1014z.hanzi.engine.data.CharacterData
+import io.github.brad1014z.hanzi.engine.data.ExampleSentence
 import io.github.brad1014z.hanzi.engine.data.Phrase
 import io.github.brad1014z.hanzi.engine.speech.SpeechService
 
@@ -122,11 +123,73 @@ fun CharacterDetailScreen(
             }
         }
 
+        character.sentence?.let { sentence ->
+            Text(
+                text = "Say it!",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(top = 12.dp, bottom = 8.dp),
+            )
+            SentenceCard(
+                sentence = sentence,
+                speechAvailable = speechAvailable,
+                onPlay = { speech.speak(sentence.text, "zh-Hans") },
+            )
+        }
+
         Spacer(Modifier.padding(12.dp))
         Button(
             onClick = onPractice,
             modifier = Modifier.fillMaxWidth(),
         ) { Text("Next character") }
+    }
+}
+
+@Composable
+private fun SentenceCard(sentence: ExampleSentence, speechAvailable: Boolean, onPlay: () -> Unit) {
+    // Same tap-anywhere-to-play target as phrases (spec 07); sentence provenance is
+    // shown honestly (spec 02: LLM-generated content is marked as such).
+    Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(enabled = speechAvailable, onClick = onPlay),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(sentence.text, fontSize = 24.sp)
+                sentence.pinyin?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                sentence.english?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                if (sentence.source == "llm") {
+                    Text(
+                        text = "AI-written · family-checked",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 4.dp),
+                    )
+                }
+            }
+            if (speechAvailable) {
+                Spacer(Modifier.width(8.dp))
+                Text("🔊", fontSize = 24.sp)
+            }
+        }
     }
 }
 

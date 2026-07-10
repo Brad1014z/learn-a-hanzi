@@ -76,15 +76,24 @@ interface MetaDao {
 }
 
 @Database(
-    entities = [CharacterProgressEntity::class, ReviewLogEntity::class, MetaEntity::class],
-    version = 1,
+    entities = [
+        CharacterProgressEntity::class, ReviewLogEntity::class, MetaEntity::class,
+        CharacterEntity::class, CurriculumEntryEntity::class, StrokePathEntity::class,
+        WordEntity::class, WordCharacterEntity::class,
+        SentenceEntity::class, SentenceCharacterEntity::class,
+    ],
+    version = 2,
     exportSchema = true,
 )
 abstract class HanziDatabase : RoomDatabase() {
     abstract fun progressDao(): ProgressDao
     abstract fun metaDao(): MetaDao
+    abstract fun contentDao(): ContentDao
 
     companion object {
+        /** Bundled dataset asset produced by `./gradlew :data-ingest:run` (spec 02). */
+        const val ASSET_PATH = "databases/hanzi_v1.sqlite"
+
         @Volatile private var instance: HanziDatabase? = null
 
         fun get(context: Context): HanziDatabase = instance ?: synchronized(this) {
@@ -92,7 +101,14 @@ abstract class HanziDatabase : RoomDatabase() {
                 context.applicationContext,
                 HanziDatabase::class.java,
                 "hanzi.db",
-            ).build().also { instance = it }
+            )
+                // Fresh installs start from the bundled dataset (content + empty user
+                // tables). Existing installs take MIGRATION_1_2 + the DatasetSeeder
+                // reseed path instead — user data preservation is the inviolable rule
+                // (spec 03).
+                .createFromAsset(ASSET_PATH)
+                .addMigrations(MIGRATION_1_2)
+                .build().also { instance = it }
         }
     }
 }
