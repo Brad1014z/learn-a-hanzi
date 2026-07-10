@@ -1,0 +1,17 @@
+# HSK 1 world curation (spec 04/10): worldId <TAB> display name <TAB> characters.
+# Hand-curated 2026-07-09; display names are PLACEHOLDERS — naming is the co-designer's
+# job (spec 11). Every HSK 1 character must appear exactly once; the ingest tool
+# hard-fails on gaps or duplicates. World ORDER in-app is computed at ingest from
+# aggregate character frequency (spec 04), not from file order.
+numbers	Numbers	一二三四五六七八九十零几
+family	Family & Friends	人我你他她们妈爸姐儿子女朋友猫狗
+time	Time & Weather	天日月年星期时候今明昨现在岁点分午雨
+food	Food & Fire	吃喝茶饭菜果苹米杯水火热冷
+school	School & Words	学习老师生读写字书本名汉语识认校
+talking	Talking & Feelings	说话听请谢叫喂吗呢什么哪谁和好爱喜欢
+places	Places	家国店院馆站京北东西中里面商客
+travel	Getting Around	来去回出上下坐住起开车飞租
+things	Things & Screens	电视机脑影桌椅衣服钟钱买块
+doing	Doing	做作工打会能想看见睡觉医
+describing	Describing	大小多少高亮漂太很对同样气兴
+littlewords	Little Words	是不没有的了个些这那都再先后前关系怎
