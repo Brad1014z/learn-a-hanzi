@@ -96,7 +96,7 @@ Not a schema change — a **data addition**: make-me-a-hanzi and CC-CEDICT both 
 traditional forms, so a `zh-Hant` content set plus a curriculum (e.g. TOCFL) slots into
 the existing `lang` + `CurriculumEntry` mechanics. The same codepoint-collision note as
 Japanese applies (many characters are shared between Hans/Hant sets). Scheduled loosely
-under Phase 5 (`08`).
+under the Publish milestone (`08`).
 
 ## Branding note
 

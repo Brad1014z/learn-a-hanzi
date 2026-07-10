@@ -46,7 +46,7 @@ both:
   fraction** along its `median` — i.e., animate a "growing" stroke by clipping/filling the
   outline region near the median prefix. A simpler MVP approach: draw the median as a
   thick rounded stroke up to the progress fraction (less pretty, far simpler); upgrade to
-  outline-clipping in Phase 3 (polish) if needed.
+  outline-clipping in M5 (polish) if needed.
 - **Faint target:** in quiz mode, optionally show all strokes at low opacity as a guide
   the user traces. Default is **mode-dependent** — on during first-learn (scaffold the
   unfamiliar shape), off during review (recall from memory is the point) — and

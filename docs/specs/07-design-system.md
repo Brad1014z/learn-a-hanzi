@@ -1,6 +1,7 @@
 # 07 — Design System
 
-> **Status:** ACCEPTED (reviewed 2026-07-05; amended 2026-07-05 — play layer, see `10`)
+> **Status:** ACCEPTED (reviewed 2026-07-05; amended 2026-07-05 — play layer, see `10`;
+> amended 2026-07-09 — mockup-first design workflow, see below)
 > Theme tokens, core screens, and the key user flows. Focus is on structure and behavior;
 > pixel-perfect visuals are finalized at implementation with reference mockups.
 >
@@ -8,6 +9,21 @@
 > feedback everywhere *except* during the act of writing, which stays focused and calm.
 > Playful never means childish: type, color, and copy work for a 12-year-old and a
 > 40-year-old at once.
+
+## Design workflow — mockup-first (added 2026-07-09)
+
+Every milestone that adds or reshapes a screen starts with design, not code:
+
+1. **Claude generates 2–3 interactive HTML mockups** of the screen (phone-framed,
+   tappable enough to feel the flow), each a distinct direction — not three shades of
+   the same idea.
+2. **The co-designer picks and tweaks as art director** (typically at family demo day):
+   choose a direction, mark what to change, iterate on the mockup cheaply.
+3. **The winner is built in Compose** against this spec's tokens and rules.
+
+Mockups are **throwaway design artifacts, never product code** — no HTML ships. Keep
+them dated under `docs/design/mockups/` so decisions have a paper trail. This workflow
+is how "kid-friendly" stays concrete: the kid literally signs off on every screen.
 
 ## Theme & tokens (Material 3)
 
@@ -104,18 +120,18 @@ by every feature.
 - Organized by world; tap a tile → Character Detail (with replay-the-strokes animation).
 - Stats live here too: characters mastered, review calendar heatmap, retention over time
   (MVP: mastered count + last-7-days activity).
-- **Badge shelf** (Phase 3): earned badges with transparent criteria — tap any badge to
+- **Badge shelf** (M5): earned badges with transparent criteria — tap any badge to
   see exactly what earned it or what's left (`10`). Unearned badges show as goals, never
   as guilt.
-- MVP ships the simple grid + ranks; art/personality per character is a Phase 3 pass.
+- MVP ships the simple grid + ranks; art/personality per character is an M5 pass.
 
 ### 7. Settings
 - Daily new-character cap, theme (system/light/dark), dynamic color toggle, TTS engine
   picker + preview, sound/haptics toggles, credits (data sources + licenses), reset progress.
-- **Account** (Phase 4): sign in/out with Google, re-roll display name, pick avatar,
+- **Account** (M4): sign in/out with Google, re-roll display name, pick avatar,
   rotate friend code, delete account. Signed-out state is a calm single row, not a banner.
 
-### 8. Profile & Friends (Phase 4)
+### 8. Profile & Friends (M4)
 - My card: generated name, avatar, weekly XP, badge count; **friend code** with share/QR.
 - Friends list (mutual only): name, avatar, weekly XP (ceilinged); remove silently.
 - Challenges: incoming (accept/ignore), active (play), finished (results + preset
@@ -150,14 +166,14 @@ by every feature.
 3. Result card: spoiler-free emoji grid of stroke verdicts (🟩🟨🟥) + day number.
 4. **Share** via the OS share sheet (no server, no account); or dismiss. Done for the day.
 
-### Flow E — Friend challenge (Phase 4, signed-in)
+### Flow E — Friend challenge (M4, signed-in)
 1. Profile & Friends → pick a friend → "Challenge" → daily duel or set duel (`12`).
 2. Friend gets it on their next app open (no push nagging); accepts or lets it expire —
    both consequence-free.
 3. Both play the same puzzle/set; results appear for both; optional preset reaction.
 4. Weekly friends board updates with ceilinged XP.
 
-### Flow F — Sign-in (Phase 4, always optional)
+### Flow F — Sign-in (M4, always optional)
 1. Settings row, or a one-line card after a completed quest ("Back up your progress?").
 2. Google one-tap → generated name + avatar picker → done. Dismissing the card mutes it.
 

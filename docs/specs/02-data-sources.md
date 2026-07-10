@@ -1,6 +1,8 @@
 # 02 — Data Sources
 
-> **Status:** ACCEPTED (reviewed 2026-07-05)
+> **Status:** ACCEPTED (reviewed 2026-07-05; amended 2026-07-09 — LLM-generated example
+> sentences and pre-generated TTS clips join the pipeline, per the constitution's
+> LLM-assisted-content amendment; scheduled as milestone M2 in `08`)
 > This is one of the two riskiest specs. Licenses and repository facts were **verified by
 > web research on 2026-07-05**; remaining **⚠ verify** flags are ingest-time checks (exact
 > field names, export formats) that the ingest tool confirms mechanically and fails loudly
@@ -16,7 +18,8 @@
 | [CC-CEDICT](https://www.mdbg.net/chinese/dictionary?page=cc-cedict) | word list (trad/simpl/pinyin/english) | **CC BY-SA 4.0** | multi-char words, definition cross-check |
 | [hanzi-writer-data](https://github.com/chanind/hanzi-writer-data) | derived JSON per character | same lineage (Arphic) | **Phase 0 prototype source** + ingest sanity check |
 | [Unihan database](https://www.unicode.org/charts/unihan.html) | stroke counts, radicals, readings | Unicode license (permissive, attribution) | cross-checks (`kTotalStrokes`, `kRSUnicode`) |
-| [Tatoeba](https://tatoeba.org/en/downloads) | sentences + translation links | **CC-BY 2.0 FR** (mostly; per-sentence — record it) | example sentences; **character frequency ranks** |
+| [Tatoeba](https://tatoeba.org/en/downloads) | sentences + translation links | **CC-BY 2.0 FR** (mostly; per-sentence — record it) | fallback example sentences; **character frequency ranks** |
+| Claude API (LLM, **ingest-time only**) | generated example sentences | our own generated content; provenance recorded (see below) | primary example sentences: vocab-constrained, kid-friendly |
 
 > The two make-me-a-hanzi files carry **different licenses** (per the repo's `COPYING`):
 > the graphics are Arphic PL (copyleft for the font-derived data), the dictionary is
@@ -167,20 +170,60 @@ Tatoeba publishes three relevant files:
 - `links.csv` — pairs of `sentence_id`s that are translations of each other.
 - (optional) `tags.csv`, `user_lists.csv` — not needed for MVP.
 
-**Selection rule per character:** for each character, pick the **shortest** Mandarin
-sentence (≤ ~12 chars) that (a) contains the character and (b) has an English translation
-via `links`. If none, fall back to a CEDICT multi-char word as the "phrase." This keeps
-every character displayable even when no good sentence exists.
+**Selection rule per character (amended 2026-07-09):** the **curated LLM sentence** (next
+section) is the primary example. Where none passed review, fall back to the **shortest**
+Tatoeba Mandarin sentence (≤ ~12 chars) that (a) contains the character and (b) has an
+English translation via `links`; if none, fall back to a CEDICT multi-char word as the
+"phrase." This keeps every character displayable even when no good sentence exists.
 
 **⚠ verify license:** historically CC-BY 2.0 FR; Tatoeba's licensing has shifted per-
 sentence. Safest path: record the contributing user + sentence id so attribution is exact,
 and prefer sentences under a permissive license where the data exposes it.
 
+## LLM-generated sentences — primary example source (added 2026-07-09)
+
+Datasets can't give us what a language learner actually needs from an example sentence:
+**comprehensible input** — sentences built only from characters the learner has already
+met, in an all-ages tone. An LLM can. Constitution amendment 2026-07-09 allows it under
+strict rules; scheduled as milestone M2 (`08`).
+
+- **Ingest-time only.** The `:data-ingest` tool calls the Claude API once per curriculum
+  character; the app never calls an LLM at runtime (offline-first is untouched).
+- **Vocabulary-constrained.** The prompt restricts each sentence to characters at or
+  below the target character's curriculum position (plus the target itself), so early
+  learners can actually read their examples. Length ≤ ~10 characters; tone all-ages
+  playful, never childish (`07`).
+- **Human-reviewed, then checked in.** Generated candidates land in a review file; a
+  human (dad) approves/edits/rejects each; only approved sentences enter the dataset.
+  The checked-in, reviewed file — not the API — is the pipeline's input, so
+  `./gradlew :data-ingest:run` stays deterministic and offline. Regeneration is a
+  deliberate, separate step.
+- **Provenance recorded.** Each sentence row carries `source = "llm"` plus the pinned
+  model id; prompts and model version live in the repo (e.g. `data-ingest/prompts/`).
+  English glosses and tone-marked pinyin are generated alongside and reviewed together.
+- **Pinyin/gloss cross-check.** The tool validates every LLM sentence's characters exist
+  in the dataset and cross-checks readings against CEDICT; mismatches fail review, not
+  silently pass.
+
+## Pre-generated TTS audio — shipped as data (added 2026-07-09)
+
+Device TTS varies wildly and is simply absent on phones without a Mandarin voice pack.
+Per `01` (and the constitution's allowed quality upgrade), the pipeline pre-generates
+audio at ingest time — moved up from old Phase 3 into milestone M2 (`08`):
+
+- A cloud TTS API (e.g. Google Cloud TTS) is called once per curriculum character,
+  phrase, and sentence; clips ship as app/data assets — offline forever, no runtime
+  service, never an API key in the app (`12`).
+- Like the LLM step, generation is a **deliberate, separate step** whose output is
+  checked in / cached; the deterministic ingest run consumes the stored clips.
+- The manifest records voice name + API version per batch. `PregenAudioSpeechService`
+  plays clips with device-TTS fallback for anything uncovered (`01`).
+
 ## License obligations summary
 
 > This section is a checklist, not legal advice. The app is a **free/open product**
 > (constitution), so share-alike terms are workable — we comply rather than avoid.
-> Complete every box before the first public release (Phase 5).
+> Complete every box before the first public release (Publish milestone).
 
 - [ ] **Arphic Public License** (`graphics.txt`): copyleft for the font-derived data —
       ship the APL text + attribution in-app (Credits) and in the repo; derived stroke
@@ -194,6 +237,11 @@ and prefer sentences under a permissive license where the data exposes it.
 - [ ] **Tatoeba**: mostly CC-BY 2.0 FR but licensed **per sentence** — record sentence id
       + contributor at ingest; credits screen lists contributors; skip sentences whose
       license the export marks as non-permissive.
+- [ ] **LLM-generated sentences**: our own generated, human-reviewed content — no
+      third-party license obligation; released under the same terms as the rest of the
+      derived dataset; provenance (model id, generation date, reviewer) ships in the
+      attribution manifest and the credits screen notes that example sentences are
+      AI-generated and human-reviewed.
 - [ ] **Our releases:** app code under MIT or Apache-2.0; the *derived bundled dataset*
       under the terms of its most restrictive inputs per component (APL for stroke data,
       LGPL for dictionary-derived, CC BY-SA 4.0 for CEDICT/Tatoeba-derived), documented in
@@ -212,19 +260,25 @@ A **JVM Kotlin tool** (Gradle subproject `:data-ingest`, **not shipped** in the 
    scales into the internal **1000×1000, Y-down** box (see `05`); validates by comparing
    a rendered sample against hanzi-writer-data.
 4. **Joins on the simplified character** as the natural key:
-   make-me-a-hanzi `graphics` + `dictionary` ← CEDICT words ← Tatoeba sentences.
+   make-me-a-hanzi `graphics` + `dictionary` ← CEDICT words ← reviewed LLM sentences
+   ← Tatoeba sentences.
 5. Computes **frequency ranks** from the Tatoeba corpus (see above) and applies selection
-   rules (one example phrase/sentence per char, shortest wins; words ranked by frequency).
-6. Emits **`CurriculumEntry` rows** (`curriculumId="hsk"`, level, sequence — see `03`/`04`)
+   rules (curated LLM sentence first, then shortest Tatoeba sentence, then CEDICT word;
+   words ranked by frequency).
+6. Bundles the **pre-generated TTS clips** (see above) for every curriculum character,
+   phrase, and sentence, validating coverage (a curriculum entry with no clip is a
+   loud warning; device TTS covers the gap at runtime).
+7. Emits **`CurriculumEntry` rows** (`curriculumId="hsk"`, level, sequence — see `03`/`04`)
    and tags all content rows `lang = "zh-Hans"` (BCP-47).
-7. **Fails the build** if any character in an MVP curriculum level lacks complete data
+8. **Fails the build** if any character in an MVP curriculum level lacks complete data
    (strokes + medians + definition). Silent drops are allowed only for non-curriculum
    characters, which are logged.
-8. Writes a **versioned SQLite file** (`hanzi_vN.sqlite`) into `app/src/main/assets/databases/`,
+9. Writes a **versioned SQLite file** (`hanzi_vN.sqlite`) into `app/src/main/assets/databases/`,
    matching the Room schema in `03-data-model.md`.
-9. Emits an **ingest report**: counts per source, characters dropped, the
-   license-attribution manifest (including full APL + LGPL texts and per-sentence Tatoeba
-   contributors), and the dataset version string.
+10. Emits an **ingest report**: counts per source, characters dropped, the
+    license-attribution manifest (including full APL + LGPL texts, per-sentence Tatoeba
+    contributors, and LLM/TTS generation provenance — model, voice, date, reviewer),
+    and the dataset version string.
 
 ### Dataset versioning
 
@@ -238,6 +292,9 @@ A **JVM Kotlin tool** (Gradle subproject `:data-ingest`, **not shipped** in the 
 - Ingestion is deterministic: same inputs → same bytes. No clock-based ordering, no
   network calls. Pinned source snapshots (by date) recorded in the ingest report.
 - A `./gradlew :data-ingest:run` reproduces the asset from `data/raw/`.
+- The **generation steps** (LLM sentences, TTS clips) are the only network-touching
+  parts and run as separate, deliberate tasks whose reviewed/stored outputs are checked
+  in — the deterministic ingest run consumes those files and never calls an API.
 
 ## Data size & shape (estimates, ⚠ verify with real files)
 
@@ -250,7 +307,7 @@ A **JVM Kotlin tool** (Gradle subproject `:data-ingest`, **not shipped** in the 
 
 | Risk | Mitigation |
 |------|------------|
-| Field names in make-me-a-hanzi drift from this spec | Ingest tool validates schema and fails loudly with a diff; ⚠ verify at Phase 1 (data pipeline). |
+| Field names in make-me-a-hanzi drift from this spec | Ingest tool validates schema and fails loudly with a diff; ⚠ verify at M2 (data pipeline). |
 | Y-flip / coordinate assumptions wrong in detail | Tool auto-detects bounds from a sample, applies the documented transform, and diff-validates rendered geometry against hanzi-writer-data. |
 | A license forbids bundling (e.g. Arphic terms) | Keep ingestion swappable: if a source can't be bundled, fall back to on-first-launch download with attribution, still offline thereafter. Constitution allows one-time import. |
 | An MVP-curriculum character lacks strokes/medians/definition | **Ingest fails the build** — the curriculum promise is "all of HSK 1" (constitution). Non-curriculum gaps are dropped + logged. |

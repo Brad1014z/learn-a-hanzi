@@ -47,8 +47,10 @@ import io.github.brad1014z.hanzi.engine.geometry.Point
 import io.github.brad1014z.hanzi.engine.geometry.arcLength
 import io.github.brad1014z.hanzi.engine.grading.RejectReason
 import io.github.brad1014z.hanzi.engine.grading.StrokeVerdict
+import io.github.brad1014z.hanzi.engine.progress.PracticeRecord
 import io.github.brad1014z.hanzi.engine.quiz.QuizEngine
 import io.github.brad1014z.hanzi.engine.quiz.QuizState
+import io.github.brad1014z.hanzi.engine.quiz.drawnCorrectly
 import io.github.brad1014z.hanzi.engine.quiz.toGrade
 import io.github.brad1014z.hanzi.engine.speech.SpeechService
 
@@ -69,12 +71,15 @@ fun PracticeScreen(
     speech: SpeechService = SpeechService.Silent,
     speechAvailable: Boolean = false,
     autoPlay: Boolean = true,
+    onRecord: (PracticeRecord) -> Unit = {},
+    onSoundToggle: (Boolean) -> Unit = {},
     onExit: () -> Unit,
     onNext: () -> Unit,
 ) {
     val engine = remember { QuizEngine() }
     var mode by remember(character) { mutableStateOf(Mode.DEMO) }
     var quiz by remember(character) { mutableStateOf(engine.start(character)) }
+    var quizStartedAt by remember(character) { mutableStateOf(0L) }
     var demoRun by remember(character) { mutableIntStateOf(0) }
     var demoStrokeIndex by remember(character) { mutableIntStateOf(0) }
     val demoProgress = remember(character) { Animatable(0f) }
@@ -101,6 +106,7 @@ fun PracticeScreen(
         demoStrokeIndex = character.medians.size
         kotlinx.coroutines.delay(350)
         mode = Mode.QUIZ
+        if (quizStartedAt == 0L) quizStartedAt = System.currentTimeMillis()
         feedback = "Your turn — stroke 1 of ${character.strokeCount}."
     }
 
@@ -121,11 +127,25 @@ fun PracticeScreen(
         }
     }
 
-    // Hear the character as part of the completion moment (spec 07: reinforcement).
+    // Completion: persist the card (M1, spec 03) and hear the character one last time
+    // (spec 07: reinforcement).
     LaunchedEffect(quiz.isComplete) {
-        if (quiz.isComplete && speechAvailable) {
-            kotlinx.coroutines.delay(400) // let the completion sound land first
-            speech.speak(character.character, "zh-Hans")
+        if (quiz.isComplete) {
+            val now = System.currentTimeMillis()
+            onRecord(
+                PracticeRecord(
+                    character = character.character,
+                    reviewedAt = now,
+                    grade = quiz.toGrade(),
+                    drawnCorrectly = quiz.drawnCorrectly(),
+                    durationMs = (now - quizStartedAt).takeIf { quizStartedAt > 0L },
+                    session = "practice",
+                ),
+            )
+            if (speechAvailable) {
+                kotlinx.coroutines.delay(400) // let the completion sound land first
+                speech.speak(character.character, "zh-Hans")
+            }
         }
     }
 
@@ -286,6 +306,7 @@ fun PracticeScreen(
             if (mode == Mode.QUIZ && quiz.isComplete) {
                 CompletionOverlay(quiz = quiz, onAgain = {
                     quiz = engine.start(character)
+                    quizStartedAt = System.currentTimeMillis()
                     feedback = "Again — stroke 1 of ${character.strokeCount}."
                 }, onNext = onNext)
             }
@@ -323,6 +344,7 @@ fun PracticeScreen(
             OutlinedButton(onClick = {
                 soundOn = !soundOn
                 sounds.enabled = soundOn
+                onSoundToggle(soundOn) // persisted (M1, DataStore)
             }) { Text(if (soundOn) "Sound on" else "Sound off") }
         }
     }

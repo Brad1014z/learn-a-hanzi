@@ -1,10 +1,12 @@
 # 12 — Accounts, Sync & Social
 
-> **Status:** ACCEPTED (2026-07-06)
+> **Status:** ACCEPTED (2026-07-06; rescheduled 2026-07-09 — now roadmap milestone
+> **M4**, pulled ahead of the polish work: the weekly family board lands right after
+> the core loop + XP exist, see `08`. Content unchanged.)
 > The optional cloud layer: Google sign-in, progress sync, friends challenges, badge
 > backup, and the audio-generation pipeline's service notes. **Nothing here is required
 > to learn or play** — the app is fully functional offline and signed-out, forever
-> (constitution principles 1 and 4, amended 2026-07-06). Scheduled as roadmap Phase 4.
+> (constitution principles 1 and 4, amended 2026-07-06).
 >
 > Lineage: adapts the closed PR #1 backend design (auth, outbox, bounds validation) to
 > the friends-challenges shape decided 2026-07-06; PR #1's anonymous leagues remain
@@ -106,12 +108,12 @@ account deletion purge.
   No birthdate collection, no analytics, no ad IDs, no third-party trackers (`00`).
 - **Mixed-audience caution:** we don't age-gate, so the social design assumes children
   are present — hence generated names, no free text, no stranger contact, no public
-  profiles. (Formal COPPA/Families-policy review happens at Phase 5 publish.)
+  profiles. (Formal COPPA/Families-policy review happens at the Publish milestone.)
 - Privacy policy ships with the first public release listing exactly the above.
 
 ## Audio-generation service note
 
-The pre-generated audio pipeline (`00` amendment; roadmap Phase 3) runs at **ingest
+The pre-generated audio pipeline (`00` amendment; milestone M2, moved up 2026-07-09) runs at **ingest
 time**, not runtime: a cloud TTS API (e.g. Google Cloud TTS) is called once per
 curriculum character/word per language, and the clips ship as app/data assets — offline
 forever, no runtime service. If runtime TTS for arbitrary text is ever needed (unlikely:

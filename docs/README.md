@@ -22,7 +22,7 @@ decision-record-like: it states what we chose, why, and what is explicitly out o
 | DI / Async     | Hilt / Coroutines + Flow                        |
 | Portability    | Pure-Kotlin KMP-ready core; Android-only build  |
 | Audio          | System TTS behind `SpeechService`; pre-gen clips later |
-| Cloud (P4)     | Optional: Firebase sign-in, sync, friends challenges |
+| Cloud (M4)     | Optional: Firebase sign-in, sync, friends challenges |
 | Ambition       | Free/open product (Play Store; open source)     |
 
 ## Reading order
@@ -40,11 +40,11 @@ most technical risk and should be reviewed carefully.
 | 05  | [Stroke Engine](./specs/05-stroke-engine.md)       | Native Canvas grading algorithm (hardest part)       |
 | 06  | [Architecture](./specs/06-architecture.md)         | Modules, layers, state, offline-first rules          |
 | 07  | [Design System](./specs/07-design-system.md)       | Theme, core screens, key user flows                  |
-| 08  | [Roadmap](./specs/08-roadmap.md)                   | Phased milestones, prototype → publish              |
+| 08  | [Roadmap](./specs/08-roadmap.md)                   | Milestone lanes (M1–M5), prototype → publish        |
 | 09  | [Extension Paths](./specs/09-extension-paths.md)   | iOS/KMP, Japanese, Korean, traditional Chinese       |
 | 10  | [Play Layer](./specs/10-play-layer.md)             | Game design: XP, collection, worlds, quest, badges, arcade |
 | 11  | [Family Prototype](./specs/11-family-prototype.md) | The 12-year-old co-creator's staged Phase 0 workstream |
-| 12  | [Accounts, Sync & Social](./specs/12-accounts-social.md) | Optional cloud layer: Google sign-in, sync, friends challenges (Phase 4) |
+| 12  | [Accounts, Sync & Social](./specs/12-accounts-social.md) | Optional cloud layer: Google sign-in, sync, friends challenges (milestone M4) |
 
 ## Status legend
 
