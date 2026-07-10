@@ -29,3 +29,5 @@ rootProject.name = "learn-a-hanzi"
 // split earns its keep (M2 — docs/specs/08).
 include(":engine")
 include(":app")
+// JVM ingest tool (docs/specs/02) — builds the bundled dataset; never shipped in the APK.
+include(":data-ingest")
