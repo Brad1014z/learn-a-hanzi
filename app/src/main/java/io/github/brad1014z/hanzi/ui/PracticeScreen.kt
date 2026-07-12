@@ -71,20 +71,34 @@ fun PracticeScreen(
     speech: SpeechService = SpeechService.Silent,
     speechAvailable: Boolean = false,
     autoPlay: Boolean = true,
+    // Recall mode (M3, spec 05/07): reviews and the boss start straight in the quiz —
+    // no demo reveal — and the tracing guide defaults off (scaffolding that fades).
+    startInQuiz: Boolean = false,
+    guideDefaultOn: Boolean = !startInQuiz,
+    allowGuide: Boolean = true, // boss: written fully from memory (spec 04)
+    allowRetry: Boolean = true, // quest cards advance via the SRS re-test, not "Again"
+    sessionTag: String = "practice",
     onRecord: (PracticeRecord) -> Unit = {},
     onSoundToggle: (Boolean) -> Unit = {},
     onExit: () -> Unit,
     onNext: () -> Unit,
 ) {
     val engine = remember { QuizEngine() }
-    var mode by remember(character) { mutableStateOf(Mode.DEMO) }
+    var mode by remember(character) { mutableStateOf(if (startInQuiz) Mode.QUIZ else Mode.DEMO) }
     var quiz by remember(character) { mutableStateOf(engine.start(character)) }
-    var quizStartedAt by remember(character) { mutableStateOf(0L) }
+    var quizStartedAt by remember(character) {
+        mutableStateOf(if (startInQuiz) System.currentTimeMillis() else 0L)
+    }
     var demoRun by remember(character) { mutableIntStateOf(0) }
     var demoStrokeIndex by remember(character) { mutableIntStateOf(0) }
     val demoProgress = remember(character) { Animatable(0f) }
-    var showGuide by remember(character) { mutableStateOf(true) } // first-learn default ON (spec 05/07)
-    var feedback by remember(character) { mutableStateOf("Watch the stroke order, then try it yourself.") }
+    var showGuide by remember(character) { mutableStateOf(guideDefaultOn && allowGuide) }
+    var feedback by remember(character) {
+        mutableStateOf(
+            if (startInQuiz) "From memory — stroke 1 of ${character.strokeCount}."
+            else "Watch the stroke order, then try it yourself.",
+        )
+    }
     var liveStroke by remember(character) { mutableStateOf<List<Point>>(emptyList()) }
     var fadingReject by remember(character) { mutableStateOf<List<Point>?>(null) }
     val rejectAlpha = remember(character) { Animatable(0f) }
@@ -139,7 +153,7 @@ fun PracticeScreen(
                     grade = quiz.toGrade(),
                     drawnCorrectly = quiz.drawnCorrectly(),
                     durationMs = (now - quizStartedAt).takeIf { quizStartedAt > 0L },
-                    session = "practice",
+                    session = sessionTag,
                 ),
             )
             if (speechAvailable) {
@@ -304,11 +318,16 @@ fun PracticeScreen(
             }
 
             if (mode == Mode.QUIZ && quiz.isComplete) {
-                CompletionOverlay(quiz = quiz, onAgain = {
-                    quiz = engine.start(character)
-                    quizStartedAt = System.currentTimeMillis()
-                    feedback = "Again — stroke 1 of ${character.strokeCount}."
-                }, onNext = onNext)
+                CompletionOverlay(
+                    quiz = quiz,
+                    allowRetry = allowRetry,
+                    onAgain = {
+                        quiz = engine.start(character)
+                        quizStartedAt = System.currentTimeMillis()
+                        feedback = "Again — stroke 1 of ${character.strokeCount}."
+                    },
+                    onNext = onNext,
+                )
             }
         }
 
@@ -319,10 +338,12 @@ fun PracticeScreen(
         )
 
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedButton(onClick = {
-                mode = Mode.DEMO
-                demoRun++
-            }) { Text("Demo") }
+            if (!startInQuiz) { // recall mode: no demo reveal (the hint path costs a grade)
+                OutlinedButton(onClick = {
+                    mode = Mode.DEMO
+                    demoRun++
+                }) { Text("Demo") }
+            }
             OutlinedButton(
                 onClick = {
                     if (mode == Mode.QUIZ && !quiz.isComplete) {
@@ -337,8 +358,10 @@ fun PracticeScreen(
                 onClick = { quiz = engine.undo(quiz) },
                 enabled = mode == Mode.QUIZ && quiz.records.isNotEmpty(),
             ) { Text("Undo") }
-            OutlinedButton(onClick = { showGuide = !showGuide }) {
-                Text(if (showGuide) "Guide on" else "Guide off")
+            if (allowGuide) {
+                OutlinedButton(onClick = { showGuide = !showGuide }) {
+                    Text(if (showGuide) "Guide on" else "Guide off")
+                }
             }
             var soundOn by remember { mutableStateOf(sounds.enabled) }
             OutlinedButton(onClick = {
@@ -351,7 +374,12 @@ fun PracticeScreen(
 }
 
 @Composable
-private fun CompletionOverlay(quiz: QuizState, onAgain: () -> Unit, onNext: () -> Unit) {
+private fun CompletionOverlay(
+    quiz: QuizState,
+    allowRetry: Boolean = true,
+    onAgain: () -> Unit,
+    onNext: () -> Unit,
+) {
     // TODO(son, S1/S5): this is where the confetti goes. Make finishing feel amazing.
     Surface(
         color = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),
@@ -375,7 +403,7 @@ private fun CompletionOverlay(quiz: QuizState, onAgain: () -> Unit, onNext: () -
                 modifier = Modifier.padding(8.dp),
             )
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedButton(onClick = onAgain) { Text("Again") }
+                if (allowRetry) OutlinedButton(onClick = onAgain) { Text("Again") }
                 Button(onClick = onNext) { Text("Next") }
             }
         }

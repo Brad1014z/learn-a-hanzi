@@ -72,12 +72,14 @@ deliberately stricter than "seen once" so the headline number is meaningful.
 The play layer surfaces this as **collection ranks** — derived *only* from SRS state
 (the "juice with honesty" value in `00`):
 
-| Rank | Meaning | SRS condition |
+| Rank | Meaning | SRS condition (pinned at M3 — `Ranks`) |
 |------|---------|---------------|
 | — (silhouette) | met, not yet reliable | `NEW` / `LEARNING` |
 | **Bronze** | can write it | graduated to `REVIEW` |
-| **Silver** | learned | `REVIEW` + ≥2 correct reviews (the definition above) |
-| **Gold** | durable | interval ≥ 21 days |
+| **Silver** | learned | `REVIEW` + `reps ≥ 5` — ≥2 **consecutive** correct answers after graduation (slightly stricter than the cumulative definition above; a deliberate M3 simplification that keeps ranks derivable from `CharacterProgress` alone) |
+| **Gold** | durable | `REVIEW` + interval ≥ 21 days |
+
+A lapse (`RELEARNING`) shows as **dimmed Bronze** until the card re-proves itself.
 
 A lapse **dims** the character's rank in the collection (it visibly "asks to be practiced
 again") but never deletes it — honest, not punishing. Ranks are recomputed from

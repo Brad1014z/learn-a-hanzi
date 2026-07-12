@@ -40,6 +40,7 @@ fun CharacterDetailScreen(
     speech: SpeechService = SpeechService.Silent,
     speechAvailable: Boolean = false,
     autoPlay: Boolean = true,
+    practiceLabel: String = "Next character",
     onToggleAutoPlay: (Boolean) -> Unit = {},
     onPractice: () -> Unit,
     onExit: () -> Unit,
@@ -141,7 +142,7 @@ fun CharacterDetailScreen(
         Button(
             onClick = onPractice,
             modifier = Modifier.fillMaxWidth(),
-        ) { Text("Next character") }
+        ) { Text(practiceLabel) }
     }
 }
 

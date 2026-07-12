@@ -59,11 +59,33 @@ interface ProgressDao {
     @Query("SELECT * FROM CharacterProgress WHERE character = :character")
     suspend fun get(character: String): CharacterProgressEntity?
 
+    @Query("SELECT * FROM CharacterProgress WHERE dueAt <= :now ORDER BY dueAt")
+    suspend fun due(now: Long): List<CharacterProgressEntity>
+
+    /**
+     * New characters introduced via the guided track since [todayStart] — counts
+     * against the daily cap (spec 04; browse practice is exempt via its session tag).
+     * SQLite's bare-column-with-MIN semantics make `session` come from the first row.
+     */
+    @Query(
+        "SELECT COUNT(*) FROM (SELECT character, MIN(reviewedAt) AS firstAt, session " +
+            "FROM ReviewLog GROUP BY character HAVING firstAt >= :todayStart AND session = :sessionTag)",
+    )
+    suspend fun introducedSince(todayStart: Long, sessionTag: String): Int
+
+    /** Streak metric (spec 10): days *played*, pauses gracefully — no loss framing. */
+    @Query("SELECT COUNT(DISTINCT date(reviewedAt/1000, 'unixepoch', 'localtime')) FROM ReviewLog")
+    suspend fun daysPlayed(): Int
+
     @Upsert
     suspend fun upsert(progress: CharacterProgressEntity)
 
     @Insert
     suspend fun insertLog(log: ReviewLogEntity)
+
+    // Manual reset (spec 04: destructive, behind a confirmation).
+    @Query("DELETE FROM CharacterProgress") suspend fun clearProgress()
+    @Query("DELETE FROM ReviewLog") suspend fun clearLog()
 }
 
 @Dao
