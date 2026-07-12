@@ -1,0 +1,9 @@
+# Pinned raw-source snapshot (spec 02). Regenerate data/raw/ with :data-ingest:downloadData;
+# the tool verifies these sha256 hashes and fails loudly on drift.
+# make-me-a-hanzi pinned commit: bddc96d41bef78427ed0e034e9f7e31d71fd1b92 (2026-03-08)
+# Unihan: Unicode 16.0.0. CEDICT + Tatoeba: snapshot downloaded 2026-07-09.
+a28c478b5178e98f67f510b2d52fde08a69dc664654ef43498253b9b764d46ee  graphics.txt
+744bb05d5b0742e9ee35c37791f94d56a173349b3367569e7ca11e510364d203  dictionary.txt
+97316a1af0dda440c649861f5fa44420a6c93ad6eef1a94ed284a66bf47e6446  cedict.txt.gz
+b8f000df69de7828d21326a2ffea462b04bc7560022989f7cc704f10521ef3e0  Unihan.zip
+b297af22d35b07fa28b804a5178568fd46aaf5ce00cc907735ec85478f4e73fa  cmn_sentences_detailed.tsv.bz2

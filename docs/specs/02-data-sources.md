@@ -170,11 +170,14 @@ Tatoeba publishes three relevant files:
 - `links.csv` — pairs of `sentence_id`s that are translations of each other.
 - (optional) `tags.csv`, `user_lists.csv` — not needed for MVP.
 
-**Selection rule per character (amended 2026-07-09):** the **curated LLM sentence** (next
-section) is the primary example. Where none passed review, fall back to the **shortest**
-Tatoeba Mandarin sentence (≤ ~12 chars) that (a) contains the character and (b) has an
-English translation via `links`; if none, fall back to a CEDICT multi-char word as the
-"phrase." This keeps every character displayable even when no good sentence exists.
+**Selection rule per character (amended 2026-07-09; narrowed 2026-07-10 at M2
+implementation):** the **curated LLM sentence** (next section) is the primary example;
+where none passed review, the character's CEDICT words are the fallback context.
+Tatoeba's M2 role is **frequency only** — shipping its sentences would require the
+~600 MB English corpus for translations via `links`, which isn't worth it while the
+LLM sentences cover the full curriculum. Tatoeba sentences remain the documented
+upgrade path if a broader pool is ever wanted (the `Sentence` table already models
+them).
 
 **⚠ verify license:** historically CC-BY 2.0 FR; Tatoeba's licensing has shifted per-
 sentence. Safest path: record the contributing user + sentence id so attribution is exact,
