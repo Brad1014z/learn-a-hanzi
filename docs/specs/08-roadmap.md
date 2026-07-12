@@ -154,9 +154,11 @@ example sentence and consistent, good pronunciation — still fully offline.
 - [x] **Pre-generated TTS tooling** (moved up from old Phase 3 — see `01`/`02`):
       `PregenAudioSpeechService` (bundled clips with device-TTS fallback) +
       `:data-ingest:generateAudio` (Google Cloud TTS, `GOOGLE_TTS_API_KEY`).
-- [ ] **TTS clips generated + bundled** — awaiting an API key run
-      (`GOOGLE_TTS_API_KEY=… ./gradlew :data-ingest:generateAudio`, then commit the
-      clips); until then every phone uses device TTS as before.
+- [x] **TTS clips generated + bundled** (2026-07-12): 779 clips — every character,
+      word, and sentence — synthesized with `cmn-CN-Chirp3-HD-Leda` at 0.85 rate
+      (~6.3 MB of assets, APK 12 → 17 MB); voice + API recorded in the manifest.
+      Every phone now gets the same clear Mandarin voice offline; device TTS remains
+      the fallback for uncovered text.
 - [x] Content tables per `03` join M1's user tables (schema v2); fresh installs get the
       dataset via `createFromAsset`, existing installs via the `DatasetSeeder` reseed
       that preserves user tables; `Meta.datasetVersion` readable.
