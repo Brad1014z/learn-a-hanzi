@@ -33,6 +33,14 @@ data class Phrase(
     val english: String,  // gloss, e.g. "(idiom) cautious; careful"
 )
 
+/** An example sentence for the character (spec 02: LLM-generated primary, M2). */
+data class ExampleSentence(
+    val text: String,
+    val pinyin: String? = null,  // tone-marked, word-spaced
+    val english: String? = null,
+    val source: String = "",     // "llm" | "tatoeba" — provenance shown in UI
+)
+
 /** One teachable character: per-stroke outline commands (rendering) + medians (grading). */
 data class CharacterData(
     val character: String,
@@ -46,6 +54,8 @@ data class CharacterData(
     val definition: String = "",
     /** 2-3 common words/idioms containing the character (from CC-CEDICT — spec 02). */
     val phrases: List<Phrase> = emptyList(),
+    /** One example sentence (M2 dataset; null in the Phase 0 resource slice). */
+    val sentence: ExampleSentence? = null,
 ) {
     /** First clause of the gloss — fits small UI (e.g. "fire" from "fire, flame; to burn"). */
     val shortDefinition: String

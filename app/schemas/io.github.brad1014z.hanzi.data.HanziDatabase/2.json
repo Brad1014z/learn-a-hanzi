@@ -1,0 +1,562 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 2,
+    "identityHash": "5a84f0b28eb7ccd699d65b4a53831a50",
+    "entities": [
+      {
+        "tableName": "CharacterProgress",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`character` TEXT NOT NULL, `state` TEXT NOT NULL, `dueAt` INTEGER NOT NULL, `intervalDays` REAL NOT NULL, `ease` REAL NOT NULL, `reps` INTEGER NOT NULL, `lapses` INTEGER NOT NULL, `lastReviewedAt` INTEGER, `lastGrade` INTEGER, PRIMARY KEY(`character`))",
+        "fields": [
+          {
+            "fieldPath": "character",
+            "columnName": "character",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "state",
+            "columnName": "state",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dueAt",
+            "columnName": "dueAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "intervalDays",
+            "columnName": "intervalDays",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ease",
+            "columnName": "ease",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reps",
+            "columnName": "reps",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lapses",
+            "columnName": "lapses",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastReviewedAt",
+            "columnName": "lastReviewedAt",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "lastGrade",
+            "columnName": "lastGrade",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "character"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_CharacterProgress_dueAt",
+            "unique": false,
+            "columnNames": [
+              "dueAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_CharacterProgress_dueAt` ON `${TABLE_NAME}` (`dueAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "ReviewLog",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `character` TEXT NOT NULL, `reviewedAt` INTEGER NOT NULL, `grade` INTEGER NOT NULL, `drawnCorrectly` INTEGER NOT NULL, `durationMs` INTEGER, `session` TEXT)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "character",
+            "columnName": "character",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reviewedAt",
+            "columnName": "reviewedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "grade",
+            "columnName": "grade",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "drawnCorrectly",
+            "columnName": "drawnCorrectly",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "durationMs",
+            "columnName": "durationMs",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "session",
+            "columnName": "session",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_ReviewLog_character_reviewedAt",
+            "unique": false,
+            "columnNames": [
+              "character",
+              "reviewedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_ReviewLog_character_reviewedAt` ON `${TABLE_NAME}` (`character`, `reviewedAt`)"
+          },
+          {
+            "name": "index_ReviewLog_reviewedAt",
+            "unique": false,
+            "columnNames": [
+              "reviewedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_ReviewLog_reviewedAt` ON `${TABLE_NAME}` (`reviewedAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "Meta",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`key` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY(`key`))",
+        "fields": [
+          {
+            "fieldPath": "key",
+            "columnName": "key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value",
+            "columnName": "value",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "key"
+          ]
+        }
+      },
+      {
+        "tableName": "Character",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`character` TEXT NOT NULL, `lang` TEXT NOT NULL, `pinyin` TEXT NOT NULL, `definition` TEXT NOT NULL, `radical` TEXT, `strokeCount` INTEGER NOT NULL, `freqRank` INTEGER, `decomposition` TEXT, `etymologyHint` TEXT, PRIMARY KEY(`character`))",
+        "fields": [
+          {
+            "fieldPath": "character",
+            "columnName": "character",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lang",
+            "columnName": "lang",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pinyin",
+            "columnName": "pinyin",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "definition",
+            "columnName": "definition",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "radical",
+            "columnName": "radical",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "strokeCount",
+            "columnName": "strokeCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "freqRank",
+            "columnName": "freqRank",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "decomposition",
+            "columnName": "decomposition",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "etymologyHint",
+            "columnName": "etymologyHint",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "character"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_Character_freqRank",
+            "unique": false,
+            "columnNames": [
+              "freqRank"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Character_freqRank` ON `${TABLE_NAME}` (`freqRank`)"
+          }
+        ]
+      },
+      {
+        "tableName": "CurriculumEntry",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`curriculumId` TEXT NOT NULL, `character` TEXT NOT NULL, `level` INTEGER NOT NULL, `sequence` INTEGER NOT NULL, `world` TEXT NOT NULL, `worldName` TEXT NOT NULL, PRIMARY KEY(`curriculumId`, `character`))",
+        "fields": [
+          {
+            "fieldPath": "curriculumId",
+            "columnName": "curriculumId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "character",
+            "columnName": "character",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "level",
+            "columnName": "level",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sequence",
+            "columnName": "sequence",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "world",
+            "columnName": "world",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "worldName",
+            "columnName": "worldName",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "curriculumId",
+            "character"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_CurriculumEntry_curriculumId_level_sequence",
+            "unique": false,
+            "columnNames": [
+              "curriculumId",
+              "level",
+              "sequence"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_CurriculumEntry_curriculumId_level_sequence` ON `${TABLE_NAME}` (`curriculumId`, `level`, `sequence`)"
+          }
+        ]
+      },
+      {
+        "tableName": "StrokePath",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`character` TEXT NOT NULL, `strokeIndex` INTEGER NOT NULL, `pathData` TEXT NOT NULL, `median` TEXT NOT NULL, PRIMARY KEY(`character`, `strokeIndex`))",
+        "fields": [
+          {
+            "fieldPath": "character",
+            "columnName": "character",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "strokeIndex",
+            "columnName": "strokeIndex",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pathData",
+            "columnName": "pathData",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "median",
+            "columnName": "median",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "character",
+            "strokeIndex"
+          ]
+        }
+      },
+      {
+        "tableName": "Word",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `lang` TEXT NOT NULL, `simplified` TEXT NOT NULL, `traditional` TEXT, `pinyin` TEXT NOT NULL, `english` TEXT NOT NULL, `freqRank` INTEGER, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lang",
+            "columnName": "lang",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "simplified",
+            "columnName": "simplified",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "traditional",
+            "columnName": "traditional",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "pinyin",
+            "columnName": "pinyin",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "english",
+            "columnName": "english",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "freqRank",
+            "columnName": "freqRank",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_Word_simplified",
+            "unique": false,
+            "columnNames": [
+              "simplified"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Word_simplified` ON `${TABLE_NAME}` (`simplified`)"
+          }
+        ]
+      },
+      {
+        "tableName": "WordCharacter",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`wordId` INTEGER NOT NULL, `character` TEXT NOT NULL, `position` INTEGER NOT NULL, PRIMARY KEY(`wordId`, `character`, `position`))",
+        "fields": [
+          {
+            "fieldPath": "wordId",
+            "columnName": "wordId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "character",
+            "columnName": "character",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "wordId",
+            "character",
+            "position"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_WordCharacter_character",
+            "unique": false,
+            "columnNames": [
+              "character"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_WordCharacter_character` ON `${TABLE_NAME}` (`character`)"
+          }
+        ]
+      },
+      {
+        "tableName": "Sentence",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `lang` TEXT NOT NULL, `text` TEXT NOT NULL, `pinyin` TEXT, `english` TEXT, `source` TEXT NOT NULL, `contributor` TEXT, `forCharacter` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lang",
+            "columnName": "lang",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "text",
+            "columnName": "text",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pinyin",
+            "columnName": "pinyin",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "english",
+            "columnName": "english",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "source",
+            "columnName": "source",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "contributor",
+            "columnName": "contributor",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "forCharacter",
+            "columnName": "forCharacter",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "SentenceCharacter",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`sentenceId` INTEGER NOT NULL, `character` TEXT NOT NULL, `position` INTEGER NOT NULL, PRIMARY KEY(`sentenceId`, `character`, `position`))",
+        "fields": [
+          {
+            "fieldPath": "sentenceId",
+            "columnName": "sentenceId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "character",
+            "columnName": "character",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "sentenceId",
+            "character",
+            "position"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_SentenceCharacter_character",
+            "unique": false,
+            "columnNames": [
+              "character"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_SentenceCharacter_character` ON `${TABLE_NAME}` (`character`)"
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5a84f0b28eb7ccd699d65b4a53831a50')"
+    ]
+  }
+}

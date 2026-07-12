@@ -135,29 +135,33 @@ reopen — the shelf still shows it learned, and the toggles are how you left th
 Goal: from 20 checked-in characters to the full HSK 1 world, each with a kid-friendly
 example sentence and consistent, good pronunciation — still fully offline.
 
-- [ ] `:data-ingest` tool per `02`: reads make-me-a-hanzi, CC-CEDICT, Unihan, Tatoeba,
-      and the pinned HSK 1 list from `data/raw/`; verifies actual field names (the ⚠
-      verify flags close here); applies + validates the Y-flip normalization; computes
-      Tatoeba-derived frequency ranks; emits `CurriculumEntry` rows for HSK 1
-      (~174 chars) with hand-curated world tags (`10`); **hard-fails** if any HSK 1
-      character lacks complete data; produces a deterministic `hanzi_vN.sqlite`
-      matching `03`; emits the ingest report + attribution manifest.
-- [ ] **LLM-generated example sentences** (added 2026-07-09 — see `02`): the pipeline
-      calls the Claude API once per curriculum character to generate short example
-      sentences constrained to level-appropriate vocabulary, all-ages in tone; prompts
-      and model version pinned in the repo; every sentence **human-reviewed before
-      check-in**; provenance recorded (`source = "llm"`). Tatoeba remains the frequency
-      source and the sentence fallback.
-- [ ] **Pre-generated TTS audio** (moved up from old Phase 3 — see `01`/`02`): the
-      pipeline generates cloud-TTS clips for every curriculum character, phrase, and
-      sentence, shipped as offline assets; `PregenAudioSpeechService` plays them with
-      device-TTS fallback for anything uncovered. Consistent Mandarin audio on any
-      phone — including demo-day phones with no TTS engine installed.
-- [ ] Content tables per `03` join M1's user tables; bundled asset copied on first
-      launch; `Meta.datasetVersion` readable.
-- [ ] Plumbing that rides along: whatever module reshaping this milestone genuinely
-      needs — `:engine` → `:core:domain` graduation and a `:core:data` split happen
-      here if the growth demands it, and not otherwise.
+- [x] `:data-ingest` tool per `02` (landed 2026-07-10): reads make-me-a-hanzi (pinned
+      commit), CC-CEDICT, Unihan 16, Tatoeba cmn, and the pinned HSK 1 list; verifies
+      actual field names against `data/sources.lock` (the ⚠ verify flags **closed** —
+      all 178 HSK 1 characters have complete data); applies + validates the Y-flip
+      normalization via the engine's own parser; computes Tatoeba-derived frequency
+      ranks; emits `CurriculumEntry` rows with hand-curated world tags (`10`,
+      `data/pinned/worlds-hsk1.tsv`); **hard-fails** on incomplete curriculum data;
+      produces a byte-deterministic `hanzi_v1.sqlite` whose schema + identity hash come
+      from the KSP-exported Room schema; emits `data/ingest-report.md` with the
+      attribution manifest.
+- [x] **LLM-generated example sentences** (landed 2026-07-10 — see `02`): one
+      vocabulary-constrained, all-ages sentence per HSK 1 character (178/178) with
+      tone-marked pinyin + gloss; model + prompt pinned
+      (`data-ingest/prompts/sentence-generation.md`); reviewed in PR
+      (`data/pinned/sentences-hsk1.json`); provenance `source="llm"` +
+      `forCharacter`; ingest hard-fails on off-list characters.
+- [x] **Pre-generated TTS tooling** (moved up from old Phase 3 — see `01`/`02`):
+      `PregenAudioSpeechService` (bundled clips with device-TTS fallback) +
+      `:data-ingest:generateAudio` (Google Cloud TTS, `GOOGLE_TTS_API_KEY`).
+- [ ] **TTS clips generated + bundled** — awaiting an API key run
+      (`GOOGLE_TTS_API_KEY=… ./gradlew :data-ingest:generateAudio`, then commit the
+      clips); until then every phone uses device TTS as before.
+- [x] Content tables per `03` join M1's user tables (schema v2); fresh installs get the
+      dataset via `createFromAsset`, existing installs via the `DatasetSeeder` reseed
+      that preserves user tables; `Meta.datasetVersion` readable.
+- [x] Plumbing that rode along: `:data-ingest` module added; `:engine` stayed `:engine`
+      (the `:core:domain` graduation wasn't needed yet — it reuses cleanly as-is).
 
 **Definition of done (the demo):** airplane mode on, open the app on any phone: ~174
 characters grouped into worlds, every one speaks with the same clear voice and shows a

@@ -5,10 +5,11 @@
 
 ## Scope
 
-- **MVP:** **HSK 1** — the ~174 unique characters of the HSK 1 (2.0) 150-word vocabulary
-  set. (⚠ pin the exact list snapshot at M2 (data pipeline), since HSK restructured
-  into 9 levels in 2021. We target the well-known HSK 2.0 level-1 set regardless of what
-  it's called now.)
+- **MVP:** **HSK 1** — the unique characters of the HSK 1 (2.0) 150-word vocabulary
+  set. *(Pinned at M2, 2026-07-10: `data/pinned/hsk1-words.json` — 150 words,
+  **178 unique characters**. The oft-quoted "~174" varies by counting convention; the
+  pinned file is our truth.)* HSK restructured into 9 levels in 2021; we target the
+  well-known HSK 2.0 level-1 set regardless of what it's called now.
 - **MVP+:** HSK 2, then HSK 3 (≈150 / ≈300 chars). Added after the MVP loop is validated.
 - **Later:** HSK 4–6, a frequency-only track, and user-built custom decks.
 
@@ -139,8 +140,9 @@ Concretely:
 
 ## Open questions
 
-- [ ] HSK 1 ~174: confirm the exact character list + count at M2 (list is stable, but
-      pin the source snapshot in `data/raw/`). ⚠ verify
+- [x] ~~HSK 1 ~174: confirm the exact character list + count at M2~~ — **resolved
+      2026-07-10: 178 unique characters, pinned in `data/pinned/hsk1-words.json`;
+      the ingest tool hard-fails if any lacks complete data (all 178 pass).**
 - [x] ~~Cap new chars/day or total cards/day?~~ — **decided: cap only new characters;
       reviews are uncapped** (you should always clear your reviews; the >100-due backlog
       nudge above is the pressure valve).

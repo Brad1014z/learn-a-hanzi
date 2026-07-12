@@ -1,7 +1,9 @@
 # 03 — Data Model
 
 > **Status:** ACCEPTED (reviewed 2026-07-05; amended 2026-07-09 — `Sentence.source`
-> gains `"llm"`; user tables land first, in milestone M1, ahead of content tables)
+> gains `"llm"`; user tables land first, in milestone M1, ahead of content tables;
+> amended 2026-07-10 (M2 implementation) — `CurriculumEntry` gains `world`/`worldName`,
+> `Sentence` gains `pinyin`/`forCharacter`, FKs are conceptual not declared)
 > Room (SQLite) schema. Two classes of data: **content** (read-only, seeded by the ingest
 > tool — see `02`) and **user** (mutated at runtime). The split matters because a dataset
 > update replaces content tables but must preserve user tables.
@@ -22,8 +24,11 @@
   language actually lands.
 - Content tables are **read-only at runtime**. The app never writes to them; only the
   ingestion tool and dataset migrations do.
-- User tables reference content by the character key (FK) so a content refresh doesn't
-  orphan progress.
+- User tables reference content by the character key so a content refresh doesn't
+  orphan progress. *(M2 note: the FK is conceptual — Room entities don't declare it,
+  because progress may legitimately reference non-curriculum characters, e.g. the
+  Phase 0 prototype set, and a dataset swap must never cascade into user tables.
+  Referential integrity is the ingest tool's job.)*
 - Coordinates (stroke paths, medians) are stored in a normalized **1000×1000** box (see
   `05-stroke-engine.md`); the UI scales at draw time.
 - JSON columns hold small, structured blobs (pinyin variants, point arrays). Room stores
@@ -53,14 +58,16 @@ etymologyHint TEXT                 -- short text if present (nullable)
 curriculumId  TEXT NOT NULL        -- "hsk" in MVP; later e.g. "freq", "jlpt"
 character     TEXT NOT NULL        -- FK -> Character
 level         INTEGER NOT NULL     -- e.g. HSK level 1..6
-sequence      INTEGER NOT NULL     -- teaching order within the curriculum, computed by ingest
+sequence      INTEGER NOT NULL     -- world-major teaching order, computed by ingest
+world         TEXT NOT NULL        -- curated world id (spec 04/10) — added M2
+worldName     TEXT NOT NULL        -- placeholder display name (naming: spec 11) — added M2
 PRIMARY KEY (curriculumId, character)
-FOREIGN KEY (character) REFERENCES Character(character)
 ```
-> `sequence` is the deterministic teaching order `04-curriculum.md` defines (frequency,
-> then stroke count, then radical grouping) — computed once by the ingest tool, never at
-> runtime. User-built custom decks (M5+) would mirror this shape in a *user* table
-> rather than extending this content table.
+> `sequence` is the deterministic teaching order — **world-major** (worlds ordered by
+> aggregate corpus frequency, then `04`'s frequency/stroke-count/radical order within a
+> world), computed once by the ingest tool so the app never re-derives ordering.
+> User-built custom decks (M5+) would mirror this shape in a *user* table rather than
+> extending this content table.
 
 #### `StrokePath` — one row per stroke of a character
 ```
@@ -88,15 +95,17 @@ freqRank      INTEGER              -- for ranking examples (nullable)
 Plus join table `WordCharacter(wordId, character, position)` so we can query
 "words containing character X, ranked."
 
-#### `Sentence` — example sentences (LLM-generated primary, Tatoeba fallback — see `02`)
+#### `Sentence` — example sentences (LLM-generated primary — see `02`)
 ```
-id            INTEGER PRIMARY KEY                  -- Tatoeba sentence id, or synthetic for llm rows
+id            INTEGER PRIMARY KEY                  -- synthetic for llm rows (Tatoeba id if ever shipped)
 lang          TEXT NOT NULL                        -- BCP-47, "zh-Hans" in MVP
 text          TEXT NOT NULL                        -- Mandarin sentence
+pinyin        TEXT                                 -- tone-marked, word-spaced (llm rows) — added M2
 english       TEXT                                 -- English translation (nullable)
-source        TEXT NOT NULL                        -- "tatoeba" | "llm"
-contributor   TEXT                                 -- attribution: Tatoeba username, or the
-                                                   -- pinned model id for source="llm" (nullable)
+source        TEXT NOT NULL                        -- "llm" | "tatoeba"
+contributor   TEXT                                 -- attribution: pinned model id for llm rows,
+                                                   -- Tatoeba username otherwise (nullable)
+forCharacter  TEXT                                 -- the character the sentence was crafted for — added M2
 ```
 Plus join table `SentenceCharacter(sentenceId, character, position)`.
 

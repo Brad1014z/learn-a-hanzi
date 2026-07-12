@@ -117,6 +117,28 @@ object SvgPathParser {
     }
 }
 
+/**
+ * Serialize commands back to an SVG path string (used by the ingest tool to store
+ * *normalized* geometry — spec 02 step 3; the app then renders without re-transforming).
+ * Coordinates are rounded to 0.1 unit (sub-pixel in the 1000-box) to keep the DB compact.
+ */
+fun List<SvgCommand>.toPathString(): String {
+    fun n(v: Double): String {
+        val r = kotlin.math.round(v * 10) / 10
+        return if (r == kotlin.math.floor(r)) r.toLong().toString() else r.toString()
+    }
+    fun p(pt: Point) = "${n(pt.x)} ${n(pt.y)}"
+    return joinToString(" ") { cmd ->
+        when (cmd) {
+            is SvgCommand.MoveTo -> "M ${p(cmd.p)}"
+            is SvgCommand.LineTo -> "L ${p(cmd.p)}"
+            is SvgCommand.QuadTo -> "Q ${p(cmd.control)} ${p(cmd.p)}"
+            is SvgCommand.CubicTo -> "C ${p(cmd.control1)} ${p(cmd.control2)} ${p(cmd.p)}"
+            SvgCommand.Close -> "Z"
+        }
+    }
+}
+
 /** Apply an affine-ish point transform to every coordinate (used for Y-flip normalization). */
 fun List<SvgCommand>.mapPoints(f: (Point) -> Point): List<SvgCommand> = map { cmd ->
     when (cmd) {
