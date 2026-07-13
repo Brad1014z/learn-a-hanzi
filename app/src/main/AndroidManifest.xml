@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Offline-first (docs/specs/00): the prototype requests no permissions at all. -->
+    <!-- Offline-first (docs/specs/00): learning never needs a network. INTERNET is the
+         one permission the app requests, added at M4 for the OPTIONAL cloud layer
+         (sync + family board, docs/specs/12) — it is never required to learn or play. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:label="@string/app_name"

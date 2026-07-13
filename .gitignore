@@ -47,3 +47,6 @@ data/output/
 # --- Logs / profiling ---
 *.log
 *.hprof
+
+# Firebase config is per-developer (created via the console checklist); never commit.
+app/google-services.json
