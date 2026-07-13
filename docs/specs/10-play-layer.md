@@ -186,8 +186,10 @@ scheduled as roadmap milestone M4, specified in `12-accounts-social.md`:
 ## Data notes (deltas applied at implementation)
 
 - `CurriculumEntry.world` (content) — world tag, curated at ingest (`04`).
-- Session XP total + learner level — small user-table addition (or `Meta` user keys);
-  schema delta to `03` at implementation.
+- Session XP total + learner level — stored in the `Meta` user keys (pinned at M3:
+  `xpTotal`; level is derived, never stored). XP values live in one tunable object
+  (`XpConfig`: warm-up 10, review 10, new character 15, boss attempted 20, chest 15)
+  and the level curve is `cost(L) = 100 + 25·(L−1)` — sliders for feelings (`11`).
 - Daily-challenge attempts — reuse `ReviewLog` with a `session` tag (`"daily-YYYY-MM-DD"`),
   no new table expected.
 - `LocalHighScore(mode TEXT PRIMARY KEY, bestScore INTEGER, achievedAt INTEGER)` — one row

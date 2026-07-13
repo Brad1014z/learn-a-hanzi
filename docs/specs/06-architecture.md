@@ -111,6 +111,13 @@ A small, well-tested pure-Kotlin component.
   fixed steps — **re-test at the tail of the current session's queue, then 1 day** —
   before graduating to the SM-2 interval schedule. (This is what `07` Flow A's "first
   review" means; there is no same-minute timer.)
+  *Implementation pinned at M3 (`SrsEngine`):* `reps` counts consecutive successes and
+  doubles as the step index (success 1 = intro quiz → due **now** for the tail re-test;
+  success 2 = tail re-test → due **+1 day**; success 3 graduates). A failed learning
+  step resets to the tail without counting as a lapse. On a REVIEW lapse: ease −0.2
+  (floor 1.3), and `intervalDays` holds the **pending halved interval** through
+  RELEARNING, applied at re-graduation. Review intervals: 1d → 6d → ×ease, capped at
+  365d. All of this fits the spec 03 columns with no migration.
 - The engine is a **pure function** of `(progress, grade, now)` → new progress. Fully unit-
   tested, including edge cases (lapse chains, ease floor, interval caps).
 - **Upgrade path:** FSRS is the modern successor to SM-2. `ReviewLog` already captures the

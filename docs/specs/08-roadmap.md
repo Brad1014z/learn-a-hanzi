@@ -154,9 +154,11 @@ example sentence and consistent, good pronunciation — still fully offline.
 - [x] **Pre-generated TTS tooling** (moved up from old Phase 3 — see `01`/`02`):
       `PregenAudioSpeechService` (bundled clips with device-TTS fallback) +
       `:data-ingest:generateAudio` (Google Cloud TTS, `GOOGLE_TTS_API_KEY`).
-- [ ] **TTS clips generated + bundled** — awaiting an API key run
-      (`GOOGLE_TTS_API_KEY=… ./gradlew :data-ingest:generateAudio`, then commit the
-      clips); until then every phone uses device TTS as before.
+- [x] **TTS clips generated + bundled** (2026-07-12): 779 clips — every character,
+      word, and sentence — synthesized with `cmn-CN-Chirp3-HD-Leda` at 0.85 rate
+      (~6.3 MB of assets, APK 12 → 17 MB); voice + API recorded in the manifest.
+      Every phone now gets the same clear Mandarin voice offline; device TTS remains
+      the fallback for uncovered text.
 - [x] Content tables per `03` join M1's user tables (schema v2); fresh installs get the
       dataset via `createFromAsset`, existing installs via the `DatasetSeeder` reseed
       that preserves user tables; `Meta.datasetVersion` readable.
@@ -173,21 +175,25 @@ bundled asset deterministically.
 Goal: the full learn → practice → review loop inside the play-layer frame (`10`) — the
 old MVP definition, reached with content and audio already in place.
 
-- [ ] **Data layer:** Room repositories over M1's tables + M2's content (Character,
-      Progress, Curriculum, Settings) with Flow APIs; DAO + migration tests (the
-      harness deferred from M1 lands here).
-- [ ] **Domain:** SRS engine (SM-2 + state machine, learning steps per `06`) fully
-      unit-tested; use cases for "next new character", "due queue", "submit review".
-- [ ] **Review screen** driven by the due queue (same canvas engine; tracing guide off —
-      recall is the point); `GradingConfig` re-tuned against the full HSK 1 set.
-- [ ] **Daily quest frame** per `04`/`10`: warm-up → reviews → new characters → boss
-      stroke → chest; always completable; session XP + learner level.
-- [ ] **Collection ranks** (silhouette/Bronze/Silver/Gold, lapse dimming) derived from
-      SRS state; world unlock gating (default 80% Bronze+, `04`); daily cap (default 10).
-- [ ] **Screens** per `07`: Quest Hub (Home), Review, Browse (search + HSK 1 list),
-      Collection upgrade (ranks + worlds), minimal Settings.
-- [ ] Smoke test: a fresh user can learn characters today and get a correct review
-      queue tomorrow.
+- [x] **Data layer** (landed 2026-07-12): due-queue / introduced-today / days-played
+      queries; XP in `Meta`; daily cap in DataStore; session tags distinguish guided
+      quest steps from cap-exempt browse practice (`04`). (Room DAO/migration test
+      harness still owed — carried to M4 alongside the sync work.)
+- [x] **Domain:** `SrsEngine` (SM-2 + state machine + learning steps per `06`, fully
+      unit-tested), `QuestBuilder`/`QuestSession` (warm-up → reviews → new → boss →
+      chest with tail re-tests), `Ranks`, `XpConfig`/`Levels` — all pure, all tested.
+- [x] **Recall mode** on the practice canvas: reviews/re-tests/boss start straight in
+      the quiz — no demo reveal, tracing guide off (boss: guide locked off).
+      (`GradingConfig` re-tune against the full set remains a standing tuning task.)
+- [x] **Daily quest frame** per `04`/`10`: quest player + chest (XP tally + rank-up
+      replay; celebration art is the co-designer's, `TODO(son, S5)`).
+- [x] **Collection ranks** with lapse dimming + world unlock gating (80% Bronze+;
+      locked worlds stay browsable — gating applies to the guided track only).
+- [x] **Screens**: Quest Hub home (quest card, XP/level, days played, world strip),
+      Collection upgrade, minimal Settings (cap, toggles, reset). Browse search is
+      deferred to M5 with the radical browser (the worlds grid covers discovery).
+- [x] Smoke test: on-emulator quest end-to-end; next-day due queue verified by SRS
+      unit tests + device-clock check.
 
 **Definition of done (the demo):** come back tomorrow — the app greets you with a quest
 built from *your* due queue; finish it, open the chest, watch a character rank up — and

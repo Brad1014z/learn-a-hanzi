@@ -37,26 +37,5 @@ data class CharacterProgress(
     }
 }
 
-/**
- * Pre-SRS bookkeeping (M1): fold one completed practice into a character's progress,
- * recording facts without scheduling — the card stays LEARNING and "due now" until
- * SM-2 (M3, spec 06) takes over the interval/ease/state fields. `reps` counts
- * successes in a row (grade ≥ 3, the SM-2 convention); `lapses` counts grade < 3 on a
- * previously-seen card ("needing that much correction is forgetting", spec 05).
- */
-fun applyPractice(
-    previous: CharacterProgress?,
-    character: String,
-    grade: Int,
-    now: Long,
-): CharacterProgress {
-    require(grade in 0..5) { "grade must be 0..5, was $grade" }
-    val base = previous ?: CharacterProgress.initial(character, now)
-    return base.copy(
-        dueAt = now,
-        reps = if (grade >= 3) base.reps + 1 else 0,
-        lapses = base.lapses + if (previous != null && grade < 3) 1 else 0,
-        lastReviewedAt = now,
-        lastGrade = grade,
-    )
-}
+// M1's pre-SRS `applyPractice` placeholder was replaced by [SrsEngine.apply] in M3 —
+// same signature shape, real scheduling (spec 06).

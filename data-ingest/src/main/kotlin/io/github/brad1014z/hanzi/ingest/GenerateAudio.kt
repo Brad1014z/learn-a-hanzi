@@ -58,30 +58,62 @@ fun main() {
             .joinToString("") { "%02x".format(it) }
     }
 
-    var generated = 0
     val manifest = LinkedHashMap<String, String>()
-    for (text in texts) {
-        val hash = sha1(text)
-        manifest[hash] = text
-        val clip = File(outDir, "$hash.mp3")
-        if (clip.exists()) continue
+    for (text in texts) manifest[sha1(text)] = text
+
+    // Chirp3-HD voices have a tight per-minute quota: keep parallelism low, time out
+    // stuck connections, and back off on 429/5xx instead of dying mid-run. The task
+    // is resumable either way (existing clips are skipped).
+    fun synthesize(text: String): ByteArray {
         val body = buildJsonObject {
             putJsonObject("input") { put("text", text) }
             putJsonObject("voice") { put("languageCode", "cmn-CN"); put("name", voice) }
             putJsonObject("audioConfig") { put("audioEncoding", "MP3"); put("speakingRate", 0.85) }
         }
-        val response = client.send(
-            HttpRequest.newBuilder(URI.create("https://texttospeech.googleapis.com/v1/text:synthesize?key=$key"))
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(body.toString()))
-                .build(),
-            HttpResponse.BodyHandlers.ofString(),
-        )
-        check(response.statusCode() == 200) { "TTS failed for \"$text\": HTTP ${response.statusCode()} ${response.body().take(300)}" }
-        val audio = Json.parseToJsonElement(response.body()).jsonObject["audioContent"]!!.jsonPrimitive.content
-        clip.writeBytes(Base64.getDecoder().decode(audio))
-        generated++
-        if (generated % 50 == 0) println("…$generated clips")
+        val request = HttpRequest.newBuilder(URI.create("https://texttospeech.googleapis.com/v1/text:synthesize?key=$key"))
+            .header("Content-Type", "application/json")
+            .timeout(java.time.Duration.ofSeconds(30))
+            .POST(HttpRequest.BodyPublishers.ofString(body.toString()))
+            .build()
+        var backoffMs = 2_000L
+        repeat(6) { attempt ->
+            val response = runCatching { client.send(request, HttpResponse.BodyHandlers.ofString()) }
+                .getOrElse { e -> // timeout / transient IO: retry like a 5xx
+                    if (attempt == 5) throw e
+                    Thread.sleep(backoffMs); backoffMs *= 2
+                    return@repeat
+                }
+            when {
+                response.statusCode() == 200 -> {
+                    val audio = Json.parseToJsonElement(response.body())
+                        .jsonObject["audioContent"]!!.jsonPrimitive.content
+                    return Base64.getDecoder().decode(audio)
+                }
+                response.statusCode() == 429 || response.statusCode() >= 500 -> {
+                    println("HTTP ${response.statusCode()} for \"$text\" — backing off ${backoffMs / 1000}s")
+                    Thread.sleep(backoffMs); backoffMs *= 2
+                }
+                else -> error("TTS failed for \"$text\": HTTP ${response.statusCode()} ${response.body().take(300)}")
+            }
+        }
+        error("TTS failed for \"$text\": still throttled after 6 attempts")
+    }
+
+    val pool = java.util.concurrent.Executors.newFixedThreadPool(3)
+    val generated = java.util.concurrent.atomic.AtomicInteger()
+    val jobs = texts.map { text ->
+        pool.submit<Unit> {
+            val clip = File(outDir, "${sha1(text)}.mp3")
+            if (clip.exists()) return@submit
+            clip.writeBytes(synthesize(text))
+            val n = generated.incrementAndGet()
+            if (n % 50 == 0) println("…$n clips")
+        }
+    }
+    try {
+        jobs.forEach { it.get() } // rethrows the first failure
+    } finally {
+        pool.shutdownNow()
     }
 
     // manifest.json: sha1 → text, plus provenance under "_meta".

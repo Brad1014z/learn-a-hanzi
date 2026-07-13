@@ -25,8 +25,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
 import io.github.brad1014z.hanzi.data.CurriculumRow
 import io.github.brad1014z.hanzi.data.RoomContentRepository
+import io.github.brad1014z.hanzi.engine.play.Rank
+import io.github.brad1014z.hanzi.engine.play.RankState
+import io.github.brad1014z.hanzi.engine.play.Ranks
 import io.github.brad1014z.hanzi.engine.progress.CharacterProgress
 
 /**
@@ -39,6 +44,8 @@ import io.github.brad1014z.hanzi.engine.progress.CharacterProgress
 fun CharacterGridScreen(
     worlds: List<RoomContentRepository.World>,
     progress: Map<String, CharacterProgress> = emptyMap(),
+    unlockedWorlds: Int = Int.MAX_VALUE,
+    onBack: (() -> Unit)? = null,
     onCharacterTap: (String) -> Unit,
 ) {
     val total = worlds.sumOf { it.characters.size }
@@ -48,10 +55,15 @@ fun CharacterGridScreen(
             .safeDrawingPadding()
             .padding(horizontal = 16.dp, vertical = 8.dp),
     ) {
-        Text(
-            text = "Hanzi Prototype",
-            style = MaterialTheme.typography.headlineMedium,
-        )
+        androidx.compose.foundation.layout.Row(verticalAlignment = Alignment.CenterVertically) {
+            if (onBack != null) {
+                androidx.compose.material3.TextButton(onClick = onBack) { Text("‹ Home") }
+            }
+            Text(
+                text = "Collection",
+                style = MaterialTheme.typography.headlineMedium,
+            )
+        }
         Text(
             text = "$total characters in ${worlds.size} worlds · ${progress.size} practiced",
             style = MaterialTheme.typography.bodyMedium,
@@ -63,12 +75,13 @@ fun CharacterGridScreen(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            for (world in worlds) {
+            worlds.forEachIndexed { worldIndex, world ->
                 item(key = "world-${world.id}", span = { GridItemSpan(maxLineSpan) }) {
                     WorldHeader(
                         name = world.name,
-                        practiced = world.characters.count { it.character in progress },
-                        total = world.characters.size,
+                        locked = worldIndex >= unlockedWorlds,
+                        previousName = worlds.getOrNull(worldIndex - 1)?.name,
+                        mastery = Ranks.masteryFraction(world.characters.map { progress[it.character] }),
                     )
                 }
                 items(world.characters, key = { it.character }) { row ->
@@ -84,19 +97,24 @@ fun CharacterGridScreen(
 }
 
 @Composable
-private fun WorldHeader(name: String, practiced: Int, total: Int) {
+private fun WorldHeader(name: String, locked: Boolean, previousName: String?, mastery: Double) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(top = 12.dp, bottom = 2.dp),
     ) {
         Text(
-            text = name,
+            text = if (locked) "🔒 $name" else name,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
         )
         Spacer(Modifier.padding(4.dp))
         Text(
-            text = "$practiced / $total",
+            // Locked gates the guided track only — tiles stay browsable (spec 04).
+            text = if (locked && previousName != null) {
+                "unlocks at 80% Bronze in $previousName · free practice ok"
+            } else {
+                "${(mastery * 100).toInt()}% Bronze+"
+            },
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -105,12 +123,14 @@ private fun WorldHeader(name: String, practiced: Int, total: Int) {
 
 @Composable
 private fun CharacterTile(row: CurriculumRow, progress: CharacterProgress?, onTap: () -> Unit) {
+    // Rank colors are placeholders — collection art is the co-designer's M5 pass.
+    val rank: RankState = Ranks.of(progress)
     Surface(
         shape = RoundedCornerShape(16.dp),
-        color = if (progress != null) {
-            MaterialTheme.colorScheme.secondaryContainer
-        } else {
-            MaterialTheme.colorScheme.surfaceVariant
+        color = when {
+            rank.rank != Rank.NONE -> MaterialTheme.colorScheme.secondaryContainer
+            progress != null -> MaterialTheme.colorScheme.surfaceVariant // met, silhouette
+            else -> MaterialTheme.colorScheme.surfaceVariant
         },
         modifier = Modifier
             .aspectRatio(1f)
@@ -132,14 +152,22 @@ private fun CharacterTile(row: CurriculumRow, progress: CharacterProgress?, onTa
                     modifier = Modifier.padding(horizontal = 4.dp),
                 )
             }
-            if (progress != null) {
+            val badge = when (rank.rank) {
+                Rank.GOLD -> "★" to Color(0xFFDAA520)
+                Rank.SILVER -> "●" to Color(0xFF8E9BA6)
+                Rank.BRONZE -> "●" to Color(0xFFB07B4F)
+                Rank.NONE -> if (progress != null) "·" to MaterialTheme.colorScheme.onSurfaceVariant else null
+            }
+            badge?.let { (glyph, color) ->
                 Text(
-                    text = if (progress.lastGrade == 5) "★" else "✓",
-                    color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.labelMedium,
+                    text = glyph,
+                    color = color,
+                    style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .padding(6.dp),
+                        .padding(6.dp)
+                        // A lapse dims the rank until re-proven — asks, never scolds (spec 04).
+                        .alpha(if (rank.dimmed) 0.35f else 1f),
                 )
             }
         }
