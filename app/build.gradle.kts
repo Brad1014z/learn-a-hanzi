@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization) // @Serializable payloads (Outbox, profiles)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.room)
 }
 
 // The cloud layer lights up only when the Firebase config exists (docs/specs/12):
@@ -46,11 +47,20 @@ android {
     buildFeatures {
         compose = true
     }
+
+    testOptions {
+        unitTests {
+            // Robolectric harness for Room DAOs + migrations (spec 03/08).
+            isIncludeAndroidResources = true
+        }
+    }
+
 }
 
-ksp {
-    // Schema JSON checked in from v1 so future migrations are testable (spec 03).
-    arg("room.schemaLocation", "$projectDir/schemas")
+room {
+    // Schema JSON checked in from v1 so migrations are testable (spec 03); the Room
+    // plugin also feeds these to MigrationTestHelper as test assets.
+    schemaDirectory("$projectDir/schemas")
 }
 
 dependencies {
@@ -71,6 +81,11 @@ dependencies {
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services)
     implementation(libs.googleid)
+    testImplementation(libs.junit)
+    testImplementation(kotlin("test"))
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.core)
+    testImplementation(libs.kotlinx.coroutines.test)
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)
     implementation(libs.compose.material3)

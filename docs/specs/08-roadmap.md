@@ -178,7 +178,8 @@ old MVP definition, reached with content and audio already in place.
 - [x] **Data layer** (landed 2026-07-12): due-queue / introduced-today / days-played
       queries; XP in `Meta`; daily cap in DataStore; session tags distinguish guided
       quest steps from cap-exempt browse practice (`04`). (Room DAO/migration test
-      harness still owed — carried to M4 alongside the sync work.)
+      harness landed with M4: host-side Robolectric tests replay the checked-in
+      schema JSONs through the production migrations — no device needed, runs in CI.)
 - [x] **Domain:** `SrsEngine` (SM-2 + state machine + learning steps per `06`, fully
       unit-tested), `QuestBuilder`/`QuestSession` (warm-up → reviews → new → boss →
       chest with tail re-tests), `Ranks`, `XpConfig`/`Levels` — all pure, all tested.
