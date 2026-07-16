@@ -31,8 +31,13 @@ class RoomProgressRepository(private val db: HanziDatabase) : ProgressRepository
         db.withTransaction {
             val previous = dao.get(record.character)?.toModel()
             val updated = SrsEngine.apply(previous, record.character, record.grade, record.reviewedAt)
-            dao.insertLog(record.toEntity())
-            dao.upsert(updated.toEntity())
+            val log = record.toEntity(uuid = java.util.UUID.randomUUID().toString())
+            val progressEntity = updated.toEntity()
+            dao.insertLog(log)
+            dao.upsert(progressEntity)
+            // Queue for backup (spec 12 outbox); drained by the sync worker when
+            // signed in + online, pruned so a forever-signed-out device stays bounded.
+            Outbox.enqueueReview(db, log, progressEntity)
         }
     }
 
@@ -41,6 +46,12 @@ class RoomProgressRepository(private val db: HanziDatabase) : ProgressRepository
     suspend fun due(now: Long): List<CharacterProgress> = dao.due(now).map { it.toModel() }
 
     suspend fun progressOf(character: String): CharacterProgress? = dao.get(character)?.toModel()
+
+    // Restore-with-merge support (spec 12; used by the sync layer).
+    suspend fun allProgress(): Map<String, CharacterProgress> =
+        dao.allProgress().associate { it.character to it.toModel() }
+
+    suspend fun upsert(progress: CharacterProgress) = dao.upsert(progress.toEntity())
 
     suspend fun introducedToday(todayStart: Long): Int =
         dao.introducedSince(todayStart, Sessions.QUEST_NEW)
@@ -56,6 +67,23 @@ class RoomProgressRepository(private val db: HanziDatabase) : ProgressRepository
         return next
     }
 
+    /**
+     * Fold a finished quest into this week's board tally (ceilinged per session —
+     * spec 10/12) and queue the totals for upload. Returns the week's new total.
+     */
+    suspend fun addBoardXp(sessionXp: Int, now: Long = System.currentTimeMillis()): Int {
+        val weekId = io.github.brad1014z.hanzi.engine.social.Weeks.weekId(now)
+        val key = "$WEEK_XP_PREFIX$weekId"
+        val next = (db.metaDao().get(key)?.toIntOrNull() ?: 0) +
+            io.github.brad1014z.hanzi.engine.social.Weeks.boardXpForSession(sessionXp)
+        db.metaDao().put(MetaEntity(key, next.toString()))
+        Outbox.enqueueXp(db, total = xpTotal(), weekId = weekId, weekXp = next, now = now)
+        return next
+    }
+
+    suspend fun weekBoardXp(weekId: String): Int =
+        db.metaDao().get("$WEEK_XP_PREFIX$weekId")?.toIntOrNull() ?: 0
+
     /** Destructive manual reset (spec 04) — content tables untouched. */
     suspend fun resetProgress() {
         db.withTransaction {
@@ -67,6 +95,7 @@ class RoomProgressRepository(private val db: HanziDatabase) : ProgressRepository
 
     companion object {
         const val XP_KEY = "xpTotal"
+        const val WEEK_XP_PREFIX = "xpWeek:"
     }
 }
 
@@ -94,11 +123,12 @@ private fun CharacterProgress.toEntity() = CharacterProgressEntity(
     lastGrade = lastGrade,
 )
 
-private fun PracticeRecord.toEntity() = ReviewLogEntity(
+private fun PracticeRecord.toEntity(uuid: String) = ReviewLogEntity(
     character = character,
     reviewedAt = reviewedAt,
     grade = grade,
     drawnCorrectly = drawnCorrectly,
     durationMs = durationMs,
     session = session,
+    uuid = uuid,
 )

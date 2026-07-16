@@ -205,7 +205,11 @@ fun main() {
     val sentencesSorted = approved.sortedBy { it.character }
 
     // -- Write the asset ---------------------------------------------------------
-    val schemaJson = File(root, "app/schemas/io.github.brad1014z.hanzi.data.HanziDatabase/2.json")
+    // Always the newest exported Room schema, so the asset's identity hash matches
+    // what createFromAsset validates.
+    val schemaDir = File(root, "app/schemas/io.github.brad1014z.hanzi.data.HanziDatabase")
+    val schemaJson = schemaDir.listFiles { f -> f.extension == "json" }!!
+        .maxBy { it.nameWithoutExtension.toInt() }
     val target = File(root, "app/src/main/assets/databases/hanzi_v1.sqlite")
     SqliteWriter(schemaJson, target).write { conn ->
         conn.insert("Character (character, lang, pinyin, definition, radical, strokeCount, freqRank, decomposition, etymologyHint)", charRows) { st, r ->

@@ -33,7 +33,10 @@ data class CharacterProgressEntity(
 
 @Entity(
     tableName = "ReviewLog",
-    indices = [Index("character", "reviewedAt"), Index("reviewedAt")],
+    indices = [
+        Index("character", "reviewedAt"), Index("reviewedAt"),
+        Index("uuid", unique = true),
+    ],
 )
 data class ReviewLogEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
@@ -43,6 +46,17 @@ data class ReviewLogEntity(
     val drawnCorrectly: Boolean,
     val durationMs: Long?,
     val session: String?,
+    /** Client-generated UUID: the sync set-union key (spec 12, added M4/v3). */
+    @androidx.room.ColumnInfo(defaultValue = "") val uuid: String = "",
+)
+
+/** Queued uploads (spec 12's outbox), drained by WorkManager on connectivity. */
+@Entity(tableName = "SyncOutbox")
+data class SyncOutboxEntity(
+    @PrimaryKey val uuid: String, // idempotent retries
+    val kind: String, // "progress" | "reviewLog" | "xp"
+    val payload: String, // JSON, interpreted by kind
+    val createdAt: Long,
 )
 
 @Entity(tableName = "Meta")
@@ -83,9 +97,33 @@ interface ProgressDao {
     @Insert
     suspend fun insertLog(log: ReviewLogEntity)
 
+    /** Restore path (spec 12): union inserts must not trip the unique uuid index. */
+    @Insert(onConflict = androidx.room.OnConflictStrategy.IGNORE)
+    suspend fun insertLogIgnore(log: ReviewLogEntity)
+
     // Manual reset (spec 04: destructive, behind a confirmation).
     @Query("DELETE FROM CharacterProgress") suspend fun clearProgress()
     @Query("DELETE FROM ReviewLog") suspend fun clearLog()
+
+    // Sync support (spec 12, M4).
+    @Query("SELECT uuid FROM ReviewLog") suspend fun logUuids(): List<String>
+    @Query("SELECT * FROM ReviewLog") suspend fun allLogs(): List<ReviewLogEntity>
+    @Query("SELECT * FROM CharacterProgress") suspend fun allProgress(): List<CharacterProgressEntity>
+}
+
+@Dao
+interface OutboxDao {
+    @Insert(onConflict = androidx.room.OnConflictStrategy.IGNORE)
+    suspend fun enqueue(item: SyncOutboxEntity)
+
+    @Query("SELECT * FROM SyncOutbox ORDER BY createdAt LIMIT :limit")
+    suspend fun oldest(limit: Int = 100): List<SyncOutboxEntity>
+
+    @Query("DELETE FROM SyncOutbox WHERE uuid IN (:uuids)")
+    suspend fun delete(uuids: List<String>)
+
+    @Query("SELECT COUNT(*) FROM SyncOutbox")
+    suspend fun count(): Int
 }
 
 @Dao
@@ -100,17 +138,19 @@ interface MetaDao {
 @Database(
     entities = [
         CharacterProgressEntity::class, ReviewLogEntity::class, MetaEntity::class,
+        SyncOutboxEntity::class,
         CharacterEntity::class, CurriculumEntryEntity::class, StrokePathEntity::class,
         WordEntity::class, WordCharacterEntity::class,
         SentenceEntity::class, SentenceCharacterEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = true,
 )
 abstract class HanziDatabase : RoomDatabase() {
     abstract fun progressDao(): ProgressDao
     abstract fun metaDao(): MetaDao
     abstract fun contentDao(): ContentDao
+    abstract fun outboxDao(): OutboxDao
 
     companion object {
         /** Bundled dataset asset produced by `./gradlew :data-ingest:run` (spec 02). */
@@ -129,7 +169,7 @@ abstract class HanziDatabase : RoomDatabase() {
                 // reseed path instead — user data preservation is the inviolable rule
                 // (spec 03).
                 .createFromAsset(ASSET_PATH)
-                .addMigrations(MIGRATION_1_2)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                 .build().also { instance = it }
         }
     }
