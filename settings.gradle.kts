@@ -12,6 +12,12 @@ pluginManagement {
     }
 }
 
+plugins {
+    // Lets Gradle auto-provision the pinned build JDK (gradle-daemon-jvm.properties)
+    // on machines that don't have it — no more JAVA_HOME juggling.
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+}
+
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
