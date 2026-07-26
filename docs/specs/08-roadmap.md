@@ -178,7 +178,8 @@ old MVP definition, reached with content and audio already in place.
 - [x] **Data layer** (landed 2026-07-12): due-queue / introduced-today / days-played
       queries; XP in `Meta`; daily cap in DataStore; session tags distinguish guided
       quest steps from cap-exempt browse practice (`04`). (Room DAO/migration test
-      harness still owed — carried to M4 alongside the sync work.)
+      harness landed with M4: host-side Robolectric tests replay the checked-in
+      schema JSONs through the production migrations — no device needed, runs in CI.)
 - [x] **Domain:** `SrsEngine` (SM-2 + state machine + learning steps per `06`, fully
       unit-tested), `QuestBuilder`/`QuestSession` (warm-up → reviews → new → boss →
       chest with tail re-tests), `Ranks`, `XpConfig`/`Levels` — all pure, all tested.
@@ -207,16 +208,24 @@ and the demo-day friends are the natural first beta cohort (`12` open question �
 answered: yes). The constitution is unchanged — everything keeps working offline and
 signed out, forever.
 
-- [ ] Google sign-in (Credential Manager + Firebase Auth); generated display name +
-      preset avatar; calm entry points (`07` Flow F).
-- [ ] Progress sync/backup: outbox + WorkManager drain; merge rules per `12`
-      (latest-review wins, append-only log union); restore on fresh install.
-- [ ] Friends via mutual code/QR; Profile & Friends screen (`07` #8).
-- [ ] Weekly friends XP board (ceilinged); daily duel + set duel challenges; Cloud
-      Function bounds validation; preset reactions only.
-- [ ] Badge-backup sync path built ready (badges themselves arrive in M5).
-- [ ] Account deletion (hard purge function); security rules reviewed; fakes so all
-      social UI tests run offline; the airplane-mode regression suite passes untouched.
+- [x] Google sign-in (Credential Manager + Firebase Auth, landed 2026-07-12);
+      generated display name + preset avatar + rotatable friend code; the cloud layer
+      activates only when `app/google-services.json` exists — CI and fresh checkouts
+      build the offline fakes ("preview mode", clearly labeled).
+- [x] Progress sync/backup: ReviewLog uuid (schema v3) + SyncOutbox drained by
+      WorkManager on connectivity; merge rules per `12` as pure tested functions
+      (latest-review wins, log union, XP never decreases); restore-on-sign-in.
+- [x] Friends via mutual code (share-sheet text; QR is an M4.5 nicety); Family screen
+      (`07` #8): my card, add-by-code, confirm/remove, weekly board.
+- [x] Weekly friends XP board — ceilinged per session, client-written, rules-bounded.
+      *(M4.5: duels/challenges, preset reactions, Cloud Function validation + weekly
+      aggregation, account-deletion purge — needs the Blaze plan; see `12`.)*
+- [x] Firestore security rules checked in (`firebase/firestore.rules`): own-subtree
+      writes, edge-gated reads, no enumeration; console checklist in
+      `firebase/README.md`.
+- [x] Offline fakes power every social surface with no Firebase project; the
+      signed-out, airplane-mode experience is untouched (INTERNET is now the app's
+      single permission, used only by the optional layer).
 
 **Definition of done (the demo):** dad's and the sons' phones befriend by QR and share
 one weekly board; a demo-day friend joins in under a minute; a third, signed-out phone

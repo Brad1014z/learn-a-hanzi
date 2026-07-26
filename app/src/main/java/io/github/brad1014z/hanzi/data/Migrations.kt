@@ -57,3 +57,19 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
         db.execSQL("CREATE INDEX IF NOT EXISTS `index_SentenceCharacter_character` ON `SentenceCharacter` (`character`)")
     }
 }
+
+/**
+ * v2 → v3 (M4, spec 12): ReviewLog gains the sync set-union `uuid` (backfilled for
+ * existing rows) and the SyncOutbox table arrives. SQL mirrors app/schemas/3.json.
+ */
+val MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE `ReviewLog` ADD COLUMN `uuid` TEXT NOT NULL DEFAULT ''")
+        db.execSQL("UPDATE `ReviewLog` SET `uuid` = lower(hex(randomblob(16))) WHERE `uuid` = ''")
+        db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_ReviewLog_uuid` ON `ReviewLog` (`uuid`)")
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `SyncOutbox` (`uuid` TEXT NOT NULL, `kind` TEXT NOT NULL, " +
+                "`payload` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, PRIMARY KEY(`uuid`))",
+        )
+    }
+}

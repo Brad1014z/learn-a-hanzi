@@ -51,6 +51,7 @@ fun QuestHubScreen(
     nextWorldName: String?,
     onStartQuest: () -> Unit,
     onCollection: () -> Unit,
+    onFamily: () -> Unit,
     onSettings: () -> Unit,
 ) {
     Column(
@@ -160,6 +161,9 @@ fun QuestHubScreen(
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             OutlinedButton(onClick = onCollection, modifier = Modifier.weight(1f)) {
                 Text("Collection")
+            }
+            OutlinedButton(onClick = onFamily, modifier = Modifier.weight(1f)) {
+                Text("Family")
             }
             OutlinedButton(onClick = onSettings, modifier = Modifier.weight(1f)) {
                 Text("Settings")

@@ -1,0 +1,83 @@
+rules_version = '2';
+
+// Security rules for the M4 free-tier cloud slice (docs/specs/12).
+// Deploy: Firebase console → Firestore → Rules → paste, or `firebase deploy --only firestore:rules`.
+//
+// Shape: a user writes only their own subtree; friend data is readable only across a
+// confirmed edge; friend codes resolve to a uid but never enumerate; everything else
+// is denied. Challenge/duel collections arrive with M4.5 (Cloud Functions).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function isMe(uid) { return signedIn() && request.auth.uid == uid; }
+
+    // Edge doc id is "<uidA>_<uidB>" with uidA < uidB (client convention).
+    function edgeId(a, b) { return a < b ? a + '_' + b : b + '_' + a; }
+    function edgeConfirmed(a, b) {
+      return exists(/databases/$(database)/documents/friendEdges/$(edgeId(a, b))) &&
+        get(/databases/$(database)/documents/friendEdges/$(edgeId(a, b))).data.confirmedAt != null;
+    }
+    function edgeExists(a, b) {
+      return exists(/databases/$(database)/documents/friendEdges/$(edgeId(a, b)));
+    }
+
+    match /users/{uid} {
+      // Profile fields are readable by the owner and anyone holding a pending or
+      // confirmed edge (the adder creates the edge first, then reads the name). The
+      // profile contains ONLY the generated identity (spec 12), never the Google
+      // account. No list rule → uids and codes cannot be enumerated.
+      allow read: if isMe(uid) || (signedIn() && edgeExists(request.auth.uid, uid));
+      allow write: if isMe(uid);
+
+      match /progress/{char} {
+        allow read, write: if isMe(uid); // backup is private
+      }
+      match /reviewLog/{entry} {
+        allow read, write: if isMe(uid);
+      }
+      match /weeklyXp/{week} {
+        // Friends read each other's board entries; only the owner writes, and only
+        // sane values (numeric, non-negative, bounded — a soft server-side guard
+        // until M4.5's Functions add real validation).
+        allow read: if isMe(uid) || (signedIn() && edgeConfirmed(request.auth.uid, uid));
+        allow write: if isMe(uid) &&
+          request.resource.data.xp is int &&
+          request.resource.data.xp >= 0 &&
+          request.resource.data.xp <= 20000;
+      }
+    }
+
+    match /friendCodes/{code} {
+      // Anyone signed in may resolve a code they were handed (that is the entire
+      // connection ceremony); no list queries, so codes cannot be enumerated.
+      allow get: if signedIn();
+      allow list: if false;
+      // Only the owner may claim/rotate their code doc.
+      allow create, update: if signedIn() && request.resource.data.uid == request.auth.uid;
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    match /friendEdges/{edge} {
+      // Both parties can read; either party may create the request naming itself as
+      // requestedBy; only the party who did NOT request may confirm; either may delete
+      // (silent removal, spec 12).
+      allow read: if signedIn() &&
+        (resource.data.uidA == request.auth.uid || resource.data.uidB == request.auth.uid);
+      allow create: if signedIn() &&
+        request.resource.data.requestedBy == request.auth.uid &&
+        (request.resource.data.uidA == request.auth.uid || request.resource.data.uidB == request.auth.uid) &&
+        request.resource.data.confirmedAt == null;
+      allow update: if signedIn() &&
+        (resource.data.uidA == request.auth.uid || resource.data.uidB == request.auth.uid) &&
+        resource.data.requestedBy != request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['confirmedAt']);
+      allow delete: if signedIn() &&
+        (resource.data.uidA == request.auth.uid || resource.data.uidB == request.auth.uid);
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

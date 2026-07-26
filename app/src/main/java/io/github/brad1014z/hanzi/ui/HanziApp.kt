@@ -28,6 +28,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.brad1014z.hanzi.cloud.Cloud
+import io.github.brad1014z.hanzi.cloud.SyncWorker
 import io.github.brad1014z.hanzi.data.DatasetSeeder
 import io.github.brad1014z.hanzi.data.HanziDatabase
 import io.github.brad1014z.hanzi.data.RoomContentRepository
@@ -58,7 +60,7 @@ object PracticeColors {
     val faintTarget = Color(0x1A888888)
 }
 
-private enum class Screen { HOME, COLLECTION, QUEST, SETTINGS }
+private enum class Screen { HOME, COLLECTION, QUEST, SETTINGS, FAMILY }
 
 /** Everything the Quest Hub shows, recomputed whenever progress changes. */
 private data class HubState(
@@ -92,6 +94,7 @@ fun HanziApp() {
                 }
             }
             val db = remember { HanziDatabase.get(context) }
+            val cloud = remember { Cloud.get(context) }
             val progressRepository = remember { RoomProgressRepository(db) }
             val contentRepository = remember { RoomContentRepository(db) }
             val settings = remember { SettingsStore(context) }
@@ -194,6 +197,7 @@ fun HanziApp() {
                                 screen = Screen.QUEST
                             },
                             onCollection = { screen = Screen.COLLECTION },
+                            onFamily = { screen = Screen.FAMILY },
                             onSettings = { screen = Screen.SETTINGS },
                         )
                     }
@@ -213,7 +217,11 @@ fun HanziApp() {
                             speechAvailable = speechAvailable,
                             autoPlay = autoPlay,
                             onSoundToggle = { on -> scope.launch { settings.setSound(on) } },
-                            onFinished = { _, _ ->
+                            onFinished = { xpEarned, _ ->
+                                scope.launch {
+                                    progressRepository.addBoardXp(xpEarned)
+                                    SyncWorker.kickNow(context)
+                                }
                                 questPlan = null
                                 refresh++
                                 screen = Screen.HOME
@@ -225,6 +233,11 @@ fun HanziApp() {
                             },
                         )
                     }
+                }
+
+                Screen.FAMILY -> {
+                    BackHandler { screen = Screen.HOME }
+                    FamilyScreen(cloud = cloud, onBack = { screen = Screen.HOME })
                 }
 
                 Screen.SETTINGS -> {

@@ -12,7 +12,9 @@ brings a quest and a shareable challenge. Co-built by a father-son team.
 
 ## Build & run
 
-Requirements: JDK 17+, Android SDK (a `local.properties` with `sdk.dir`, or Android Studio).
+Requirements: any installed JDK to launch Gradle (the build itself is pinned to
+JDK 17 via `gradle/gradle-daemon-jvm.properties` and auto-provisioned if missing),
+Android SDK (a `local.properties` with `sdk.dir`, or Android Studio).
 
 ```bash
 ./gradlew test                 # engine unit tests incl. the grading golden corpus

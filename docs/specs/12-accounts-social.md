@@ -1,8 +1,12 @@
 # 12 — Accounts, Sync & Social
 
 > **Status:** ACCEPTED (2026-07-06; rescheduled 2026-07-09 — now roadmap milestone
-> **M4**, pulled ahead of the polish work: the weekly family board lands right after
-> the core loop + XP exist, see `08`. Content unchanged.)
+> **M4**, see `08`; amended 2026-07-12 — **M4 ships the free-tier slice**: sign-in,
+> sync/backup, friends by code, weekly board. Each client writes its own *ceilinged*
+> weekly XP doc (rules-bounded) instead of a Cloud Function aggregating — Functions
+> require the paid Blaze plan, so **challenges/duels + server-side validation +
+> account-deletion purge move to M4.5**. Firestore rules live in
+> `firebase/firestore.rules`; console setup in `firebase/README.md`.)
 > The optional cloud layer: Google sign-in, progress sync, friends challenges, badge
 > backup, and the audio-generation pipeline's service notes. **Nothing here is required
 > to learn or play** — the app is fully functional offline and signed-out, forever
