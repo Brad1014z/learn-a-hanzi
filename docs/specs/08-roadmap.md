@@ -1,5 +1,9 @@
 # 08 — Roadmap
 
+> **M4.1 amendment (2026-08-23):** The current release path is
+> [`M4.1 First Ten Minutes`](../milestones/m4.1-release-gates.md). Social/cloud and iOS are
+> frozen. Older completion labels below are historical and do not authorize distribution.
+
 > **Status:** ACCEPTED (reviewed 2026-07-05; amended 2026-07-05 — family prototype & play
 > layer; amended 2026-07-06 — cloud layer inserted; **rewritten 2026-07-09 — Phases 1–4
 > re-sliced into milestone lanes M1–M5** so every milestone ends in something visible on

@@ -49,7 +49,7 @@ object Outbox {
         )
         outbox.enqueue(
             SyncOutboxEntity(
-                uuid = "progress-${progress.character}-${log.reviewedAt}",
+                uuid = "progress-${progress.character}-${log.uuid}",
                 kind = KIND_PROGRESS,
                 payload = json.encodeToString(
                     ProgressPayload(
@@ -64,10 +64,17 @@ object Outbox {
         prune(db)
     }
 
-    suspend fun enqueueXp(db: HanziDatabase, total: Int, weekId: String, weekXp: Int, now: Long) {
+    suspend fun enqueueXp(
+        db: HanziDatabase,
+        total: Int,
+        weekId: String,
+        weekXp: Int,
+        now: Long,
+        idempotencyKey: String = "xp-$weekId-$now",
+    ) {
         db.outboxDao().enqueue(
             SyncOutboxEntity(
-                uuid = "xp-$weekId-$now",
+                uuid = idempotencyKey,
                 kind = KIND_XP,
                 payload = json.encodeToString(XpPayload(total, weekId, weekXp)),
                 createdAt = now,

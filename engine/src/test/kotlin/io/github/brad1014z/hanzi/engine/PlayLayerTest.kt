@@ -127,6 +127,56 @@ class PlayLayerTest {
         assertTrue(plan.steps.none { it is QuestStep.NewChar })
     }
 
+    @Test
+    fun `complete beginner core is exactly Shape Shift with person big sky`() {
+        val daily = QuestBuilder.buildDaily(
+            due = emptyList(),
+            newCandidates = listOf("的", "天", "人", "大", "一"),
+            introducedToday = 0,
+        )
+
+        assertEquals("Shape Shift", daily.title)
+        assertEquals(listOf("人", "大", "天"), daily.core.newCharacters)
+        assertEquals(listOf("的", "一"), daily.bonus?.newCharacters)
+    }
+
+    @Test
+    fun `daily rhythm offers three core plus two optional and never a sixth`() {
+        val daily = QuestBuilder.buildDaily(
+            due = emptyList(),
+            newCandidates = listOf("一", "二", "三", "四", "五", "六"),
+            introducedToday = 0,
+        )
+
+        assertEquals(3, daily.core.newCharacters.size)
+        assertEquals(2, daily.bonus?.newCharacters?.size)
+        assertEquals(5, daily.core.newCharacters.size + daily.bonus!!.newCharacters.size)
+        assertTrue("六" !in daily.core.newCharacters + daily.bonus!!.newCharacters)
+    }
+
+    @Test
+    fun `characters already introduced today consume the five character ceiling`() {
+        val daily = QuestBuilder.buildDaily(
+            due = emptyList(),
+            newCandidates = listOf("一", "二", "三", "四", "五"),
+            introducedToday = 4,
+        )
+
+        assertEquals(1, daily.core.newCharacters.size)
+        assertEquals(null, daily.bonus)
+    }
+
+    @Test
+    fun `backlog keeps every due review and suppresses core and bonus new cards`() {
+        val due = (1..101).map { due("字$it", 1.0, t0 - it) }
+        val daily = QuestBuilder.buildDaily(due, listOf("人", "大", "天", "一", "二"), 0)
+
+        assertTrue(daily.core.backlogWarning)
+        assertTrue(daily.core.newCharacters.isEmpty())
+        assertEquals(null, daily.bonus)
+        assertEquals(101, daily.core.steps.count { it is QuestStep.WarmUp || it is QuestStep.Review })
+    }
+
     // ----- Quest session (re-tests at the tail, XP, chest) ------------------------
 
     @Test

@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -25,9 +24,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.brad1014z.hanzi.engine.data.CharacterData
-import io.github.brad1014z.hanzi.engine.data.ExampleSentence
-import io.github.brad1014z.hanzi.engine.data.Phrase
 import io.github.brad1014z.hanzi.engine.speech.SpeechService
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 
 /**
  * Character Detail — the recap step shown after writing practice (spec 07 screen 2).
@@ -45,11 +46,15 @@ fun CharacterDetailScreen(
     onPractice: () -> Unit,
     onExit: () -> Unit,
 ) {
+    val lesson = checkNotNull(character.lessonContent) {
+        "Character detail requires the LessonContent contract"
+    }
+    var showMoreReadings by remember(character.character) { mutableStateOf(false) }
     // Auto-play the character's reading when the intro opens (spec: hear it on load).
     LaunchedEffect(character.character) {
         if (autoPlay && speechAvailable) {
             kotlinx.coroutines.delay(250)
-            speech.speak(character.character, "zh-Hans")
+            speech.speak(lesson.pronunciationAudio.spokenText, "zh-Hans")
         }
     }
 
@@ -81,7 +86,7 @@ fun CharacterDetailScreen(
                 fontSize = 120.sp,
                 modifier = Modifier
                     .clickable(enabled = speechAvailable) {
-                        speech.speak(character.character, "zh-Hans")
+                        speech.speak(lesson.pronunciationAudio.spokenText, "zh-Hans")
                     },
             )
             if (speechAvailable) {
@@ -90,7 +95,7 @@ fun CharacterDetailScreen(
         }
 
         Text(
-            text = character.pinyin.joinToString(", "),
+            text = lesson.primaryReading.pinyin,
             style = MaterialTheme.typography.headlineSmall,
             modifier = Modifier
                 .fillMaxWidth()
@@ -98,7 +103,7 @@ fun CharacterDetailScreen(
             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
         )
         Text(
-            text = character.definition.ifBlank { character.shortDefinition },
+            text = lesson.learnerGloss,
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier
@@ -107,35 +112,35 @@ fun CharacterDetailScreen(
             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
         )
 
-        if (character.phrases.isNotEmpty()) {
-            Text(
-                text = "Words with ${character.character}",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 8.dp),
-            )
-            for (phrase in character.phrases) {
-                PhraseRow(
-                    phrase = phrase,
-                    speechAvailable = speechAvailable,
-                    onPlay = { speech.speak(phrase.phrase, "zh-Hans") },
-                )
-                Spacer(Modifier.padding(4.dp))
+        if (lesson.secondaryReadings.isNotEmpty()) {
+            TextButton(onClick = { showMoreReadings = !showMoreReadings }) {
+                Text(if (showMoreReadings) "Hide more readings" else "More readings")
             }
+            if (showMoreReadings) Text(
+                text = lesson.secondaryReadings.joinToString(", "),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
 
-        character.sentence?.let { sentence ->
+        lesson.usageExample?.let { example ->
             Text(
-                text = "Say it!",
+                text = "In use",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 12.dp, bottom = 8.dp),
             )
-            SentenceCard(
-                sentence = sentence,
-                speechAvailable = speechAvailable,
-                onPlay = { speech.speak(sentence.text, "zh-Hans") },
-            )
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = MaterialTheme.colorScheme.secondaryContainer,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Column(Modifier.padding(14.dp)) {
+                    Text(example.text, fontSize = 24.sp)
+                    Text(example.segmentedPinyin, style = MaterialTheme.typography.bodyMedium)
+                    Text(example.translation, style = MaterialTheme.typography.bodyMedium)
+                }
+            }
         }
 
         Spacer(Modifier.padding(12.dp))
@@ -143,92 +148,5 @@ fun CharacterDetailScreen(
             onClick = onPractice,
             modifier = Modifier.fillMaxWidth(),
         ) { Text(practiceLabel) }
-    }
-}
-
-@Composable
-private fun SentenceCard(sentence: ExampleSentence, speechAvailable: Boolean, onPlay: () -> Unit) {
-    // Same tap-anywhere-to-play target as phrases (spec 07); sentence provenance is
-    // shown honestly (spec 02: LLM-generated content is marked as such).
-    Surface(
-        shape = RoundedCornerShape(12.dp),
-        color = MaterialTheme.colorScheme.secondaryContainer,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(enabled = speechAvailable, onClick = onPlay),
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(sentence.text, fontSize = 24.sp)
-                sentence.pinyin?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                sentence.english?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                if (sentence.source == "llm") {
-                    Text(
-                        text = "AI-written · family-checked",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = 4.dp),
-                    )
-                }
-            }
-            if (speechAvailable) {
-                Spacer(Modifier.width(8.dp))
-                Text("🔊", fontSize = 24.sp)
-            }
-        }
-    }
-}
-
-@Composable
-private fun PhraseRow(phrase: Phrase, speechAvailable: Boolean, onPlay: () -> Unit) {
-    // Tapping anywhere on the row plays it — a big, kid-friendly target (spec 07).
-    Surface(
-        shape = RoundedCornerShape(12.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(enabled = speechAvailable, onClick = onPlay),
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.Bottom) {
-                    Text(phrase.phrase, fontSize = 26.sp)
-                    Text(
-                        text = phrase.pinyin,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(start = 10.dp, bottom = 3.dp),
-                    )
-                }
-                Text(
-                    text = phrase.english,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                )
-            }
-            if (speechAvailable) {
-                Spacer(Modifier.width(8.dp))
-                Text("🔊", fontSize = 24.sp)
-            }
-        }
     }
 }

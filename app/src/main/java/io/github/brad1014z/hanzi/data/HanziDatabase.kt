@@ -97,6 +97,12 @@ interface ProgressDao {
     @Insert
     suspend fun insertLog(log: ReviewLogEntity)
 
+    @Insert(onConflict = androidx.room.OnConflictStrategy.IGNORE)
+    suspend fun insertLogIdempotent(log: ReviewLogEntity): Long
+
+    @Query("SELECT * FROM ReviewLog WHERE uuid = :uuid LIMIT 1")
+    suspend fun logByUuid(uuid: String): ReviewLogEntity?
+
     /** Restore path (spec 12): union inserts must not trip the unique uuid index. */
     @Insert(onConflict = androidx.room.OnConflictStrategy.IGNORE)
     suspend fun insertLogIgnore(log: ReviewLogEntity)
@@ -124,6 +130,9 @@ interface OutboxDao {
 
     @Query("SELECT COUNT(*) FROM SyncOutbox")
     suspend fun count(): Int
+
+    @Query("DELETE FROM SyncOutbox")
+    suspend fun clearAll()
 }
 
 @Dao
@@ -133,6 +142,15 @@ interface MetaDao {
 
     @Upsert
     suspend fun put(meta: MetaEntity)
+
+    @Query(
+        "DELETE FROM Meta WHERE `key` = 'xpTotal' OR `key` LIKE 'xpWeek:%' " +
+            "OR `key` LIKE 'quest:%' OR `key` LIKE 'restore:%' OR `key` LIKE 'sync:%'",
+    )
+    suspend fun clearProgressMetadata()
+
+    @Query("SELECT * FROM Meta")
+    suspend fun all(): List<MetaEntity>
 }
 
 @Database(

@@ -18,6 +18,7 @@ import io.github.brad1014z.hanzi.data.MetaEntity
 import io.github.brad1014z.hanzi.data.Outbox
 import io.github.brad1014z.hanzi.data.ReviewLogEntity
 import io.github.brad1014z.hanzi.data.RoomProgressRepository
+import io.github.brad1014z.hanzi.data.RoomQuestStore
 import io.github.brad1014z.hanzi.engine.progress.CharacterProgress
 import io.github.brad1014z.hanzi.engine.progress.SrsState
 import io.github.brad1014z.hanzi.engine.social.AccountRepository
@@ -361,6 +362,7 @@ class FirestoreSyncRepository(private val room: HanziDatabase) : SyncRepository 
 
     override suspend fun restore() {
         val uid = auth.currentUser?.uid ?: return
+        if (room.metaDao().get(RoomQuestStore.RESTORE_BLOCKED_KEY) == "true") return
         val user = db.collection("users").document(uid)
         val progressRepo = RoomProgressRepository(room)
 

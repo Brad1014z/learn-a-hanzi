@@ -25,20 +25,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 /**
- * Minimal Settings (spec 07 screen 7, M3 slice): daily cap, audio toggles, and the
+ * Minimal Settings (spec 07 screen 7): audio toggles, debug-only pilot controls, and
  * destructive reset behind a confirmation (spec 04). Theme/TTS-picker/credits come
  * with later milestones.
  */
 @Composable
 fun SettingsScreen(
-    dailyCap: Int,
     soundOn: Boolean,
     autoPlay: Boolean,
     datasetVersion: String?,
-    onDailyCap: (Int) -> Unit,
+    pilotToolsEnabled: Boolean = false,
+    pilotExportConsent: Boolean = false,
+    pilotFacilitatorLabel: String = "unlabeled",
     onSound: (Boolean) -> Unit,
     onAutoPlay: (Boolean) -> Unit,
     onResetProgress: () -> Unit,
+    onPilotExportConsent: (Boolean) -> Unit = {},
+    onPilotFacilitatorLabel: (String) -> Unit = {},
     onBack: () -> Unit,
 ) {
     var confirmReset by remember { mutableStateOf(false) }
@@ -55,31 +58,37 @@ fun SettingsScreen(
         }
         Text("Settings", style = MaterialTheme.typography.headlineMedium)
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 20.dp),
-        ) {
-            Column(Modifier.weight(1f)) {
-                Text("New characters per day", fontWeight = FontWeight.Bold)
-                Text(
-                    "The quest never forces more — reviews are always uncapped.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            OutlinedButton(onClick = { onDailyCap(dailyCap - 1) }, enabled = dailyCap > 1) { Text("−") }
-            Text(
-                "$dailyCap",
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(horizontal = 12.dp),
-            )
-            OutlinedButton(onClick = { onDailyCap(dailyCap + 1) }, enabled = dailyCap < 30) { Text("+") }
-        }
-
         SettingSwitch("Sound effects", soundOn, onSound)
         SettingSwitch("Auto-play audio", autoPlay, onAutoPlay)
+
+        if (pilotToolsEnabled) {
+            SettingSwitch("Local pilot stroke export", pilotExportConsent, onPilotExportConsent)
+            Text(
+                "Consent required. Stores pseudonymous stroke data on this phone only; nothing uploads.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            if (pilotExportConsent) {
+                Text(
+                    "Facilitator label",
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(top = 12.dp),
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    listOf(
+                        "unlabeled" to "Unlabeled",
+                        "honest" to "Honest",
+                        "wrong-direction-order" to "Deliberate error",
+                    ).forEach { (value, label) ->
+                        OutlinedButton(
+                            onClick = { onPilotFacilitatorLabel(value) },
+                            enabled = pilotFacilitatorLabel != value,
+                            modifier = Modifier.weight(1f),
+                        ) { Text(label) }
+                    }
+                }
+            }
+        }
 
         Spacer(Modifier.weight(1f))
         datasetVersion?.let {
@@ -100,7 +109,9 @@ fun SettingsScreen(
         AlertDialog(
             onDismissRequest = { confirmReset = false },
             title = { Text("Reset all progress?") },
-            text = { Text("Every rank, review, and XP goes back to zero. The characters stay. This cannot be undone.") },
+            text = {
+                Text("Every review and learning milestone goes back to zero. The characters stay. This cannot be undone.")
+            },
             confirmButton = {
                 TextButton(onClick = { confirmReset = false; onResetProgress() }) {
                     Text("Reset", color = MaterialTheme.colorScheme.error)

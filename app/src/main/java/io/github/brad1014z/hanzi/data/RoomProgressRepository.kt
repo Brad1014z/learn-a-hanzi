@@ -86,11 +86,7 @@ class RoomProgressRepository(private val db: HanziDatabase) : ProgressRepository
 
     /** Destructive manual reset (spec 04) — content tables untouched. */
     suspend fun resetProgress() {
-        db.withTransaction {
-            dao.clearProgress()
-            dao.clearLog()
-            db.metaDao().put(MetaEntity(XP_KEY, "0"))
-        }
+        RoomQuestStore(db).resetAllProgress()
     }
 
     companion object {
@@ -99,7 +95,7 @@ class RoomProgressRepository(private val db: HanziDatabase) : ProgressRepository
     }
 }
 
-private fun CharacterProgressEntity.toModel() = CharacterProgress(
+internal fun CharacterProgressEntity.toModel() = CharacterProgress(
     character = character,
     state = SrsState.valueOf(state),
     dueAt = dueAt,
@@ -111,7 +107,7 @@ private fun CharacterProgressEntity.toModel() = CharacterProgress(
     lastGrade = lastGrade,
 )
 
-private fun CharacterProgress.toEntity() = CharacterProgressEntity(
+internal fun CharacterProgress.toEntity() = CharacterProgressEntity(
     character = character,
     state = state.name,
     dueAt = dueAt,

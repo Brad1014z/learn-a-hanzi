@@ -26,10 +26,71 @@ sealed interface QuestStep {
 
 data class QuestPlan(val steps: List<QuestStep>, val backlogWarning: Boolean) {
     val isEmpty: Boolean get() = steps.isEmpty()
+
+    val newCharacters: List<String>
+        get() = steps.filterIsInstance<QuestStep.NewChar>().map { it.character }
 }
+
+/**
+ * One day is deliberately split into a complete core and an optional bonus. Finishing
+ * [core] is the whole daily commitment; [bonus] is never required for completion.
+ */
+data class DailyQuestPlan(
+    val title: String,
+    val core: QuestPlan,
+    val bonus: QuestPlan?,
+)
 
 object QuestBuilder {
     const val BACKLOG_THRESHOLD = 100
+    const val CORE_NEW_CHARACTER_LIMIT = 3
+    const val BONUS_NEW_CHARACTER_LIMIT = 2
+    const val DAILY_NEW_CHARACTER_LIMIT = CORE_NEW_CHARACTER_LIMIT + BONUS_NEW_CHARACTER_LIMIT
+
+    /** The complete-beginner opening is content-designed, not frequency-generated. */
+    val STARTER_ORDER: List<String> = listOf("人", "大", "天")
+
+    /**
+     * Builds the fixed three-plus-two rhythm. Due reviews are never capped. A backlog
+     * suppresses both new-character portions, and characters already introduced today
+     * reduce the absolute five-character headroom.
+     */
+    fun buildDaily(
+        due: List<CharacterProgress>,
+        newCandidates: List<String>,
+        introducedToday: Int,
+        backlogThreshold: Int = BACKLOG_THRESHOLD,
+    ): DailyQuestPlan {
+        val orderedCandidates = starterFirst(newCandidates)
+        val headroom = (DAILY_NEW_CHARACTER_LIMIT - introducedToday).coerceAtLeast(0)
+        val coreNewCount = minOf(CORE_NEW_CHARACTER_LIMIT, headroom)
+        val core = build(
+            due = due,
+            newCandidates = orderedCandidates,
+            remainingNewCap = coreNewCount,
+            backlogThreshold = backlogThreshold,
+        )
+        val bonusCandidates = orderedCandidates.drop(core.newCharacters.size)
+        val bonusHeadroom = (headroom - core.newCharacters.size)
+            .coerceAtMost(BONUS_NEW_CHARACTER_LIMIT)
+            .coerceAtLeast(0)
+        val bonus = if (!core.backlogWarning && bonusHeadroom > 0 && bonusCandidates.isNotEmpty()) {
+            build(
+                due = emptyList(),
+                newCandidates = bonusCandidates,
+                remainingNewCap = bonusHeadroom,
+                backlogThreshold = backlogThreshold,
+            ).takeUnless { it.isEmpty }
+        } else {
+            null
+        }
+        return DailyQuestPlan(title = "Shape Shift", core = core, bonus = bonus)
+    }
+
+    private fun starterFirst(candidates: List<String>): List<String> {
+        val candidateSet = candidates.toSet()
+        return STARTER_ORDER.filter { it in candidateSet } + candidates.filterNot { it in STARTER_ORDER }
+    }
 
     /**
      * [due]: cards with dueAt ≤ now. [newCandidates]: unlocked-world characters with no
@@ -113,6 +174,14 @@ data class QuestSession(
             xpEarned = xpEarned + xp,
             reTestCounts = if (needsReTest) reTestCounts + (step.character to count + 1) else reTestCounts,
         )
+    }
+
+    fun xpForCurrentStep(): Int = when (current) {
+        is QuestStep.WarmUp -> XpConfig.WARM_UP
+        is QuestStep.Review, is QuestStep.ReTest -> XpConfig.REVIEW_CLEARED
+        is QuestStep.NewChar -> XpConfig.NEW_CHARACTER
+        is QuestStep.Boss -> XpConfig.BOSS_ATTEMPTED
+        null -> 0
     }
 
     fun openChest(): QuestSession {

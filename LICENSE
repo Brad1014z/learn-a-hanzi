@@ -13,20 +13,20 @@ see docs/specs/02-data-sources.md (sections "License obligations summary" and th
 
 2. DERIVED LEARNING DATA (the bundled SQLite dataset)
    ---------------------------------------------------
-   Built from open datasets, each under its own license. The combined dataset inherits the
-   most restrictive applicable terms (likely CC-BY-SA 3.0 share-alike from CC-CEDICT, plus
-   the Arphic Public License conditions from make-me-a-hanzi graphics). Confirm before
-   redistribution.
+   NO REDISTRIBUTION CONCLUSION HAS BEEN MADE. Repository notes currently disagree about
+   some upstream license versions and file-level coverage. Do not distribute the bundled
+   database or audio until qualified review confirms compatibility and obligations.
 
-   Upstream sources and their licenses (⚠ verify current text before release):
+   Upstream sources and claimed terms in project notes (⚠ not legal conclusions; verify):
 
    - make-me-a-hanzi (chanind/make-me-a-hanzi)
        graphics.txt, dictionary.txt → stroke paths, medians, definitions
-       License: Arphic Public License
+       Conflict: file-level Arphic Public License / LGPL coverage is not stated
+       consistently across README, specs, ingest report, and this notice.
 
    - CC-CEDICT (https://www.mdbg.net/chinese/dictionary?page=cedict)
        multi-char words, definitions cross-check
-       License: CC-BY-SA 3.0
+       Conflict: project files claim both CC BY-SA 3.0 and CC BY-SA 4.0.
 
    - Unihan database (unicode.org)
        frequency ranks, radical/stroke metadata

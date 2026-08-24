@@ -7,6 +7,10 @@ game**: characters join your collection as you master them, the curriculum unfol
 worlds, and each day brings a quest and a shareable challenge (see `10-play-layer.md`).
 It is co-built by a father-son team (see `11-family-prototype.md`).
 
+The M4.1 milestone gate supersedes older roadmap/social sequencing where they conflict:
+[M4.1 First Ten Minutes](./milestones/m4.1-release-gates.md). Social and iOS are frozen,
+and no distribution is approved.
+
 This directory is the authoritative spec set. Each document is self-contained and
 decision-record-like: it states what we chose, why, and what is explicitly out of scope.
 
@@ -22,7 +26,7 @@ decision-record-like: it states what we chose, why, and what is explicitly out o
 | DI / Async     | Hilt / Coroutines + Flow                        |
 | Portability    | Pure-Kotlin KMP-ready core; Android-only build  |
 | Audio          | System TTS behind `SpeechService`; pre-gen clips later |
-| Cloud (M4)     | Optional: Firebase sign-in, sync, friends challenges |
+| Cloud          | Compiled but disabled; blocked until after M4.1      |
 | Ambition       | Free/open product (Play Store; open source)     |
 
 ## Reading order
@@ -56,8 +60,6 @@ Each spec carries a status line at the top:
 
 ## Verification flags
 
-Items the spec asserts but that must be confirmed against upstream sources before the
-related code ships are marked **⚠ verify**. Licenses and repository facts were verified by
-web research on **2026-07-05** (see `02-data-sources.md`); the remaining flags are
-ingest-time checks (exact field names, export formats) that the ingest tool confirms
-mechanically and fails loudly on.
+Items the spec asserts but that must be confirmed before related code ships are marked
+**⚠ verify**. Older documents contain conflicting license claims; they are not distribution
+approval. The M4.1 gate requires qualified review. Ingest-time data checks still fail loudly.
