@@ -187,7 +187,7 @@ private fun QuestStepBanner(
 }
 
 @Composable
-private fun ChestScreen(saving: Boolean, error: String?, onOpened: () -> Unit) {
+internal fun ChestScreen(saving: Boolean, error: String?, onOpened: () -> Unit) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -223,7 +223,7 @@ private fun ChestScreen(saving: Boolean, error: String?, onOpened: () -> Unit) {
 }
 
 @Composable
-private fun BonusChoiceScreen(onAccept: () -> Unit, onDecline: () -> Unit) {
+internal fun BonusChoiceScreen(onAccept: () -> Unit, onDecline: () -> Unit) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,

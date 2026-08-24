@@ -52,8 +52,9 @@ object QuestBuilder {
 
     /**
      * Builds the fixed three-plus-two rhythm. Due reviews are never capped. A backlog
-     * suppresses both new-character portions, and characters already introduced today
-     * reduce the absolute five-character headroom.
+     * suppresses both new-character portions. Characters already introduced today finish
+     * the three-character core first; once that core is complete, later planning never
+     * turns the declined two-character bonus into another required quest.
      */
     fun buildDaily(
         due: List<CharacterProgress>,
@@ -63,7 +64,10 @@ object QuestBuilder {
     ): DailyQuestPlan {
         val orderedCandidates = starterFirst(newCandidates)
         val headroom = (DAILY_NEW_CHARACTER_LIMIT - introducedToday).coerceAtLeast(0)
-        val coreNewCount = minOf(CORE_NEW_CHARACTER_LIMIT, headroom)
+        val coreNewCount = minOf(
+            (CORE_NEW_CHARACTER_LIMIT - introducedToday).coerceAtLeast(0),
+            headroom,
+        )
         val core = build(
             due = due,
             newCandidates = orderedCandidates,
@@ -71,9 +75,13 @@ object QuestBuilder {
             backlogThreshold = backlogThreshold,
         )
         val bonusCandidates = orderedCandidates.drop(core.newCharacters.size)
-        val bonusHeadroom = (headroom - core.newCharacters.size)
-            .coerceAtMost(BONUS_NEW_CHARACTER_LIMIT)
-            .coerceAtLeast(0)
+        val bonusHeadroom = if (introducedToday < CORE_NEW_CHARACTER_LIMIT) {
+            (headroom - core.newCharacters.size)
+                .coerceAtMost(BONUS_NEW_CHARACTER_LIMIT)
+                .coerceAtLeast(0)
+        } else {
+            0
+        }
         val bonus = if (!core.backlogWarning && bonusHeadroom > 0 && bonusCandidates.isNotEmpty()) {
             build(
                 due = emptyList(),

@@ -68,6 +68,28 @@ class LessonContentValidationTest {
     }
 
     @Test
+    fun `rejects segmented pinyin that does not use the declared target reading`() {
+        val broken = valid.toMutableList().apply {
+            this[1] = lesson("大", 2, "dà", 4, UsageExample("大人", "dǎ rén", "adult", "dà"))
+        }
+
+        val error = assertFailsWith<LessonContentValidationException> { validate(broken) }
+
+        assertTrue(error.message!!.contains("segmented pinyin does not contain target reading"))
+    }
+
+    @Test
+    fun `rejects an audio cue that omits the lesson target`() {
+        val broken = valid.toMutableList().apply {
+            this[1] = valid[1].copy(pronunciationAudio = PronunciationAudio("人", "大.mp3"))
+        }
+
+        val error = assertFailsWith<LessonContentValidationException> { validate(broken) }
+
+        assertTrue(error.message!!.contains("audio spoken text does not contain its target"))
+    }
+
+    @Test
     fun `rejects missing audio duplicate ordering and unreviewed content`() {
         val broken = listOf(valid[0], valid[1].copy(curriculumSequence = 1), lesson("天", 3, "tiān", 1, reviewed = false))
         val error = assertFailsWith<LessonContentValidationException> {

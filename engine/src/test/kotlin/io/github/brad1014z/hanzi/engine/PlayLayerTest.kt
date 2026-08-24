@@ -155,14 +155,14 @@ class PlayLayerTest {
     }
 
     @Test
-    fun `characters already introduced today consume the five character ceiling`() {
+    fun `after three guided characters remaining candidates never become a second required core`() {
         val daily = QuestBuilder.buildDaily(
             due = emptyList(),
-            newCandidates = listOf("一", "二", "三", "四", "五"),
-            introducedToday = 4,
+            newCandidates = listOf("一", "二"),
+            introducedToday = 3,
         )
 
-        assertEquals(1, daily.core.newCharacters.size)
+        assertTrue(daily.core.isEmpty)
         assertEquals(null, daily.bonus)
     }
 

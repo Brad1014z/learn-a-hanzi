@@ -51,6 +51,8 @@ fun requireValidLessonManifest(
         }
         if (lesson.pronunciationAudio.spokenText.isBlank()) {
             failures += "$prefix audio spoken text is blank"
+        } else if (lesson.character !in lesson.pronunciationAudio.spokenText) {
+            failures += "$prefix audio spoken text does not contain its target"
         }
         if (!lesson.review.approved || lesson.review.reviewer.isBlank() || lesson.review.reviewedAt.isNullOrBlank()) {
             failures += "$prefix lacks complete Chinese-teacher approval metadata"
@@ -59,6 +61,9 @@ fun requireValidLessonManifest(
             if (lesson.character !in example.text) failures += "$prefix example does not contain its target"
             if (example.targetReading.lowercase() != lesson.primaryReading.pinyin.lowercase()) {
                 failures += "$prefix example target reading does not match the primary reading"
+            }
+            if (example.targetReading.lowercase() !in pinyinSyllables(example.segmentedPinyin)) {
+                failures += "$prefix example segmented pinyin does not contain target reading"
             }
             if (example.segmentedPinyin.isBlank() || example.translation.isBlank()) {
                 failures += "$prefix example pinyin/translation is incomplete"
@@ -78,3 +83,7 @@ private fun toneOf(pinyin: String): Int {
     val found = marks.indexOfFirst { set -> pinyin.any { it in set } }
     return if (found < 0) 5 else found + 1
 }
+
+private fun pinyinSyllables(text: String): List<String> = text.lowercase()
+    .split(Regex("[^a-züāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]+"))
+    .filter(String::isNotBlank)
