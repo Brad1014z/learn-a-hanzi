@@ -77,6 +77,10 @@ class RoomProgressRepository(private val db: HanziDatabase) : ProgressRepository
         derived.copy(daysPlayed = dao.daysPlayed())
     }
 
+    /** Has today (local date) had a graded write yet? The reminder worker's only check. */
+    suspend fun playedToday(today: LocalDate = LocalDate.now()): Boolean =
+        dao.hasPlayedOn(today.toString())
+
     /** Total XP lives in the Meta user keys (spec 10 data notes). */
     suspend fun xpTotal(): Int = db.metaDao().get(XP_KEY)?.toIntOrNull() ?: 0
 

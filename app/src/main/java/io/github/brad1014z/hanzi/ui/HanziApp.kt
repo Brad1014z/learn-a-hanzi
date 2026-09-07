@@ -1,6 +1,10 @@
 package io.github.brad1014z.hanzi.ui
 
+import android.Manifest
+import android.os.Build
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -43,7 +47,10 @@ import io.github.brad1014z.hanzi.engine.play.Ranks
 import io.github.brad1014z.hanzi.engine.play.unlockedWorldCount
 import io.github.brad1014z.hanzi.engine.progress.CharacterProgress
 import io.github.brad1014z.hanzi.engine.progress.Consistency
+import io.github.brad1014z.hanzi.reminder.ReminderNotifications
+import io.github.brad1014z.hanzi.reminder.ReminderScheduler
 import java.util.UUID
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
@@ -126,6 +133,61 @@ fun HanziApp() {
                 PilotStrokeExporter(context, pilotExportConsent, pilotFacilitatorLabel)
             }
             LaunchedEffect(soundOn) { sounds.enabled = soundOn }
+
+            // Opt-in daily reminder (spec 10 guardrail 5) — off by default, always
+            // reversible from Settings, never re-offered once dismissed.
+            val reminderEnabled by settings.reminderEnabled.collectAsStateWithLifecycle(false)
+            val reminderHour by settings.reminderHour.collectAsStateWithLifecycle(18)
+            val reminderMinute by settings.reminderMinute.collectAsStateWithLifecycle(0)
+            val reminderOfferShown by settings.reminderOfferShown.collectAsStateWithLifecycle(false)
+            var showReminderOffer by remember { mutableStateOf(false) }
+            var pendingReminderTime by remember { mutableStateOf<Pair<Int, Int>?>(null) }
+            val notificationPermissionLauncher = rememberLauncherForActivityResult(
+                ActivityResultContracts.RequestPermission(),
+            ) { granted ->
+                val pending = pendingReminderTime
+                pendingReminderTime = null
+                // Denied: leave the setting off. The Settings row still shows "off" and
+                // the learner can try again there — no retry nag, no dead toggle.
+                if (granted && pending != null) {
+                    val (h, m) = pending
+                    scope.launch {
+                        settings.setReminderTime(h, m)
+                        settings.setReminderEnabled(true)
+                    }
+                    ReminderScheduler.schedule(context, h, m)
+                }
+            }
+            fun enableReminder(hour: Int, minute: Int) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                    !ReminderNotifications.hasPermission(context)
+                ) {
+                    pendingReminderTime = hour to minute
+                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                } else {
+                    scope.launch {
+                        settings.setReminderTime(hour, minute)
+                        settings.setReminderEnabled(true)
+                    }
+                    ReminderScheduler.schedule(context, hour, minute)
+                }
+            }
+            fun disableReminder() {
+                scope.launch { settings.setReminderEnabled(false) }
+                ReminderScheduler.cancel(context)
+            }
+            // Safety net: if the reminder was already on (a returning learner, not the
+            // first-run case), make sure WorkManager actually has it queued. Idempotent
+            // (unique work, REPLACE) — harmless to call every launch.
+            LaunchedEffect(Unit) {
+                if (settings.reminderEnabled.first()) {
+                    ReminderScheduler.schedule(
+                        context,
+                        settings.reminderHour.first(),
+                        settings.reminderMinute.first(),
+                    )
+                }
+            }
             val speechAvailable = remember(ttsReady) { speech.isAvailable("zh-Hans") }
 
             val worlds by produceState<List<RoomContentRepository.World>?>(null) {
@@ -251,6 +313,13 @@ fun HanziApp() {
                                 questPlan = null
                                 refresh++
                                 screen = Screen.HOME
+                                // The first chest ever opened (spec 10 guardrail 5 /
+                                // spec 12's entry-point pattern): a real "I did the
+                                // thing" moment, offered once, never again after this.
+                                if (!reminderEnabled && !reminderOfferShown) {
+                                    scope.launch { settings.setReminderOfferShown(true) }
+                                    showReminderOffer = true
+                                }
                             },
                             onExit = {
                                 questPlan = null
@@ -287,7 +356,17 @@ fun HanziApp() {
                         onPilotFacilitatorLabel = {
                             scope.launch { settings.setPilotFacilitatorLabel(it) }
                         },
+                        reminderEnabled = reminderEnabled,
+                        reminderHour = reminderHour,
+                        reminderMinute = reminderMinute,
                         onCredits = { screen = Screen.CREDITS },
+                        onReminderToggle = { on ->
+                            if (on) enableReminder(reminderHour, reminderMinute) else disableReminder()
+                        },
+                        onReminderTimeChange = { h, m ->
+                            scope.launch { settings.setReminderTime(h, m) }
+                            ReminderScheduler.schedule(context, h, m)
+                        },
                         onBack = { screen = Screen.HOME },
                     )
                 }
@@ -344,6 +423,19 @@ fun HanziApp() {
                         )
                     }
                 }
+            }
+
+            if (showReminderOffer) {
+                val now = remember { java.util.Calendar.getInstance() }
+                ReminderOfferDialog(
+                    initialHour = now.get(java.util.Calendar.HOUR_OF_DAY),
+                    initialMinute = now.get(java.util.Calendar.MINUTE),
+                    onEnable = { h, m ->
+                        enableReminder(h, m)
+                        showReminderOffer = false
+                    },
+                    onDismiss = { showReminderOffer = false },
+                )
             }
         }
     }

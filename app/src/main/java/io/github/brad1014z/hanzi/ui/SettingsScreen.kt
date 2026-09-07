@@ -37,12 +37,19 @@ fun SettingsScreen(
     pilotToolsEnabled: Boolean = false,
     pilotExportConsent: Boolean = false,
     pilotFacilitatorLabel: String = "unlabeled",
+    reminderEnabled: Boolean = false,
+    reminderHour: Int = 18,
+    reminderMinute: Int = 0,
     onSound: (Boolean) -> Unit,
     onAutoPlay: (Boolean) -> Unit,
     onResetProgress: () -> Unit,
     onPilotExportConsent: (Boolean) -> Unit = {},
     onPilotFacilitatorLabel: (String) -> Unit = {},
     onCredits: () -> Unit = {},
+    // Reminder toggle asks for the notification permission first when needed (spec 10
+    // guardrail 5); the caller reports back whether it actually turned on.
+    onReminderToggle: (Boolean) -> Unit = {},
+    onReminderTimeChange: (hour: Int, minute: Int) -> Unit = { _, _ -> },
     onBack: () -> Unit,
 ) {
     var confirmReset by remember { mutableStateOf(false) }
@@ -61,6 +68,19 @@ fun SettingsScreen(
 
         SettingSwitch("Sound effects", soundOn, onSound)
         SettingSwitch("Auto-play audio", autoPlay, onAutoPlay)
+
+        // Opt-in daily reminder (spec 10 guardrail 5): off by default, one neutral
+        // message, and this row is how it's turned on or off at any time — not just at
+        // the one-time post-chest offer.
+        SettingSwitch("Daily reminder", reminderEnabled, onReminderToggle)
+        if (reminderEnabled) {
+            ReminderTimePicker(
+                hour = reminderHour,
+                minute = reminderMinute,
+                onChange = onReminderTimeChange,
+                modifier = Modifier.padding(top = 4.dp),
+            )
+        }
 
         if (pilotToolsEnabled) {
             SettingSwitch("Local pilot stroke export", pilotExportConsent, onPilotExportConsent)
