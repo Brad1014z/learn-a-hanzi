@@ -103,6 +103,17 @@ interface ProgressDao {
     )
     suspend fun playedDates(): List<String>
 
+    /**
+     * Whether [date] (local `YYYY-MM-DD`) has at least one graded write — the opt-in
+     * daily reminder's only question (spec 10 guardrail 5): never nudge a day already
+     * played. Cheap on purpose: this runs from a background worker every day.
+     */
+    @Query(
+        "SELECT EXISTS(SELECT 1 FROM ReviewLog WHERE " +
+            "date(reviewedAt/1000, 'unixepoch', 'localtime') = :date)",
+    )
+    suspend fun hasPlayedOn(date: String): Boolean
+
     @Upsert
     suspend fun upsert(progress: CharacterProgressEntity)
 

@@ -81,6 +81,35 @@ deliberately absent from the pilot hub (M4.1 froze it, and the Compose specs ass
 hub shows no XP), so paying an invisible bonus would be a signal nobody sees. The
 comeback is framing only until XP returns to the surface. Locked in by `ConsistencyTest`.
 
+### The daily reminder *(added 2026-09-07)*
+
+The one notification this app ever sends. `ReminderPolicy` (`:engine`, pure, tested)
+holds the two decisions that must stay honest regardless of platform plumbing:
+
+- **The message never varies.** `"Your quest is ready"` — no streak talk, no "you're
+  falling behind", no emoji urgency.
+- **A day already played gets no nudge.** The whole point is reminding someone to show
+  up, not badgering someone who already did.
+- **Off by default, on only by explicit choice, reversible from Settings at any time.**
+  First offered exactly once, right after the learner's very first chest — not on first
+  launch, not repeated if dismissed (the same calm, one-shot pattern spec 12 uses for
+  sign-in). `SettingsScreen` carries a permanent "Daily reminder" row (toggle + time)
+  for turning it on, off, or retiming afterward.
+- **Delivery is deliberately inexact.** `ReminderScheduler` uses WorkManager, not
+  `AlarmManager`'s exact-alarm APIs — this is a once-a-day habit nudge, not an alarm
+  clock, so it needs no `SCHEDULE_EXACT_ALARM` permission and no boot receiver
+  (constitution: minimal permissions). `POST_NOTIFICATIONS` is requested at runtime only
+  when the learner turns the reminder on; if denied, the app stays fully usable and the
+  Settings row simply stays off.
+- **Silent, not crashing, if permission is later revoked.** Android lets a user revoke
+  notification permission at any time from system settings; `ReminderWorker` checks
+  before notifying and swallows the rare revoke-mid-flight race rather than surface it.
+
+`ReminderPolicyTest` and `ReminderWorkerTest` (the latter through the real `Worker`,
+asserting on the platform notification manager) lock in: disabled never notifies,
+enabled-but-already-played never notifies, enabled-and-not-played does, and a missing
+permission stays silent rather than crashing.
+
 ## The daily challenge (shareable)
 
 Wordle-shaped, offline, serverless:
@@ -199,7 +228,8 @@ scheduled as roadmap milestone M4, specified in `12-accounts-social.md`:
    unlocks rank or world shortcuts.
 4. **No lives, energy, or cooldowns** that block learning. You can always practice.
 5. **No guilt mechanics.** Streaks pause gracefully; lapsed characters "ask" for
-   practice, they don't scold; notifications (if ever added) are opt-in and neutral.
+   practice, they don't scold; the one notification this app sends is opt-in and
+   neutral *(landed 2026-09-07 — the daily reminder below)*.
 6. **No monetization pressure** — free/open product; no ads, no IAP (`00`).
 7. **Celebrations are short and skippable** (`07`) — juice serves the loop, not vice versa.
 
