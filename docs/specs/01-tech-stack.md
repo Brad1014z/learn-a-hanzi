@@ -96,17 +96,30 @@ Java 17+ toolchain via the Android Gradle Plugin.
 
 - **Gradle (Kotlin DSL)** with a **version catalog** (`gradle/libs.versions.toml`) — single
   source of truth for dependency versions.
-- **`applicationId`:** the prototype uses `io.github.brad1014z.hanzi` — the
-  `io.github.<username>` convention is a namespace the maintainer verifiably owns and is
-  Play-acceptable. It is immutable once uploaded to Play, so the **final** id (keep this
-  one, or a custom domain later) is confirmed before the first Play upload (Publish milestone).
-- **Build variants:** `debug` / `release` only for MVP. Release uses R8/ProGuard with keep
-  rules for Room and any reflection (none planned beyond Room's).
+- **`applicationId`:** `io.github.brad1014z.hanzi` — **final** (decided 2026-09-04,
+  [ADR 0001](../adr/0001-application-id-frozen.md)). The `io.github.<username>` convention
+  is a namespace the maintainer verifiably owns and is Play-acceptable; it was frozen
+  before the first *pilot* install (not, as first planned, before the first Play upload)
+  because changing it would force every pilot tester to uninstall and lose local progress.
+- **App name:** a resource (`@string/app_name`, currently **Inkbook**) read by both the
+  launcher label and the in-app title, so renaming stays a one-line change and the
+  co-designer keeps naming authority (`11`).
+- **Build variants:** `debug` / `release` only for MVP. Release uses R8/ProGuard
+  (`app/proguard-rules.pro`): Room/Firebase/Compose ship consumer rules; our own rules
+  keep the kotlinx.serialization sync payloads and the engine's social models intact,
+  since both are read reflectively by name.
+- **Release signing:** from environment variables only (`KEYSTORE_FILE`,
+  `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`). Absent → an *unsigned* release APK,
+  never a debug-signed one, so an unsigned build can't be mistaken for a real one. CI
+  decodes the `KEYSTORE_BASE64` secret; a `v*` tag publishes the signed APK to a GitHub
+  Release — the pilot distribution channel until Play.
 - **Versioning:** semantic version `MAJOR.MINOR.PATCH` in `build.gradle.kts`; the dataset
   carries its own version (see `02-data-sources.md`) so we can detect schema/data changes.
 - **CI:** GitHub Actions, **live since Phase 0** — unit tests (including the grading
-  golden corpus) gate the build; a debug-APK artifact is produced only when the suite
-  passes. The ingest tool's determinism check joins in M2.
+  golden corpus) gate the build; debug and release APK artifacts are produced only when
+  the suite passes, the Compose UI specs then run on API 26 / API 36 emulators, and a
+  tagged build publishes a GitHub Release only after those device jobs pass. The ingest
+  tool's determinism check joins in M2.
 
 ## Testing
 
@@ -158,8 +171,9 @@ user strokes against known characters) so tuning changes are measurable. See `05
 
 ## Open questions
 
-- [ ] Final `applicationId` / package name — an owned namespace, decided before the first
-      Play upload (Publish).
+- [x] ~~Final `applicationId` / package name~~ — **decided 2026-09-04:
+      `io.github.brad1014z.hanzi`, frozen before the pilot
+      ([ADR 0001](../adr/0001-application-id-frozen.md)).**
 - [x] ~~`PathParser` vs vendored parser~~ — **decided: vendor a pure-Kotlin SVG-path
       parser** (androidx `PathParser` is `@RestrictTo`; the core must stay free of
       `android.*`).

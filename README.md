@@ -22,8 +22,35 @@ Android SDK (a `local.properties` with `sdk.dir`, or Android Studio).
 ./gradlew :app:assembleDebug   # debug APK → app/build/outputs/apk/debug/
 ```
 
-CI (GitHub Actions) runs the same on every push/PR — the APK artifact
-(`hanzi-prototype-debug-apk`) is only produced when all tests pass.
+CI (GitHub Actions) runs the same on every push/PR — the APK artifacts
+(`hanzi-prototype-debug-apk`, `hanzi-release-apk`) are only produced when all tests pass,
+and the Compose UI specs then run on real API 26 / API 36 emulators.
+
+### Release builds & pilot distribution
+
+```bash
+./gradlew :app:assembleRelease  # R8-minified; unsigned unless the signing env vars are set
+```
+
+Release signing reads four environment variables — `KEYSTORE_FILE`, `KEYSTORE_PASSWORD`,
+`KEY_ALIAS`, `KEY_PASSWORD`. Absent, the build still runs and emits
+`app-release-unsigned.apk` (so R8 and the keep rules stay covered on every PR); it is
+never debug-signed. The keystore is **never committed**. One-time setup:
+
+```bash
+keytool -genkeypair -v -keystore release.jks -alias hanzi -keyalg RSA -keysize 4096 -validity 10000
+base64 -w0 release.jks   # → repo Settings → Secrets and variables → Actions → KEYSTORE_BASE64
+# also add KEYSTORE_PASSWORD, KEY_ALIAS (hanzi), KEY_PASSWORD
+```
+
+Pushing a tag `vX.Y.Z` then builds the signed APK and — **only after the emulator jobs
+pass** — attaches it to a **GitHub Release**, which is the pilot download page. The job
+refuses to publish an unsigned APK. The `applicationId` (`io.github.brad1014z.hanzi`) is
+final ([ADR 0001](./docs/adr/0001-application-id-frozen.md)), so pilot installs upgrade in
+place rather than forcing a reinstall that would wipe local progress. Tagging does not
+bypass the release gates in
+[`m4.1-release-gates`](./docs/milestones/m4.1-release-gates.md) — those are human
+decisions, not CI steps.
 
 ## What this is
 

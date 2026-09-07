@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Working name only — naming the app is the co-designer's job (docs/specs/11, S1). -->
-    <string name="app_name">Hanzi Prototype</string>
+    <!-- The app's name, as the co-designer named it (docs/specs/11, S1). This is the
+         single source of truth: the launcher label AND the in-app title read it, so
+         renaming the app is a one-line change here. -->
+    <string name="app_name">Inkbook</string>
 </resources>

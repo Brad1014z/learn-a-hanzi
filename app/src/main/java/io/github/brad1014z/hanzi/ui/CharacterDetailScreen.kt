@@ -20,6 +20,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -75,20 +79,33 @@ fun CharacterDetailScreen(
             }
         }
 
-        // Big character, tappable to replay its reading.
+        // Big character, tappable to replay its reading. The character and the 🔊 glyph
+        // are ONE labelled control: the glyph is decorative (it carried no click action
+        // of its own) and a bare clickable character announced nothing useful, so
+        // TalkBack now reads a real button — "Play pronunciation for 人" (asserted by
+        // CoreUiTest; spec 07 accessibility).
+        val pronunciationLabel = "Play pronunciation for ${character.character}"
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .then(
+                    if (speechAvailable) {
+                        Modifier
+                            .clickable(onClickLabel = pronunciationLabel) {
+                                speech.speak(lesson.pronunciationAudio.spokenText, "zh-Hans")
+                            }
+                            .semantics(mergeDescendants = true) {
+                                contentDescription = pronunciationLabel
+                                role = Role.Button
+                            }
+                    } else {
+                        Modifier
+                    },
+                ),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                text = character.character,
-                fontSize = 120.sp,
-                modifier = Modifier
-                    .clickable(enabled = speechAvailable) {
-                        speech.speak(lesson.pronunciationAudio.spokenText, "zh-Hans")
-                    },
-            )
+            Text(text = character.character, fontSize = 120.sp)
             if (speechAvailable) {
                 Text("🔊", fontSize = 28.sp, modifier = Modifier.padding(start = 12.dp))
             }

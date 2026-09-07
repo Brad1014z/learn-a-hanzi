@@ -54,6 +54,7 @@ import io.github.brad1014z.hanzi.engine.grading.StrokeVerdict
 import io.github.brad1014z.hanzi.engine.progress.PracticeRecord
 import io.github.brad1014z.hanzi.engine.quiz.QuizEngine
 import io.github.brad1014z.hanzi.engine.quiz.QuizState
+import io.github.brad1014z.hanzi.engine.quiz.StrokeHelp
 import io.github.brad1014z.hanzi.engine.quiz.drawnCorrectly
 import io.github.brad1014z.hanzi.engine.quiz.toGrade
 import io.github.brad1014z.hanzi.engine.speech.SpeechService
@@ -114,6 +115,9 @@ fun PracticeScreen(
     var fadingReject by remember(character) { mutableStateOf<List<Point>?>(null) }
     val rejectAlpha = remember(character) { Animatable(0f) }
     var hintStrokeFlash by remember(character) { mutableStateOf(false) }
+    // "Show me" keeps the stroke on screen (rather than flashing) until it is accepted,
+    // so a learner who has missed it five times can take as long as they need.
+    var showMeActive by remember(character) { mutableStateOf(false) }
     val view = LocalView.current
     val reducedMotion = remember(view) {
         runCatching {
@@ -162,6 +166,10 @@ fun PracticeScreen(
             fadingReject = null
         }
     }
+
+    // Once the stroke lands (or is undone), "Show me" has done its job — clear it so the
+    // next stroke starts unaided.
+    LaunchedEffect(quiz.expectedIndex) { showMeActive = false }
 
     // Hint: flash the expected stroke's median briefly (spec 05: "show me").
     LaunchedEffect(hintStrokeFlash) {
@@ -239,8 +247,22 @@ fun PracticeScreen(
             }
             StrokeVerdict.Ignored -> feedback
         }
-        if (engine.shouldOfferHint(quiz)) {
-            feedback += "  Tap Hint to see it drawn."
+        // Escalating help (spec 05): nobody gets stranded on one stroke. The learner is
+        // never blocked and never told they have used up attempts — the app just gets
+        // more helpful. A card helped this way still completes; it grades as HINTED.
+        when (engine.helpFor(quiz)) {
+            StrokeHelp.NONE -> Unit
+            StrokeHelp.OFFER_HINT -> feedback += "  Tap Hint to see it drawn."
+            StrokeHelp.AUTO_HINT -> {
+                quiz = engine.useHint(quiz)
+                hintStrokeFlash = true
+                feedback += "  Here it is — trace the highlighted stroke."
+            }
+            StrokeHelp.SHOW_ME -> {
+                quiz = engine.useHint(quiz)
+                showMeActive = true
+                feedback += "  Tracing it for you — follow the line."
+            }
         }
     }
 
@@ -362,8 +384,11 @@ fun PracticeScreen(
                         for (i in 0 until quiz.expectedIndex) {
                             drawPath(character.strokeOutlines[i].toComposePath(m), inkColor)
                         }
-                        // Hint flash: the expected stroke's median in the sloppy tint.
-                        if (hintStrokeFlash && !quiz.isComplete) {
+                        // Hint flash (brief) or "Show me" (stays until traced): the
+                        // expected stroke's median in the sloppy tint.
+                        // TODO(son, S4): "Show me" currently just holds the line on
+                        // screen — animating it drawing itself is your call.
+                        if ((hintStrokeFlash || showMeActive) && !quiz.isComplete) {
                             drawMedian(character.medians[quiz.expectedIndex], m, PracticeColors.strokeSloppy)
                         }
                         // The in-flight finger stroke.

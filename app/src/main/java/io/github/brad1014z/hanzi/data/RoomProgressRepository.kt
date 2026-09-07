@@ -2,10 +2,13 @@ package io.github.brad1014z.hanzi.data
 
 import androidx.room.withTransaction
 import io.github.brad1014z.hanzi.engine.progress.CharacterProgress
+import io.github.brad1014z.hanzi.engine.progress.Consistency
+import io.github.brad1014z.hanzi.engine.progress.consistencyOf
 import io.github.brad1014z.hanzi.engine.progress.PracticeRecord
 import io.github.brad1014z.hanzi.engine.progress.ProgressRepository
 import io.github.brad1014z.hanzi.engine.progress.SrsEngine
 import io.github.brad1014z.hanzi.engine.progress.SrsState
+import java.time.LocalDate
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -57,6 +60,26 @@ class RoomProgressRepository(private val db: HanziDatabase) : ProgressRepository
         dao.introducedSince(todayStart, Sessions.QUEST_NEW)
 
     suspend fun daysPlayed(): Int = dao.daysPlayed()
+
+    /**
+     * Consistency for the hub (spec 10): the run the learner is on, and whether today is
+     * a comeback. SQLite stores the days as local `YYYY-MM-DD`; the pure engine works in
+     * epoch days, so the conversion — and therefore the timezone question — is settled
+     * here, once. Unparseable rows are skipped rather than crashing the hub.
+     */
+    suspend fun consistency(today: LocalDate = LocalDate.now()): Consistency = consistencyOf(
+        playedDays = dao.playedDates().mapNotNull { day ->
+            runCatching { LocalDate.parse(day).toEpochDay() }.getOrNull()
+        },
+        today = today.toEpochDay(),
+    ).let { derived ->
+        // daysPlayed is the lifetime total, which the capped date list cannot see.
+        derived.copy(daysPlayed = dao.daysPlayed())
+    }
+
+    /** Has today (local date) had a graded write yet? The reminder worker's only check. */
+    suspend fun playedToday(today: LocalDate = LocalDate.now()): Boolean =
+        dao.hasPlayedOn(today.toString())
 
     /** Total XP lives in the Meta user keys (spec 10 data notes). */
     suspend fun xpTotal(): Int = db.metaDao().get(XP_KEY)?.toIntOrNull() ?: 0

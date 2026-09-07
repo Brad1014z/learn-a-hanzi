@@ -21,9 +21,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.brad1014z.hanzi.R
 
 /** What today's quest holds, precomputed by HanziApp for the hub card. */
 data class QuestSummary(
@@ -43,6 +45,10 @@ data class QuestSummary(
 fun QuestHubScreen(
     daysPlayed: Int,
     quest: QuestSummary,
+    // Defaulted so the consistency line is additive: callers that don't track a run
+    // (and the Compose specs) keep working, and the line simply doesn't appear.
+    currentRun: Int = 0,
+    isComeback: Boolean = false,
     currentWorldName: String?,
     currentWorldMastery: Double,
     nextWorldName: String?,
@@ -57,9 +63,17 @@ fun QuestHubScreen(
             .padding(16.dp)
             .verticalScroll(rememberScrollState()),
     ) {
-        Text("Inkbook", style = MaterialTheme.typography.headlineMedium)
+        // One source of truth for the name: the launcher label is the same resource.
+        Text(stringResource(R.string.app_name), style = MaterialTheme.typography.headlineMedium)
         Text(
-            text = "$daysPlayed ${if (daysPlayed == 1) "day" else "days"} practiced",
+            // Consistency, never guilt (spec 10 / constitution): this line reports the
+            // run you are ON and greets a return. It never mentions a broken streak, and
+            // the lifetime total never goes down.
+            text = when {
+                isComeback -> "Welcome back — day 1 of a new run"
+                currentRun > 1 -> "$currentRun days in a row · $daysPlayed practiced"
+                else -> "$daysPlayed ${if (daysPlayed == 1) "day" else "days"} practiced"
+            },
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
