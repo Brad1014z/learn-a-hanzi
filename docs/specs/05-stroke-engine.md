@@ -208,10 +208,28 @@ The corpus ships with the test code (no PII — they're geometric paths).
 
 - On reject, the user's just-drawn stroke **fades away** (not left as permanent ink), so
   the canvas stays uncluttered for a retry.
-- After 2 consecutive rejects on the same stroke, offer a **"show me"** button that plays
-  the demo for the current stroke and lifts grading pressure: while the hint is active,
-  the distance caps widen by `hintDistLeniency` (×1.3) and the direction floors drop by
-  `hintDirLeniency` (×0.75); the resulting accept is recorded as HINTED (grade ≤ 3).
+- **Escalating help** — nobody gets stranded on one stroke *(amended 2026-09-05: the
+  ladder below replaces "offer a button after 2 rejects", which relied on the learner
+  noticing the offer and taking it; a stuck learner could sit on one stroke forever with
+  the app doing nothing new)*. Rungs are keyed to consecutive rejects on the **same**
+  stroke (`QuizEngine.helpFor` → `StrokeHelp`, thresholds in `HelpPolicy`):
+
+  | Rejects | Rung | What the app does |
+  |---|---|---|
+  | 2 | `OFFER_HINT` | Point at the Hint button — still the learner's choice. |
+  | 3 | `AUTO_HINT` | Stop waiting to be asked: show the stroke, no tap needed. |
+  | 5 | `SHOW_ME` | The hint is on screen and still missing — hold the stroke visible to trace along, for as long as they need. |
+
+  While a hint is active, grading pressure lifts: distance caps widen by
+  `hintDistLeniency` (×1.3) and direction floors drop by `hintDirLeniency` (×0.75); the
+  resulting accept is recorded as HINTED.
+
+  **There is no attempt limit and no failure state** — no rung ends the card, skips the
+  stroke, or tells the learner they are out of tries (constitution principle 5). Help is
+  also never *laundering*: an accept after ≥3 rejects still grades 2 (heavy retries) even
+  though a hint was shown, because SRS must not reschedule a stroke the learner could not
+  actually produce. A hint taken early, before the heavy-retry line, grades 3 — asking for
+  help is not itself penalised. Locked in by `StrokeHelpLadderTest`.
 - A persistent **undo** clears the last accepted stroke (in case of a misfire).
 
 ## Performance

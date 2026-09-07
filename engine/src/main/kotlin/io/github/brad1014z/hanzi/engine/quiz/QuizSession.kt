@@ -99,6 +99,51 @@ class QuizEngine(
     }
 
     /** Suggest offering the hint button prominently (spec 05: after 2 consecutive rejects). */
-    fun shouldOfferHint(state: QuizState): Boolean =
-        !state.isComplete && state.rejectsOnCurrent >= 2 && !state.hintActive
+    fun shouldOfferHint(state: QuizState): Boolean = helpFor(state) == StrokeHelp.OFFER_HINT
+
+    /**
+     * How hard the app should be helping with the current stroke (spec 05, failure UX).
+     *
+     * `rejectsOnCurrent` only resets when the stroke is finally accepted (or undone), so
+     * it measures how long this learner has been stuck on *this* stroke — which is
+     * exactly what should drive help. Constitution principle 5: feedback teaches, it
+     * never punishes, and there is no attempt limit anywhere in this ladder.
+     */
+    fun helpFor(state: QuizState): StrokeHelp = when {
+        state.isComplete -> StrokeHelp.NONE
+        // Checked before `hintActive`: showing the stroke and *still* missing it is the
+        // one case where a passive hint has already proved insufficient.
+        state.rejectsOnCurrent >= HelpPolicy.SHOW_ME_AFTER_REJECTS -> StrokeHelp.SHOW_ME
+        state.hintActive -> StrokeHelp.NONE
+        state.rejectsOnCurrent >= HelpPolicy.AUTO_HINT_AFTER_REJECTS -> StrokeHelp.AUTO_HINT
+        state.rejectsOnCurrent >= HelpPolicy.OFFER_HINT_AFTER_REJECTS -> StrokeHelp.OFFER_HINT
+        else -> StrokeHelp.NONE
+    }
+}
+
+/**
+ * The escalating help ladder for a stroke the learner keeps missing. They never have to
+ * know a threshold exists — the app just gets more helpful the longer they struggle, and
+ * nothing here ever blocks them or ends the card.
+ */
+enum class StrokeHelp {
+    /** Let them try. */
+    NONE,
+
+    /** Draw attention to the Hint button — still their choice to take it. */
+    OFFER_HINT,
+
+    /** Stop waiting to be asked and show the stroke. */
+    AUTO_HINT,
+
+    /** The hint is already on screen and they are still missing: offer to draw it for
+     *  them to trace along. */
+    SHOW_ME,
+}
+
+/** Thresholds for [QuizEngine.helpFor], in consecutive rejects on the same stroke. */
+object HelpPolicy {
+    const val OFFER_HINT_AFTER_REJECTS = 2
+    const val AUTO_HINT_AFTER_REJECTS = 3
+    const val SHOW_ME_AFTER_REJECTS = 5
 }
