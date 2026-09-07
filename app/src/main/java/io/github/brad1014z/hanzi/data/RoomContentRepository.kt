@@ -43,8 +43,28 @@ class RoomContentRepository(
     suspend fun worlds(): List<World> =
         db.contentDao().curriculum()
             .also { rows -> curriculumSequence = rows.associate { it.character to it.sequence } }
+            .filter { offerable(it.character) }
             .groupBy { it.world to it.worldName } // groupBy preserves encounter order
             .map { (key, rows) -> World(key.first, key.second, rows) }
+            .filter { it.characters.isNotEmpty() }
+
+    /**
+     * What a build is allowed to put in front of a learner.
+     *
+     * A release build offers **exactly** the characters a Chinese teacher has signed off
+     * in `content/lesson-content-first30.json`; a debug build also offers the
+     * engineering-draft fallback below, so development never waits on content review.
+     *
+     * This is the same release gate as the `check` in [lessonContentFor], moved one step
+     * earlier. Filtering here means an unreviewed character is never *offered* — so the
+     * gate can no longer be tripped by a learner tapping a tile, which previously threw
+     * `IllegalStateException` and killed the app mid-session (the Collection's Browse
+     * shelf deliberately shows every character in the dataset, and the dataset is far
+     * larger than the signed manifest will ever be). The `check` stays as a backstop for
+     * any future caller that reaches a character without going through [worlds].
+     */
+    private fun offerable(character: String): Boolean =
+        BuildConfig.DEBUG || character in signedLessons
 
     override suspend fun load(character: String): CharacterData {
         cache[character]?.let { return it }
@@ -83,8 +103,12 @@ class RoomContentRepository(
         sequence: Int,
     ): LessonContent {
         signedLessons[character]?.let { return it }
+        // Backstop only: `worlds()` already filters unreviewed characters out of every
+        // release surface, so reaching this in a release build means a caller bypassed
+        // it — a bug in us, not a learner action.
         check(BuildConfig.DEBUG) {
-            "$character has no signed LessonContent; release content is intentionally blocked"
+            "$character has no signed LessonContent and was offered anyway; " +
+                "release builds must only offer characters in content/lesson-content-first30.json"
         }
         val starter = STARTER_CONTENT[character]
         val primary = starter?.first ?: readings.firstOrNull().orEmpty()
