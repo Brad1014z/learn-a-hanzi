@@ -226,25 +226,39 @@ audio at ingest time — moved up from old Phase 3 into milestone M2 (`08`):
 
 > This section is a checklist, not legal advice. The app is a **free/open product**
 > (constitution), so share-alike terms are workable — we comply rather than avoid.
-> Complete every box before the first public release (Publish milestone).
+> Complete every box before the first public release (Publish milestone). *Brought
+> forward 2026-09-04: a sideloaded **pilot** APK is redistribution too, so the in-app
+> **Credits & licences** screen (Settings → Credits; `CreditsScreen.kt`, full texts under
+> `app/src/main/assets/licenses/`) ships with the pilot rather than with Publish. The
+> boxes below track our **obligations**; the independent "qualified license review" gate
+> in [`m4.1-release-gates`](../milestones/m4.1-release-gates.md) is a separate human sign-off
+> and stays open.*
 
-- [ ] **Arphic Public License** (`graphics.txt`): copyleft for the font-derived data —
+- [x] **Arphic Public License** (`graphics.txt`): copyleft for the font-derived data —
       ship the APL text + attribution in-app (Credits) and in the repo; derived stroke
-      data remains under APL.
-- [ ] **LGPL v3+** (`dictionary.txt`): ship the license text + attribution; keep the
+      data remains under APL. *(Credits screen + `assets/licenses/arphic-public-license.txt`,
+      2026-09-04.)*
+- [x] **LGPL v3+** (`dictionary.txt`): ship the license text + attribution; keep the
       derived dictionary data replaceable/extractable (the bundled SQLite is regenerable
       from public sources via the ingest tool, which satisfies the spirit and letter).
-- [ ] **CC BY-SA 4.0** (CC-CEDICT): attribution + share-alike — CEDICT-derived rows in
-      our dataset are redistributed under CC BY-SA 4.0.
-- [ ] **Unicode license** (Unihan): permissive; include current text in the manifest.
-- [ ] **Tatoeba**: mostly CC-BY 2.0 FR but licensed **per sentence** — record sentence id
+      *(LGPL 3 ships together with the GPL 3 text it incorporates by reference, 2026-09-04.)*
+- [x] **CC BY-SA 4.0** (CC-CEDICT): attribution + share-alike — CEDICT-derived rows in
+      our dataset are redistributed under CC BY-SA 4.0. *(Credits screen, 2026-09-04.)*
+- [x] **Unicode license** (Unihan): permissive; include current text in the manifest.
+      *(Unicode License v3 bundled, 2026-09-04.)*
+- [x] **Tatoeba**: mostly CC-BY 2.0 FR but licensed **per sentence** — record sentence id
       + contributor at ingest; credits screen lists contributors; skip sentences whose
-      license the export marks as non-permissive.
-- [ ] **LLM-generated sentences**: our own generated, human-reviewed content — no
+      license the export marks as non-permissive. *(Resolved by scope, 2026-09-04: M2 uses
+      Tatoeba for **frequency ranks only** and ships no sentence text, so there are no
+      per-sentence contributors to list. The credits screen attributes the corpus under
+      CC BY 2.0 FR and says exactly what it was used for. **Re-open this box if Tatoeba
+      sentence text is ever shipped.**)*
+- [x] **LLM-generated sentences**: our own generated, human-reviewed content — no
       third-party license obligation; released under the same terms as the rest of the
       derived dataset; provenance (model id, generation date, reviewer) ships in the
       attribution manifest and the credits screen notes that example sentences are
-      AI-generated and human-reviewed.
+      AI-generated and human-reviewed. *(Credits screen names the model and the
+      review-by-PR process, and credits the TTS voice the same way, 2026-09-04.)*
 - [ ] **Our releases:** app code under MIT or Apache-2.0; the *derived bundled dataset*
       under the terms of its most restrictive inputs per component (APL for stroke data,
       LGPL for dictionary-derived, CC BY-SA 4.0 for CEDICT/Tatoeba-derived), documented in
