@@ -262,10 +262,14 @@ HSK 1; progress is motivating without being manipulative.
 Goal: ship to the Play Store as a free, open product with a clear conscience on privacy
 and data licensing.
 
-- [ ] License-obligation checklist in `02` fully closed; credits screen ships all
-      attributions + license texts.
-- [ ] Final `applicationId` (owned namespace), Play listing, screenshots, privacy policy
-      (covering the `12` data practices); COPPA / Play Families posture reviewed.
+- [ ] License-obligation checklist in `02` fully closed; ~~credits screen ships all
+      attributions + license texts~~ *(credits screen + bundled licence texts landed
+      2026-09-04 with the pilot; what remains is the application-code licence in
+      `LICENSE` and the qualified review gate)*.
+- [ ] ~~Final `applicationId` (owned namespace)~~ *(frozen 2026-09-04,
+      [ADR 0001](../adr/0001-application-id-frozen.md))*, Play listing, screenshots,
+      privacy policy (covering the `12` data practices); COPPA / Play Families posture
+      reviewed.
 - [ ] Privacy-respecting, **opt-in** crash reporting.
 - [ ] Local backup/restore (export/import a progress JSON) — independent of cloud sync.
 - [ ] Wider curricula (HSK 4–6), traditional-character support (`zh-Hant` data addition —
