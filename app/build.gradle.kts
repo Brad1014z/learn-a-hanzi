@@ -20,7 +20,16 @@ if (file("google-services.json").exists()) {
 // decodes KEYSTORE_BASE64 to a file and passes these four env vars; a developer machine
 // can do the same. Without them the release build is simply unsigned (still useful for
 // checking R8) — never debug-signed, which would be indistinguishable from a real build.
-val releaseKeystore = System.getenv("KEYSTORE_FILE")?.let { file(it) }?.takeIf { it.exists() }
+//
+// isNotBlank() before file(): on any CI run that isn't a v* tag, the workflow's
+// "Decode release keystore" step is skipped (its `if:` is false), and GitHub Actions
+// resolves a SKIPPED step's output reference to an empty string, not an absent one — so
+// KEYSTORE_FILE arrives as "" on every push/PR build, not null. file("") throws
+// immediately ("Cannot convert '' to File"), before a null-only check ever runs.
+val releaseKeystore = System.getenv("KEYSTORE_FILE")
+    ?.takeIf { it.isNotBlank() }
+    ?.let { file(it) }
+    ?.takeIf { it.exists() }
 val releaseSigningReady = releaseKeystore != null &&
     !System.getenv("KEYSTORE_PASSWORD").isNullOrEmpty() &&
     !System.getenv("KEY_ALIAS").isNullOrEmpty() &&
