@@ -59,7 +59,7 @@ object PracticeColors {
     val faintTarget = Color(0x1A888888)
 }
 
-private enum class Screen { HOME, COLLECTION, QUEST, SETTINGS }
+private enum class Screen { HOME, COLLECTION, QUEST, SETTINGS, CREDITS }
 
 /** Everything the Quest Hub shows, recomputed whenever progress changes. */
 private data class HubState(
@@ -282,9 +282,12 @@ fun HanziApp() {
                         onPilotFacilitatorLabel = {
                             scope.launch { settings.setPilotFacilitatorLabel(it) }
                         },
+                        onCredits = { screen = Screen.CREDITS },
                         onBack = { screen = Screen.HOME },
                     )
                 }
+
+                Screen.CREDITS -> CreditsScreen(onBack = { screen = Screen.SETTINGS })
 
                 Screen.COLLECTION -> when {
                     practiceChar != null -> {

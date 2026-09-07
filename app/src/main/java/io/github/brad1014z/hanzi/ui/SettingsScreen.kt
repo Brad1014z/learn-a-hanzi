@@ -42,6 +42,7 @@ fun SettingsScreen(
     onResetProgress: () -> Unit,
     onPilotExportConsent: (Boolean) -> Unit = {},
     onPilotFacilitatorLabel: (String) -> Unit = {},
+    onCredits: () -> Unit = {},
     onBack: () -> Unit,
 ) {
     var confirmReset by remember { mutableStateOf(false) }
@@ -88,6 +89,26 @@ fun SettingsScreen(
                     }
                 }
             }
+        }
+
+        // Spec 02 licence checklist: the attribution manifest ships in-app, because a
+        // sideloaded pilot APK is redistribution too (APL/LGPL/CC BY-SA all require it).
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 20.dp),
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text("Credits & licences", fontWeight = FontWeight.Bold)
+                Text(
+                    "The open datasets this app is built from.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            TextButton(onClick = onCredits) { Text("Open ›") }
         }
 
         Spacer(Modifier.weight(1f))
