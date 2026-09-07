@@ -14,16 +14,18 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         // Cloud layer glue (spec 12): Credential Manager needs an Activity for its
         // sheet; the periodic sync is a silent no-op offline or signed out.
-        Cloud.activityProvider = { this }
-        SyncWorker.schedulePeriodic(applicationContext)
-        SyncWorker.kickNow(applicationContext)
+        if (BuildConfig.SOCIAL_ENABLED) {
+            Cloud.activityProvider = { this }
+            SyncWorker.schedulePeriodic(applicationContext)
+            SyncWorker.kickNow(applicationContext)
+        }
         setContent {
             HanziApp()
         }
     }
 
     override fun onDestroy() {
-        Cloud.activityProvider = { null }
+        if (BuildConfig.SOCIAL_ENABLED) Cloud.activityProvider = { null }
         super.onDestroy()
     }
 }

@@ -27,6 +27,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -38,6 +39,9 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -79,6 +83,11 @@ fun PracticeScreen(
     allowRetry: Boolean = true, // quest cards advance via the SRS re-test, not "Again"
     sessionTag: String = "practice",
     onRecord: (PracticeRecord) -> Unit = {},
+    canAdvance: Boolean = true,
+    isSaving: Boolean = false,
+    saveError: String? = null,
+    onRetrySave: () -> Unit = {},
+    strokeAttemptObserver: StrokeAttemptObserver = StrokeAttemptObserver.None,
     onSoundToggle: (Boolean) -> Unit = {},
     onExit: () -> Unit,
     onNext: () -> Unit,
@@ -87,7 +96,7 @@ fun PracticeScreen(
     var mode by remember(character) { mutableStateOf(if (startInQuiz) Mode.QUIZ else Mode.DEMO) }
     var quiz by remember(character) { mutableStateOf(engine.start(character)) }
     var quizStartedAt by remember(character) {
-        mutableStateOf(if (startInQuiz) System.currentTimeMillis() else 0L)
+        mutableLongStateOf(if (startInQuiz) System.currentTimeMillis() else 0L)
     }
     var demoRun by remember(character) { mutableIntStateOf(0) }
     var demoStrokeIndex by remember(character) { mutableIntStateOf(0) }
@@ -100,15 +109,32 @@ fun PracticeScreen(
         )
     }
     var liveStroke by remember(character) { mutableStateOf<List<Point>>(emptyList()) }
+    var liveTimedStroke by remember(character) { mutableStateOf<List<TimedStrokePoint>>(emptyList()) }
+    var liveStrokeStartedAt by remember(character) { mutableLongStateOf(0L) }
     var fadingReject by remember(character) { mutableStateOf<List<Point>?>(null) }
     val rejectAlpha = remember(character) { Animatable(0f) }
     var hintStrokeFlash by remember(character) { mutableStateOf(false) }
+    val view = LocalView.current
+    val reducedMotion = remember(view) {
+        runCatching {
+            android.provider.Settings.Global.getFloat(
+                view.context.contentResolver,
+                android.provider.Settings.Global.ANIMATOR_DURATION_SCALE,
+                1f,
+            ) == 0f
+        }.getOrDefault(false)
+    }
 
     // Demo animation driver: strokes grow along their medians one by one.
     LaunchedEffect(character, demoRun, mode) {
         if (mode != Mode.DEMO) return@LaunchedEffect
         // Hear the character as the demo begins (spec: auto-play on demo, gated).
-        if (autoPlay && speechAvailable) speech.speak(character.character, "zh-Hans")
+        if (autoPlay && speechAvailable) {
+            speech.speak(
+                character.lessonContent?.pronunciationAudio?.spokenText ?: character.character,
+                "zh-Hans",
+            )
+        }
         for (i in character.medians.indices) {
             demoStrokeIndex = i
             demoProgress.snapTo(0f)
@@ -127,8 +153,12 @@ fun PracticeScreen(
     // Rejected stroke fades away instead of staying as clutter (spec 05, failure UX).
     LaunchedEffect(fadingReject) {
         if (fadingReject != null) {
-            rejectAlpha.snapTo(0.8f)
-            rejectAlpha.animateTo(0f, tween(450))
+            if (reducedMotion) {
+                rejectAlpha.snapTo(0f)
+            } else {
+                rejectAlpha.snapTo(0.8f)
+                rejectAlpha.animateTo(0f, tween(200))
+            }
             fadingReject = null
         }
     }
@@ -158,17 +188,34 @@ fun PracticeScreen(
             )
             if (speechAvailable) {
                 kotlinx.coroutines.delay(400) // let the completion sound land first
-                speech.speak(character.character, "zh-Hans")
+                speech.speak(
+                    character.lessonContent?.pronunciationAudio?.spokenText ?: character.character,
+                    "zh-Hans",
+                )
             }
         }
     }
 
-    fun onStrokeFinished(points: List<Point>) {
+    fun onStrokeFinished(points: List<Point>, timedPoints: List<TimedStrokePoint>) {
         if (mode != Mode.QUIZ || quiz.isComplete) return
+        val expectedIndex = quiz.expectedIndex
+        val retryCount = quiz.rejectsOnCurrent
         val (next, verdict) = engine.submitStroke(quiz, points)
         quiz = next
+        strokeAttemptObserver.record(
+            StrokeAttemptEvent(
+                character = character.character,
+                expectedStrokeIndex = expectedIndex,
+                points = timedPoints,
+                verdict = verdict,
+                retryCount = retryCount,
+            ),
+        )
         when (verdict) {
-            is StrokeVerdict.Accept -> if (next.isComplete) sounds.playComplete() else sounds.playCorrect()
+            is StrokeVerdict.Accept -> {
+                view.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP)
+                if (next.isComplete) sounds.playComplete() else sounds.playCorrect()
+            }
             is StrokeVerdict.WrongOrder, is StrokeVerdict.Reject -> sounds.playWrong()
             StrokeVerdict.Ignored -> Unit
         }
@@ -184,15 +231,10 @@ fun PracticeScreen(
             }
             is StrokeVerdict.Reject -> {
                 fadingReject = points
-                // Scores shown for GradingConfig tuning (Phase 0); hidden post-tuning.
-                val s = verdict.scores
-                val debug = s?.let {
-                    "  [d=%.0f dir=%.2f len=%.2f]".format(it.meanDist, it.directionScore, it.lengthRatio)
-                } ?: ""
                 when (verdict.reason) {
-                    RejectReason.WRONG_DIRECTION -> "Right place, wrong direction — watch the demo arrow.$debug"
-                    RejectReason.LENGTH_OUT_OF_RANGE -> "Stroke length looks off — try the full stroke.$debug"
-                    RejectReason.TOO_FAR -> "Not quite — aim for the highlighted area.$debug"
+                    RejectReason.WRONG_DIRECTION -> "Follow the arrow from the starting dot."
+                    RejectReason.LENGTH_OUT_OF_RANGE -> "Start at the dot and finish near the arrow tip."
+                    RejectReason.TOO_FAR -> "Start closer to the dot."
                 }
             }
             StrokeVerdict.Ignored -> feedback
@@ -231,13 +273,18 @@ fun PracticeScreen(
         // (spec 00); the speaker hides when no Mandarin voice exists (spec 01 fallback).
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = "${character.pinyin.joinToString(", ")} · ${character.shortDefinition}",
+                text = "${character.primaryPinyin} · ${character.learnerGloss}",
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(bottom = 4.dp),
             )
             if (speechAvailable) {
-                TextButton(onClick = { speech.speak(character.character, "zh-Hans") }) {
+                TextButton(onClick = {
+                    speech.speak(
+                        character.lessonContent?.pronunciationAudio?.spokenText ?: character.character,
+                        "zh-Hans",
+                    )
+                }) {
                     Text("🔊", fontSize = 18.sp)
                 }
             }
@@ -248,22 +295,42 @@ fun PracticeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f)
+                    .semantics {
+                        contentDescription = if (mode == Mode.DEMO) {
+                            "Stroke order demonstration for ${character.character}"
+                        } else {
+                            "Writing pad for ${character.character}, stroke ${quiz.expectedIndex + 1} " +
+                                "of ${character.strokeCount}"
+                        }
+                    }
                     .pointerInput(character, mode) {
                         if (mode != Mode.QUIZ) return@pointerInput
                         detectDragGestures(
                             onDragStart = { offset ->
                                 val m = CanvasMapping(size.width.toFloat(), size.height.toFloat())
-                                liveStroke = listOf(m.toEngine(offset))
+                                val point = m.toEngine(offset)
+                                liveStrokeStartedAt = android.os.SystemClock.elapsedRealtime()
+                                liveStroke = listOf(point)
+                                liveTimedStroke = listOf(TimedStrokePoint(point, 0))
                             },
                             onDrag = { change, _ ->
                                 val m = CanvasMapping(size.width.toFloat(), size.height.toFloat())
-                                liveStroke = liveStroke + m.toEngine(change.position)
+                                val point = m.toEngine(change.position)
+                                liveStroke = liveStroke + point
+                                liveTimedStroke = liveTimedStroke + TimedStrokePoint(
+                                    point,
+                                    android.os.SystemClock.elapsedRealtime() - liveStrokeStartedAt,
+                                )
                             },
                             onDragEnd = {
-                                onStrokeFinished(liveStroke)
+                                onStrokeFinished(liveStroke, liveTimedStroke)
                                 liveStroke = emptyList()
+                                liveTimedStroke = emptyList()
                             },
-                            onDragCancel = { liveStroke = emptyList() },
+                            onDragCancel = {
+                                liveStroke = emptyList()
+                                liveTimedStroke = emptyList()
+                            },
                         )
                     },
             ) {
@@ -321,6 +388,10 @@ fun PracticeScreen(
                 CompletionOverlay(
                     quiz = quiz,
                     allowRetry = allowRetry,
+                    canAdvance = canAdvance,
+                    isSaving = isSaving,
+                    saveError = saveError,
+                    onRetrySave = onRetrySave,
                     onAgain = {
                         quiz = engine.start(character)
                         quizStartedAt = System.currentTimeMillis()
@@ -377,6 +448,10 @@ fun PracticeScreen(
 private fun CompletionOverlay(
     quiz: QuizState,
     allowRetry: Boolean = true,
+    canAdvance: Boolean,
+    isSaving: Boolean,
+    saveError: String?,
+    onRetrySave: () -> Unit,
     onAgain: () -> Unit,
     onNext: () -> Unit,
 ) {
@@ -391,20 +466,28 @@ private fun CompletionOverlay(
         ) {
             Text(text = "完成!", fontSize = 44.sp)
             Text(
-                text = "${quiz.character.character} · ${quiz.character.pinyin.joinToString(", ")} · " +
-                    quiz.character.shortDefinition,
+                text = "${quiz.character.character} · ${quiz.character.primaryPinyin} · " +
+                    quiz.character.learnerGloss,
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 4.dp),
             )
             Text(
-                text = "Grade ${quiz.toGrade()} / 5",
-                style = MaterialTheme.typography.titleLarge,
+                text = when {
+                    saveError != null -> "Couldn’t save yet — your work is still here."
+                    isSaving -> "Saving your progress…"
+                    canAdvance -> "Stored in your collection."
+                    else -> "Finishing up…"
+                },
+                style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.padding(8.dp),
             )
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (allowRetry) OutlinedButton(onClick = onAgain) { Text("Again") }
-                Button(onClick = onNext) { Text("Next") }
+                if (saveError != null) {
+                    OutlinedButton(onClick = onRetrySave) { Text("Try saving again") }
+                }
+                Button(onClick = onNext, enabled = canAdvance) { Text("Next") }
             }
         }
     }

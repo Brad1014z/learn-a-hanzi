@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -16,23 +17,27 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import io.github.brad1014z.hanzi.data.CurriculumRow
 import io.github.brad1014z.hanzi.data.RoomContentRepository
-import io.github.brad1014z.hanzi.engine.play.Rank
-import io.github.brad1014z.hanzi.engine.play.RankState
-import io.github.brad1014z.hanzi.engine.play.Ranks
 import io.github.brad1014z.hanzi.engine.progress.CharacterProgress
+
+enum class CharacterShelf { COLLECTION, BROWSE }
 
 /**
  * The character grid, now grouped into worlds (M2 — spec 04/10): every HSK 1 character
@@ -45,10 +50,20 @@ fun CharacterGridScreen(
     worlds: List<RoomContentRepository.World>,
     progress: Map<String, CharacterProgress> = emptyMap(),
     unlockedWorlds: Int = Int.MAX_VALUE,
+    shelf: CharacterShelf = CharacterShelf.COLLECTION,
+    onShelfChange: (CharacterShelf) -> Unit = {},
     onBack: (() -> Unit)? = null,
     onCharacterTap: (String) -> Unit,
 ) {
-    val total = worlds.sumOf { it.characters.size }
+    var search by remember { mutableStateOf("") }
+    val visibleWorlds = worlds.mapNotNull { world ->
+        val rows = world.characters.filter { row ->
+            val isVisible = shelf == CharacterShelf.BROWSE || row.character in progress
+            isVisible && (search.isBlank() || row.character.contains(search.trim()))
+        }
+        if (rows.isEmpty()) null else world.copy(characters = rows)
+    }
+    val total = visibleWorlds.sumOf { it.characters.size }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -60,12 +75,37 @@ fun CharacterGridScreen(
                 androidx.compose.material3.TextButton(onClick = onBack) { Text("‹ Home") }
             }
             Text(
-                text = "Collection",
+                text = if (shelf == CharacterShelf.COLLECTION) "Collection" else "Browse",
                 style = MaterialTheme.typography.headlineMedium,
             )
         }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedButton(
+                onClick = { onShelfChange(CharacterShelf.COLLECTION) },
+                enabled = shelf != CharacterShelf.COLLECTION,
+                modifier = Modifier.weight(1f),
+            ) { Text("Collection") }
+            OutlinedButton(
+                onClick = { onShelfChange(CharacterShelf.BROWSE) },
+                enabled = shelf != CharacterShelf.BROWSE,
+                modifier = Modifier.weight(1f),
+            ) { Text("Browse") }
+        }
+        if (shelf == CharacterShelf.BROWSE) {
+            TextField(
+                value = search,
+                onValueChange = { search = it.take(8) },
+                label = { Text("Search characters") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+            )
+        }
         Text(
-            text = "$total characters in ${worlds.size} worlds · ${progress.size} practiced",
+            text = if (shelf == CharacterShelf.COLLECTION) {
+                "$total encountered"
+            } else {
+                "$total available · ${progress.size} encountered"
+            },
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 8.dp),
@@ -75,13 +115,13 @@ fun CharacterGridScreen(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            worlds.forEachIndexed { worldIndex, world ->
+            visibleWorlds.forEach { world ->
+                val worldIndex = worlds.indexOfFirst { it.id == world.id }
                 item(key = "world-${world.id}", span = { GridItemSpan(maxLineSpan) }) {
                     WorldHeader(
                         name = world.name,
                         locked = worldIndex >= unlockedWorlds,
                         previousName = worlds.getOrNull(worldIndex - 1)?.name,
-                        mastery = Ranks.masteryFraction(world.characters.map { progress[it.character] }),
                     )
                 }
                 items(world.characters, key = { it.character }) { row ->
@@ -97,7 +137,7 @@ fun CharacterGridScreen(
 }
 
 @Composable
-private fun WorldHeader(name: String, locked: Boolean, previousName: String?, mastery: Double) {
+private fun WorldHeader(name: String, locked: Boolean, previousName: String?) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(top = 12.dp, bottom = 2.dp),
@@ -111,9 +151,9 @@ private fun WorldHeader(name: String, locked: Boolean, previousName: String?, ma
         Text(
             // Locked gates the guided track only — tiles stay browsable (spec 04).
             text = if (locked && previousName != null) {
-                "unlocks at 80% Bronze in $previousName · free practice ok"
+                "guided lessons open after $previousName · free practice is available"
             } else {
-                "${(mastery * 100).toInt()}% Bronze+"
+                "available"
             },
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -123,17 +163,21 @@ private fun WorldHeader(name: String, locked: Boolean, previousName: String?, ma
 
 @Composable
 private fun CharacterTile(row: CurriculumRow, progress: CharacterProgress?, onTap: () -> Unit) {
-    // Rank colors are placeholders — collection art is the co-designer's M5 pass.
-    val rank: RankState = Ranks.of(progress)
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = when {
-            rank.rank != Rank.NONE -> MaterialTheme.colorScheme.secondaryContainer
             progress != null -> MaterialTheme.colorScheme.surfaceVariant // met, silhouette
             else -> MaterialTheme.colorScheme.surfaceVariant
         },
         modifier = Modifier
             .aspectRatio(1f)
+            .semantics {
+                contentDescription = if (progress == null) {
+                    "${row.character}, not encountered, open details"
+                } else {
+                    "${row.character}, encountered, open details"
+                }
+            }
             .clickable(onClick = onTap),
     ) {
         Box {
@@ -144,30 +188,19 @@ private fun CharacterTile(row: CurriculumRow, progress: CharacterProgress?, onTa
             ) {
                 Text(text = row.character, fontSize = 32.sp)
                 Text(
-                    text = row.definition.substringBefore(";").substringBefore(",").trim(),
+                    text = if (progress == null) "Not met yet" else "Practiced",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(horizontal = 4.dp),
                 )
             }
-            val badge = when (rank.rank) {
-                Rank.GOLD -> "★" to Color(0xFFDAA520)
-                Rank.SILVER -> "●" to Color(0xFF8E9BA6)
-                Rank.BRONZE -> "●" to Color(0xFFB07B4F)
-                Rank.NONE -> if (progress != null) "·" to MaterialTheme.colorScheme.onSurfaceVariant else null
-            }
-            badge?.let { (glyph, color) ->
+            if (progress != null) {
                 Text(
-                    text = glyph,
-                    color = color,
+                    text = "✓",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .padding(6.dp)
-                        // A lapse dims the rank until re-proven — asks, never scolds (spec 04).
-                        .alpha(if (rank.dimmed) 0.35f else 1f),
+                        .padding(6.dp),
                 )
             }
         }

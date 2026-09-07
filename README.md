@@ -6,9 +6,10 @@ and sentences, driven by a spaced-repetition review loop — **and shaped as a g
 mastered characters join your collection, the curriculum unfolds as worlds, and each day
 brings a quest and a shareable challenge. Co-built by a father-son team.
 
-> **Status:** Phase 0 in progress — the family prototype builds and its engine test
-> suite passes; next up is on-device grading tuning and the co-designer's game-feel
-> sessions ([`11-family-prototype`](./docs/specs/11-family-prototype.md)).
+> **Status:** M4.1 “First Ten Minutes” implementation and pilot preparation. Social/cloud
+> and iOS are frozen. Distribution is blocked on signed Chinese-teacher content, real-stroke
+> calibration, teen-pilot gates, approved UI mockups, and a data-license review; see
+> [`m4.1-release-gates`](./docs/milestones/m4.1-release-gates.md).
 
 ## Build & run
 
@@ -66,20 +67,17 @@ Following [`08-roadmap`](./docs/specs/08-roadmap.md):
 
 - [x] Draft spec set
 - [x] Spec review — specs ACCEPTED (2026-07)
-- [ ] Phase 0 — family prototype (grading engine + game feel, on-device)
-- [ ] Phase 1 — foundation (module skeleton, data-ingest pipeline, CI)
-- [ ] Phase 2 — MVP (HSK 1 learn → practice → review loop, offline)
-- [ ] Phase 3 — polish & depth (badges, pre-generated audio, arcade)
-- [ ] Phase 4 — cloud layer (optional sign-in, sync, friends challenges)
-- [ ] Phase 5 — publish (Play Store)
+- [x] Technical foundation (engine, ingest, Room, Compose, offline audio)
+- [x] M4.1 engineering loop (transactional quest, three-plus-two rhythm, social freeze)
+- [ ] M4.1 external gates (teacher sign-off, mockup approval, calibration corpus, teen pilot)
+- [ ] License/attribution review and distribution approval
+- [ ] Social/cloud re-enable blockers
+- [ ] iOS/KMP portability work
 
 ## License
 
-Application code: intended to be released under a permissive license (MIT or Apache-2.0;
-see `LICENSE` once chosen).
-
-Learning content is derived from open datasets under their own licenses — see
-[`02-data-sources`](./docs/specs/02-data-sources.md) for the full attribution list
-(Arphic PL + LGPLv3 for make-me-a-hanzi's two files, CC BY-SA 4.0 for CC-CEDICT,
-per-sentence CC for Tatoeba — verified 2026-07). The compliance checklist in `02` closes
-before the first public release.
+**No redistribution grant is asserted yet.** Repository files previously disagreed about
+source versions and terms. Application-code licensing, dataset compatibility, attribution,
+and audio redistribution all require an appropriate license review before any APK or bundled
+dataset is distributed. [`m4.1-release-gates`](./docs/milestones/m4.1-release-gates.md)
+records the conflicts without inferring legal compatibility.

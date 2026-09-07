@@ -56,12 +56,18 @@ data class CharacterData(
     val phrases: List<Phrase> = emptyList(),
     /** One example sentence (M2 dataset; null in the Phase 0 resource slice). */
     val sentence: ExampleSentence? = null,
+    /** Learner-facing content; Room always supplies this even while old fixtures do not. */
+    val lessonContent: LessonContent? = null,
 ) {
     /** First clause of the gloss — fits small UI (e.g. "fire" from "fire, flame; to burn"). */
     val shortDefinition: String
         get() = definition.substringBefore(";").trim()
 
     val strokeCount: Int get() = medians.size
+
+    val primaryPinyin: String get() = lessonContent?.primaryReading?.pinyin ?: pinyin.firstOrNull().orEmpty()
+
+    val learnerGloss: String get() = lessonContent?.learnerGloss ?: shortDefinition
 
     init {
         require(strokeOutlines.size == medians.size) {

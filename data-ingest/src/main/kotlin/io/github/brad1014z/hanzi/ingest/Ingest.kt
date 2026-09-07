@@ -2,6 +2,7 @@ package io.github.brad1014z.hanzi.ingest
 
 import io.github.brad1014z.hanzi.engine.data.HanziCoordinates
 import io.github.brad1014z.hanzi.engine.geometry.Point
+import io.github.brad1014z.hanzi.engine.data.LessonManifest
 import io.github.brad1014z.hanzi.engine.svg.SvgPathParser
 import io.github.brad1014z.hanzi.engine.svg.mapPoints
 import io.github.brad1014z.hanzi.engine.svg.toPathString
@@ -118,6 +119,20 @@ fun main() {
             },
         )
     }
+
+    // -- Signed lesson content (M4.1 release gate) -----------------------------
+    // This deliberately blocks regeneration while the checked-in manifest is pending.
+    // Engineering never infers approval from a merge or from dictionary data.
+    val lessonManifestFile = File(root, "app/src/main/assets/content/lesson-content-first30.json")
+    check(lessonManifestFile.exists()) {
+        "HARD FAIL: missing teacher-reviewed app asset content/lesson-content-first30.json"
+    }
+    val lessonManifest = json.decodeFromString<LessonManifest>(lessonManifestFile.readText())
+    requireValidLessonManifest(
+        manifest = lessonManifest,
+        dictionaryReadings = dict.mapValues { it.value.pinyin },
+        audioExists = { assetPath -> File(root, "app/src/main/assets/$assetPath").isFile },
+    )
 
     // -- Worlds + world-major teaching sequence (spec 04) ----------------------
     val worlds = parseWorlds(File(pinned, "worlds-hsk1.tsv"))
