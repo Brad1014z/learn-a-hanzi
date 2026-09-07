@@ -1,10 +1,15 @@
-# CI (docs/specs/01): unit tests gate the APK — if the engine suite (including the
-# grading golden corpus) fails, no APK is produced.
+# CI (docs/specs/01): tests gate the APK — if the engine suite (including the grading
+# golden corpus) fails, no APK is produced. Three jobs, each gating the next:
+#   build         unit tests + lint + androidTest compilation → debug & release APKs
+#   device-tests  the Compose UI specs on real emulators (API 26 / API 36)
+#   release       on a v* tag only, publishes the SIGNED release APK as a GitHub
+#                 Release — the pilot download page (docs/adr/0001)
 name: android
 
 on:
   push:
     branches: [main]
+    tags: ['v*'] # a v* tag publishes the signed pilot APK — see the `release` job
   pull_request:
   workflow_dispatch:
 
@@ -49,6 +54,45 @@ jobs:
         with:
           name: hanzi-prototype-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
+
+      # --- Release APK (docs/adr/0001, spec 01) ------------------------------------
+      # Secrets (repo Settings → Secrets and variables → Actions):
+      #   KEYSTORE_BASE64   base64 of the release .jks   (base64 -w0 release.jks)
+      #   KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD
+      # The keystore is written to the runner's temp dir and never enters the repo.
+      # Without the secrets this still runs and produces app-release-unsigned.apk, so R8
+      # and the keep rules stay covered on every PR; only tagging needs the real key.
+      #
+      # Signing is deliberately restricted to v* tags. A *signed* APK is a distributable
+      # one, so it also triggers the `verifyPilotContent` gate (app/build.gradle.kts) —
+      # scoping signing to tags keeps PR and main CI green (and R8 covered) while the
+      # teacher-content gate is still open, and makes tagging the moment of truth.
+      - name: Decode release keystore
+        id: keystore
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+            echo "file=$RUNNER_TEMP/release.jks" >> "$GITHUB_OUTPUT"
+          else
+            echo "No KEYSTORE_BASE64 secret — building an UNSIGNED release APK."
+          fi
+
+      - name: Build release APK
+        env:
+          KEYSTORE_FILE: ${{ steps.keystore.outputs.file }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew :app:assembleRelease
+
+      - name: Upload release APK
+        uses: actions/upload-artifact@v6
+        with:
+          name: hanzi-release-apk
+          path: app/build/outputs/apk/release/app-release*.apk
 
   device-tests:
     name: Compose UI · API ${{ matrix.api-level }} · ${{ matrix.viewport }}
@@ -100,3 +144,36 @@ jobs:
             adb shell wm size
             adb shell wm density
             ./gradlew :app:connectedDebugAndroidTest --stacktrace --console=plain
+
+  # Tagged builds become the pilot download page. Gated on BOTH the unit-test/lint job
+  # and the emulator jobs: an APK that failed the device gates must never reach a tester.
+  release:
+    name: Publish pilot release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build, device-tests]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the GitHub Release and attach the APK
+    steps:
+      - name: Download release APK
+        uses: actions/download-artifact@v6
+        with:
+          name: hanzi-release-apk
+          path: apk
+
+      # AGP names the output app-release-unsigned.apk when no signing config applied,
+      # so this is a self-verifying check that the signing secrets really were in play.
+      - name: Refuse to publish an unsigned APK
+        run: |
+          if [ ! -f apk/app-release.apk ]; then
+            echo "::error::No signed app-release.apk (found: $(ls apk))."
+            echo "::error::Add the KEYSTORE_BASE64 / KEYSTORE_PASSWORD / KEY_ALIAS / KEY_PASSWORD secrets, then re-tag."
+            exit 1
+          fi
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          generate_release_notes: true
+          files: apk/app-release.apk
