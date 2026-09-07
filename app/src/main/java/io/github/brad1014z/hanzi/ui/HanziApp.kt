@@ -42,6 +42,7 @@ import io.github.brad1014z.hanzi.engine.play.QuestBuilder
 import io.github.brad1014z.hanzi.engine.play.Ranks
 import io.github.brad1014z.hanzi.engine.play.unlockedWorldCount
 import io.github.brad1014z.hanzi.engine.progress.CharacterProgress
+import io.github.brad1014z.hanzi.engine.progress.Consistency
 import java.util.UUID
 import kotlinx.coroutines.launch
 
@@ -70,6 +71,7 @@ private data class HubState(
     val currentWorldMastery: Double,
     val nextWorldName: String?,
     val daysPlayed: Int,
+    val consistency: Consistency,
 )
 
 @Composable
@@ -187,6 +189,7 @@ fun HanziApp() {
                     currentWorldMastery = masteryByWorld.getOrNull(unlocked - 1) ?: 0.0,
                     nextWorldName = loadedWorlds.getOrNull(unlocked)?.name,
                     daysPlayed = today.daysPlayed,
+                    consistency = progressRepository.consistency(),
                 )
             }
 
@@ -211,6 +214,8 @@ fun HanziApp() {
                         QuestHubScreen(
                             daysPlayed = h.daysPlayed,
                             quest = h.summary,
+                            currentRun = h.consistency.currentRun,
+                            isComeback = h.consistency.isComeback,
                             currentWorldName = h.currentWorldName,
                             currentWorldMastery = h.currentWorldMastery,
                             nextWorldName = h.nextWorldName,

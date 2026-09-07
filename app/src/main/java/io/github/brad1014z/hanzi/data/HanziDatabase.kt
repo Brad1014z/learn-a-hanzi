@@ -91,6 +91,18 @@ interface ProgressDao {
     @Query("SELECT COUNT(DISTINCT date(reviewedAt/1000, 'unixepoch', 'localtime')) FROM ReviewLog")
     suspend fun daysPlayed(): Int
 
+    /**
+     * The distinct local calendar days with at least one graded write, newest first —
+     * the raw material for the current run and the comeback greeting (spec 10). Capped
+     * because only the recent tail can affect a run, and the lifetime total comes from
+     * [daysPlayed] instead of this list.
+     */
+    @Query(
+        "SELECT DISTINCT date(reviewedAt/1000, 'unixepoch', 'localtime') FROM ReviewLog " +
+            "ORDER BY 1 DESC LIMIT 800",
+    )
+    suspend fun playedDates(): List<String>
+
     @Upsert
     suspend fun upsert(progress: CharacterProgressEntity)
 

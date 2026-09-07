@@ -61,6 +61,26 @@ boss stroke → chest. Play-layer notes:
 - Missing a day: nothing is lost, nothing shames. The streak counts **days played** and
   pauses gracefully (`00`).
 
+### Consistency, concretely *(added 2026-09-05)*
+
+`Consistency` (in `:engine`, `consistencyOf`) is what the hub reads. It deliberately has
+no "streak lost" state to render:
+
+- A **day played** is a local calendar day with ≥1 graded write — the definition
+  `daysPlayed` already used. No grace window: honest and simple.
+- **`daysPlayed`** is the lifetime total and only ever goes up.
+- **`currentRun`** is consecutive days played including today. A run does *not* end
+  because today has no practice yet — today isn't over; it ends once a whole unpractised
+  day has passed. So opening the app in the morning never shows a run collapsing.
+- **`isComeback`** is true on the day a learner returns after ≥2 missed days. The hub
+  greets it ("Welcome back — day 1 of a new run") *instead of* mentioning the gap. There
+  is no "you lost your streak" copy anywhere, by construction.
+
+*Deviation from the original plan:* a comeback was going to pay a small XP bonus. XP is
+deliberately absent from the pilot hub (M4.1 froze it, and the Compose specs assert the
+hub shows no XP), so paying an invisible bonus would be a signal nobody sees. The
+comeback is framing only until XP returns to the surface. Locked in by `ConsistencyTest`.
+
 ## The daily challenge (shareable)
 
 Wordle-shaped, offline, serverless:

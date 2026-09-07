@@ -45,6 +45,10 @@ data class QuestSummary(
 fun QuestHubScreen(
     daysPlayed: Int,
     quest: QuestSummary,
+    // Defaulted so the consistency line is additive: callers that don't track a run
+    // (and the Compose specs) keep working, and the line simply doesn't appear.
+    currentRun: Int = 0,
+    isComeback: Boolean = false,
     currentWorldName: String?,
     currentWorldMastery: Double,
     nextWorldName: String?,
@@ -62,7 +66,14 @@ fun QuestHubScreen(
         // One source of truth for the name: the launcher label is the same resource.
         Text(stringResource(R.string.app_name), style = MaterialTheme.typography.headlineMedium)
         Text(
-            text = "$daysPlayed ${if (daysPlayed == 1) "day" else "days"} practiced",
+            // Consistency, never guilt (spec 10 / constitution): this line reports the
+            // run you are ON and greets a return. It never mentions a broken streak, and
+            // the lifetime total never goes down.
+            text = when {
+                isComeback -> "Welcome back — day 1 of a new run"
+                currentRun > 1 -> "$currentRun days in a row · $daysPlayed practiced"
+                else -> "$daysPlayed ${if (daysPlayed == 1) "day" else "days"} practiced"
+            },
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
