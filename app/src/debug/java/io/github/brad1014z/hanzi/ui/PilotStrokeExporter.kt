@@ -34,6 +34,9 @@ class PilotStrokeExporter(
             put("sessionId", sessionId)
             put("appBuild", "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
             put("deviceProfile", "${Build.MANUFACTURER} ${Build.MODEL}; sdk ${Build.VERSION.SDK_INT}")
+            // The corpus gate is measured across phone sizes; dp is stable across density.
+            put("screenWidthDp", appContext.resources.configuration.screenWidthDp)
+            put("screenHeightDp", appContext.resources.configuration.screenHeightDp)
             put("character", event.character)
             put("expectedStrokeIndex", event.expectedStrokeIndex)
             put("retryCount", event.retryCount)

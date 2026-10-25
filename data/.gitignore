@@ -1,1 +1,3 @@
+# Raw sources (data/raw) and raw pilot exports (data/corpus/raw) stay local.
+# The generated corpus report is tracked as gate evidence.
 raw/

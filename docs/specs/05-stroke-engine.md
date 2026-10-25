@@ -204,6 +204,17 @@ crossings (e.g. 一 人 我 火 心 小 乙):
 
 The corpus ships with the test code (no PII — they're geometric paths).
 
+### Pilot corpus (M4.1)
+
+The synthetic golden set keeps tuning honest; it cannot show whether real fingers on real
+phones are treated fairly. The debug build therefore writes consent-gated JSONL stroke
+attempts (points, verdict, retry count, facilitator label, screen size) to the app's
+private storage. `:data-ingest:checkPilotCorpus` reads the pulled files and computes honest
+false rejection and deliberate false acceptance by character and phone size, against the
+M4.1 thresholds. Recording phases, `adb` pull, and the raw-data policy live in
+[`data/corpus/README.md`](../../data/corpus/README.md). Raw pilot exports are never
+committed; only the generated report is.
+
 ## Failure & recovery UX
 
 - On reject, the user's just-drawn stroke **fades away** (not left as permanent ink), so

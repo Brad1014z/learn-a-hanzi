@@ -75,6 +75,24 @@ tasks.register<JavaExec>("draftLessonContent") {
     workingDir = rootDir
 }
 
+// Corpus loop (docs/milestones/m4.1-release-gates.md): raw JSONL pulled from a pilot
+// phone → FRR/FAR report. The raw exports stay local; only the report is committed.
+tasks.register<JavaExec>("analyzePilotCorpus") {
+    group = "verification"
+    description = "Analyze pilot stroke JSONL and write data/corpus/corpus-report.md"
+    mainClass.set("io.github.brad1014z.hanzi.ingest.CorpusAnalyzerKt")
+    classpath = sourceSets["main"].runtimeClasspath
+    workingDir = rootDir
+}
+
+tasks.register<JavaExec>("checkPilotCorpus") {
+    group = "verification"
+    description = "Fail unless the corpus meets the M4.1 counts, FRR and FAR gates"
+    mainClass.set("io.github.brad1014z.hanzi.ingest.CheckPilotCorpusKt")
+    classpath = sourceSets["main"].runtimeClasspath
+    workingDir = rootDir
+}
+
 // Tests read the checked-in dataset/audio by repo-relative path, like the tasks above.
 tasks.test {
     workingDir = rootDir

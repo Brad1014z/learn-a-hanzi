@@ -50,3 +50,16 @@ The deep rules (readings, tones, contiguous sequences, audio, teacher metadata, 
 examples that use only already-learned characters) live in
 `engine/.../data/LessonContentValidation.kt`, so CI, the ingest run, and the signing gate
 all enforce the same thing.
+
+## Pilot stroke corpus
+
+The debug APK writes consent-gated JSONL stroke attempts locally. Pull them from the
+device and turn them into the gate evidence:
+
+| Task | What it does |
+|---|---|
+| `./gradlew :data-ingest:analyzePilotCorpus` | Reads `data/corpus/raw/*.jsonl` and writes `data/corpus/corpus-report.md` (FRR/FAR, per character, per phone size) |
+| `./gradlew :data-ingest:checkPilotCorpus` | Same, but exits non-zero unless the M4.1 corpus gate passes |
+
+See [`data/corpus/README.md`](../data/corpus/README.md) for the recording phases, the
+`adb` pull command, and what may be committed.
