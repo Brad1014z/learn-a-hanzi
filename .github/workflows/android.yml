@@ -35,7 +35,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
 
       - name: Unit tests, lint, and Android-test compilation
-        run: ./gradlew test lint :app:compileDebugAndroidTestKotlin --stacktrace
+        run: ./gradlew test lint :data-ingest:verifyLessonManifest :app:compileDebugAndroidTestKotlin --stacktrace
 
       - name: Upload test and lint reports
         if: failure()

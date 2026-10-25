@@ -34,3 +34,45 @@ generated content into the bundled SQLite the app reads.
   placeholders; naming belongs to the co-designer, spec 11).
 - `data/pinned/hsk1-words.json` — the pinned HSK 1 (2.0) word list (150 words,
   178 unique characters).
+
+## Teacher manifest workflow (M4.1 release gate)
+
+The signed-release content gate reads `app/src/main/assets/content/lesson-content-first30.json`.
+Three tasks work on it without needing `data/raw/`:
+
+| Task | What it does |
+|---|---|
+| `./gradlew :data-ingest:draftLessonContent` | Writes an unapproved first-30 draft + HTML/CSV review sheet to `data/review/` (see its README) |
+| `./gradlew :data-ingest:verifyLessonManifest` | Validates the checked-in manifest against the bundled dataset + audio; an empty manifest is “pending”, not a failure (CI) |
+| `./gradlew :data-ingest:verifyPilotLessonManifest` | The strict signing gate: empty or invalid fails |
+
+The deep rules (readings, tones, contiguous sequences, audio, teacher metadata, and
+examples that use only already-learned characters) live in
+`engine/.../data/LessonContentValidation.kt`, so CI, the ingest run, and the signing gate
+all enforce the same thing.
+
+## Pilot stroke corpus
+
+The debug APK writes consent-gated JSONL stroke attempts locally. Pull them from the
+device and turn them into the gate evidence:
+
+| Task | What it does |
+|---|---|
+| `./gradlew :data-ingest:analyzePilotCorpus` | Reads `data/corpus/raw/*.jsonl` and writes `data/corpus/corpus-report.md` (FRR/FAR, per character, per phone size) |
+| `./gradlew :data-ingest:checkPilotCorpus` | Same, but exits non-zero unless the M4.1 corpus gate passes |
+
+See [`data/corpus/README.md`](../data/corpus/README.md) for the recording phases, the
+`adb` pull command, and what may be committed.
+
+## Pilot results (facilitator worksheet)
+
+The pilot APK ships no telemetry; a facilitator records the gate facts on a pseudonymous
+worksheet.
+
+| Task | What it does |
+|---|---|
+| `./gradlew :data-ingest:analyzePilotResults` | Reads `data/pilot/pilot-results.csv` and writes `data/pilot/pilot-report.md` |
+| `./gradlew :data-ingest:checkPilotResults` | Same, but exits non-zero unless the participation and outcome gates pass |
+
+See [`docs/milestones/m4.1-pilot-protocol.md`](../docs/milestones/m4.1-pilot-protocol.md)
+and [`data/pilot/README.md`](../data/pilot/README.md).

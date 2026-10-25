@@ -1,13 +1,17 @@
-package io.github.brad1014z.hanzi.ingest
-
-import io.github.brad1014z.hanzi.engine.data.LessonManifest
-
-class LessonContentValidationException(val failures: List<String>) :
-    IllegalArgumentException(failures.joinToString(prefix = "Lesson content rejected:\n- ", separator = "\n- "))
+package io.github.brad1014z.hanzi.engine.data
 
 /**
- * Release gate for the signed first-30 manifest. All errors are reported together so a
- * teacher/content edit gets one useful review cycle rather than one failure at a time.
+ * Release gate for the signed first-30 manifest (docs/milestones/m4.1-release-gates.md).
+ *
+ * This lives in `:engine` — not `:data-ingest` — because it is part of the domain: the
+ * same rules must be enforceable by the ingest pipeline, by CI against the checked-in
+ * asset, and by the signing gate. All errors are reported together so a teacher/content
+ * edit gets one useful review cycle rather than one failure at a time.
+ *
+ * [requireApproval] exists for the teacher-review draft generator: a draft is *supposed*
+ * to have `approved = false`, but every other rule (readings, tones, audio, example
+ * vocabulary) should still be checked while it is authored. A release build always calls
+ * this with the default `true`.
  */
 fun requireValidLessonManifest(
     manifest: LessonManifest,
@@ -15,6 +19,7 @@ fun requireValidLessonManifest(
     audioExists: (String) -> Boolean,
     requiredCount: Int = 30,
     requiredPrefix: List<String> = listOf("人", "大", "天"),
+    requireApproval: Boolean = true,
 ) {
     val failures = mutableListOf<String>()
     val ordered = manifest.lessons.sortedBy { it.curriculumSequence }
@@ -54,7 +59,10 @@ fun requireValidLessonManifest(
         } else if (lesson.character !in lesson.pronunciationAudio.spokenText) {
             failures += "$prefix audio spoken text does not contain its target"
         }
-        if (!lesson.review.approved || lesson.review.reviewer.isBlank() || lesson.review.reviewedAt.isNullOrBlank()) {
+        if (
+            requireApproval &&
+            (!lesson.review.approved || lesson.review.reviewer.isBlank() || lesson.review.reviewedAt.isNullOrBlank())
+        ) {
             failures += "$prefix lacks complete Chinese-teacher approval metadata"
         }
         lesson.usageExample?.let { example ->
@@ -77,6 +85,11 @@ fun requireValidLessonManifest(
 
     if (failures.isNotEmpty()) throw LessonContentValidationException(failures)
 }
+
+class LessonContentValidationException(val failures: List<String>) :
+    IllegalArgumentException(failures.joinToString(prefix = "Lesson content rejected:\n- ", separator = "\n- "))
+
+private fun isHanzi(ch: Char): Boolean = ch in '一'..'鿿'
 
 private fun toneOf(pinyin: String): Int {
     val marks = listOf("āēīōūǖ", "áéíóúǘ", "ǎěǐǒǔǚ", "àèìòùǜ")

@@ -1,0 +1,662 @@
+{
+    "contentVersion": "m4.1-draft-for-teacher-review",
+    "lessons": [
+        {
+            "character": "人",
+            "primaryReading": {
+                "pinyin": "rén",
+                "tone": 2
+            },
+            "learnerGloss": "man",
+            "usageExample": {
+                "text": "人人",
+                "segmentedPinyin": "rén rén",
+                "translation": "everyone",
+                "targetReading": "rén"
+            },
+            "pronunciationAudio": {
+                "spokenText": "人",
+                "assetPath": "audio/zh-Hans/4912771a4216d897b1f3c71bb0e4994e86410815.mp3"
+            },
+            "curriculumSequence": 1,
+            "contentVersion": "m4.1-draft-for-teacher-review",
+            "review": {
+                "approved": false,
+                "reviewer": ""
+            }
+        },
+        {
+            "character": "大",
+            "primaryReading": {
+                "pinyin": "dà",
+                "tone": 4
+            },
+            "learnerGloss": "big",
+            "usageExample": {
+                "text": "大人",
+                "segmentedPinyin": "dà rén",
+                "translation": "adult",
+                "targetReading": "dà"
+            },
+            "pronunciationAudio": {
+                "spokenText": "大",
+                "assetPath": "audio/zh-Hans/0889c349726f64ac6a687c91b9cc4b6efb69ad07.mp3"
+            },
+            "curriculumSequence": 2,
+            "contentVersion": "m4.1-draft-for-teacher-review",
+            "review": {
+                "approved": false,
+                "reviewer": ""
+            }
+        },
+        {
+            "character": "天",
+            "primaryReading": {
+                "pinyin": "tiān",
+                "tone": 1
+            },
+            "learnerGloss": "sky",
+            "usageExample": {
+                "text": "天天",
+                "segmentedPinyin": "tiān tiān",
+                "translation": "every day",
+                "targetReading": "tiān"
+            },
+            "pronunciationAudio": {
+                "spokenText": "天",
+                "assetPath": "audio/zh-Hans/c3304d1e49e3eaa7072ba35285041ebb452a0c0d.mp3"
+            },
+            "curriculumSequence": 3,
+            "contentVersion": "m4.1-draft-for-teacher-review",
+            "review": {
+                "approved": false,
+                "reviewer": ""
+            }
+        },
+        {
+            "character": "的",
+            "primaryReading": {
+                "pinyin": "de",
+                "tone": 5
+            },
+            "learnerGloss": "aim",
+            "pronunciationAudio": {
+                "spokenText": "的",
+                "assetPath": "audio/zh-Hans/0746bd624955e27081c6419ac31b592d6b683e95.mp3"
+            },
+            "curriculumSequence": 4,
+            "contentVersion": "m4.1-draft-for-teacher-review",
+            "review": {
+                "approved": false,
+                "reviewer": ""
+            }
+        },
+        {
+            "character": "了",
+            "primaryReading": {
+                "pinyin": "le",
+                "tone": 5
+            },
+            "learnerGloss": "clear",
+            "pronunciationAudio": {
+                "spokenText": "了",
+                "assetPath": "audio/zh-Hans/a5933e2a9e71d8f6bf5bbf52e659ccbcc5643bea.mp3"
+            },
+            "secondaryReadings": [
+                "liǎo"
+            ],
+            "curriculumSequence": 5,
+            "contentVersion": "m4.1-draft-for-teacher-review",
+            "review": {
+                "approved": false,
+                "reviewer": ""
+            }
+        },
+        {
+            "character": "是",
+            "primaryReading": {
+                "pinyin": "shì",
+                "tone": 4
+            },
+            "learnerGloss": "to be",
+            "pronunciationAudio": {
+                "spokenText": "是",
+                "assetPath": "audio/zh-Hans/30160a21b92a049fc2befcdb70039ed5099df41f.mp3"
+            },
+            "curriculumSequence": 6,
+            "contentVersion": "m4.1-draft-for-teacher-review",
+            "review": {
+                "approved": false,
+                "reviewer": ""
+            }
+        },
+        {
+            "character": "不",
+            "primaryReading": {
+                "pinyin": "bù",
+                "tone": 4
+            },
+            "learnerGloss": "no",
+            "usageExample": {
+                "text": "不是",
+                "segmentedPinyin": "bù shì",
+                "translation": "no; is not; not",
+                "targetReading": "bù"
+            },
+            "pronunciationAudio": {
+                "spokenText": "不",
+                "assetPath": "audio/zh-Hans/8fa7401e9077e3abfd81e15b9ffa8fb30893b969.mp3"
+            },
+            "curriculumSequence": 7,
+            "contentVersion": "m4.1-draft-for-teacher-review",
+            "review": {
+                "approved": false,
+                "reviewer": ""
+            }
+        },
+        {
+            "character": "有",
+            "primaryReading": {
+                "pinyin": "yǒu",
+                "tone": 3
+            },
+            "learnerGloss": "to have",
+            "usageExample": {
+                "text": "有人",
+                "segmentedPinyin": "yǒu rén",
+                "translation": "someone; people; anyone",
+                "targetReading": "yǒu"
+            },
+            "pronunciationAudio": {
+                "spokenText": "有",
+                "assetPath": "audio/zh-Hans/fbd5b75066a6dc39a3d486bfbcda44c9b9774a47.mp3"
+            },
+            "curriculumSequence": 8,
+            "contentVersion": "m4.1-draft-for-teacher-review",
+            "review": {
+                "approved": false,
+                "reviewer": ""
+            }
+        },
+        {
+            "character": "这",
+            "primaryReading": {
+                "pinyin": "zhè",
+                "tone": 4
+            },
+            "learnerGloss": "this",
+            "pronunciationAudio": {
+                "spokenText": "这",
+                "assetPath": "audio/zh-Hans/542523173c3e3439bd490fff653d2ee678407604.mp3"
+            },
+            "curriculumSequence": 9,
+            "contentVersion": "m4.1-draft-for-teacher-review",
+            "review": {
+                "approved": false,
+                "reviewer": ""
+            }
+        },
+        {
+            "character": "个",
+            "primaryReading": {
+                "pinyin": "gè",
+                "tone": 4
+            },
+            "learnerGloss": "this",
+            "usageExample": {
+                "text": "个人",
+                "segmentedPinyin": "gè rén",
+                "translation": "an individual; oneself; (attributive) personal; one's own",
+                "targetReading": "gè"
+            },
+            "pronunciationAudio": {
+                "spokenText": "个",
+                "assetPath": "audio/zh-Hans/f7b2a6ee68ec1aff82f710f27fd2dcb710ddc457.mp3"
+            },
+            "curriculumSequence": 10,
+            "contentVersion": "m4.1-draft-for-teacher-review",
+            "review": {
+                "approved": false,
+                "reviewer": ""
+            }
+        },
+        {
+            "character": "那",
+            "primaryReading": {
+                "pinyin": "nà",
+                "tone": 4
+            },
+            "learnerGloss": "that",
+            "usageExample": {
+                "text": "那个",
+                "segmentedPinyin": "nà ge",
+                "translation": "that one; that thing; that (as opposed to this)",
+                "targetReading": "nà"
+            },
+            "pronunciationAudio": {
+                "spokenText": "那",
+                "assetPath": "audio/zh-Hans/327049aa373876eec212b8fdbf25a3808ca308b4.mp3"
+            },
+            "curriculumSequence": 11,
+            "contentVersion": "m4.1-draft-for-teacher-review",
+            "review": {
+                "approved": false,
+                "reviewer": ""
+            }
+        },
+        {
+            "character": "都",
+            "primaryReading": {
+                "pinyin": "dōu",
+                "tone": 1
+            },
+            "learnerGloss": "all",
+            "usageExample": {
+                "text": "大都",
+                "segmentedPinyin": "dà dōu",
+                "translation": "for the most part; on the whole; also pr. [da4 du1]",
+                "targetReading": "dōu"
+            },
+            "pronunciationAudio": {
+                "spokenText": "都",
+                "assetPath": "audio/zh-Hans/d51dd8d130ce462e444239d77070d038fb8e920a.mp3"
+            },
+            "curriculumSequence": 12,
+            "contentVersion": "m4.1-draft-for-teacher-review",
+            "review": {
+                "approved": false,
+                "reviewer": ""
+            }
+        },
+        {
+            "character": "没",
+            "primaryReading": {
+                "pinyin": "méi",
+                "tone": 2
+            },
+            "learnerGloss": "not",
+            "usageExample": {
+                "text": "没有",
+                "segmentedPinyin": "méi yǒu",
+                "translation": "haven't; hasn't; doesn't exist",
+                "targetReading": "méi"
+            },
+            "pronunciationAudio": {
+                "spokenText": "没",
+                "assetPath": "audio/zh-Hans/ca0bc5e27c656c19f02757ac8b3014816bb65683.mp3"
+            },
+            "curriculumSequence": 13,
+            "contentVersion": "m4.1-draft-for-teacher-review",
+            "review": {
+                "approved": false,
+                "reviewer": ""
+            }
+        },
+        {
+            "character": "些",
+            "primaryReading": {
+                "pinyin": "xiē",
+                "tone": 1
+            },
+            "learnerGloss": "little",
+            "usageExample": {
+                "text": "这些",
+                "segmentedPinyin": "zhè xiē",
+                "translation": "these",
+                "targetReading": "xiē"
+            },
+            "pronunciationAudio": {
+                "spokenText": "些",
+                "assetPath": "audio/zh-Hans/468cbbc2c4f4de62b7b5a9bbc1fc3731885af1b3.mp3"
+            },
+            "curriculumSequence": 14,
+            "contentVersion": "m4.1-draft-for-teacher-review",
+            "review": {
+                "approved": false,
+                "reviewer": ""
+            }
+        },
+        {
+            "character": "前",
+            "primaryReading": {
+                "pinyin": "qián",
+                "tone": 2
+            },
+            "learnerGloss": "in front",
+            "pronunciationAudio": {
+                "spokenText": "前",
+                "assetPath": "audio/zh-Hans/073d8528405ef6313994e97e9b09181c166fdefc.mp3"
+            },
+            "curriculumSequence": 15,
+            "contentVersion": "m4.1-draft-for-teacher-review",
+            "review": {
+                "approved": false,
+                "reviewer": ""
+            }
+        },
+        {
+            "character": "怎",
+            "primaryReading": {
+                "pinyin": "zěn",
+                "tone": 3
+            },
+            "learnerGloss": "what? why? how?",
+            "pronunciationAudio": {
+                "spokenText": "怎",
+                "assetPath": "audio/zh-Hans/0448a9d839fb8da3a28833bdbdc3d63630991810.mp3"
+            },
+            "curriculumSequence": 16,
+            "contentVersion": "m4.1-draft-for-teacher-review",
+            "review": {
+                "approved": false,
+                "reviewer": ""
+            }
+        },
+        {
+            "character": "再",
+            "primaryReading": {
+                "pinyin": "zài",
+                "tone": 4
+            },
+            "learnerGloss": "again",
+            "usageExample": {
+                "text": "不再",
+                "segmentedPinyin": "bù zài",
+                "translation": "no more; no longer",
+                "targetReading": "zài"
+            },
+            "pronunciationAudio": {
+                "spokenText": "再",
+                "assetPath": "audio/zh-Hans/95fd8be0d9916deca7893619af22a689ad8b0166.mp3"
+            },
+            "curriculumSequence": 17,
+            "contentVersion": "m4.1-draft-for-teacher-review",
+            "review": {
+                "approved": false,
+                "reviewer": ""
+            }
+        },
+        {
+            "character": "后",
+            "primaryReading": {
+                "pinyin": "hòu",
+                "tone": 4
+            },
+            "learnerGloss": "after",
+            "usageExample": {
+                "text": "后天",
+                "segmentedPinyin": "hòu tiān",
+                "translation": "the day after tomorrow; life after birth (the period in which one develops through experiences, contrasted with 先天[xian1 tian1]); acquired (not innate or congenital)",
+                "targetReading": "hòu"
+            },
+            "pronunciationAudio": {
+                "spokenText": "后",
+                "assetPath": "audio/zh-Hans/7b55d5a1d45c0c705965dcee8467712bee07e927.mp3"
+            },
+            "curriculumSequence": 18,
+            "contentVersion": "m4.1-draft-for-teacher-review",
+            "review": {
+                "approved": false,
+                "reviewer": ""
+            }
+        },
+        {
+            "character": "先",
+            "primaryReading": {
+                "pinyin": "xiān",
+                "tone": 1
+            },
+            "learnerGloss": "first",
+            "usageExample": {
+                "text": "先前",
+                "segmentedPinyin": "xiān qián",
+                "translation": "before; previously",
+                "targetReading": "xiān"
+            },
+            "pronunciationAudio": {
+                "spokenText": "先",
+                "assetPath": "audio/zh-Hans/82d45ef2106fae32c4090e649e466d75ac5c4f42.mp3"
+            },
+            "curriculumSequence": 19,
+            "contentVersion": "m4.1-draft-for-teacher-review",
+            "review": {
+                "approved": false,
+                "reviewer": ""
+            }
+        },
+        {
+            "character": "关",
+            "primaryReading": {
+                "pinyin": "guān",
+                "tone": 1
+            },
+            "learnerGloss": "frontier pass",
+            "usageExample": {
+                "text": "有关",
+                "segmentedPinyin": "yǒu guān",
+                "translation": "to have sth to do with; to relate to; related to",
+                "targetReading": "guān"
+            },
+            "pronunciationAudio": {
+                "spokenText": "关",
+                "assetPath": "audio/zh-Hans/a3332f1c946792333ba42e4ffd437223b43c2c56.mp3"
+            },
+            "curriculumSequence": 20,
+            "contentVersion": "m4.1-draft-for-teacher-review",
+            "review": {
+                "approved": false,
+                "reviewer": ""
+            }
+        },
+        {
+            "character": "系",
+            "primaryReading": {
+                "pinyin": "xì",
+                "tone": 4
+            },
+            "learnerGloss": "system",
+            "pronunciationAudio": {
+                "spokenText": "系",
+                "assetPath": "audio/zh-Hans/09744c790dd7efa93b211862e2c5eb6fc1b48871.mp3"
+            },
+            "curriculumSequence": 21,
+            "contentVersion": "m4.1-draft-for-teacher-review",
+            "review": {
+                "approved": false,
+                "reviewer": ""
+            }
+        },
+        {
+            "character": "我",
+            "primaryReading": {
+                "pinyin": "wǒ",
+                "tone": 3
+            },
+            "learnerGloss": "I",
+            "pronunciationAudio": {
+                "spokenText": "我",
+                "assetPath": "audio/zh-Hans/34f201bc507e33caaef736de328bf041234d1138.mp3"
+            },
+            "curriculumSequence": 22,
+            "contentVersion": "m4.1-draft-for-teacher-review",
+            "review": {
+                "approved": false,
+                "reviewer": ""
+            }
+        },
+        {
+            "character": "你",
+            "primaryReading": {
+                "pinyin": "nǐ",
+                "tone": 3
+            },
+            "learnerGloss": "you",
+            "usageExample": {
+                "text": "你我",
+                "segmentedPinyin": "nǐ wǒ",
+                "translation": "you and I; everyone; all of us (in society)",
+                "targetReading": "nǐ"
+            },
+            "pronunciationAudio": {
+                "spokenText": "你",
+                "assetPath": "audio/zh-Hans/5630b886f9cd31702e7c1606eb1f62ab0c759063.mp3"
+            },
+            "curriculumSequence": 23,
+            "contentVersion": "m4.1-draft-for-teacher-review",
+            "review": {
+                "approved": false,
+                "reviewer": ""
+            }
+        },
+        {
+            "character": "他",
+            "primaryReading": {
+                "pinyin": "tā",
+                "tone": 1
+            },
+            "learnerGloss": "other",
+            "usageExample": {
+                "text": "他人",
+                "segmentedPinyin": "tā rén",
+                "translation": "another person; sb else; other people",
+                "targetReading": "tā"
+            },
+            "pronunciationAudio": {
+                "spokenText": "他",
+                "assetPath": "audio/zh-Hans/e31b569a0f1d9ff0c78f766cae3732af1be502da.mp3"
+            },
+            "curriculumSequence": 24,
+            "contentVersion": "m4.1-draft-for-teacher-review",
+            "review": {
+                "approved": false,
+                "reviewer": ""
+            }
+        },
+        {
+            "character": "她",
+            "primaryReading": {
+                "pinyin": "tā",
+                "tone": 1
+            },
+            "learnerGloss": "she",
+            "pronunciationAudio": {
+                "spokenText": "她",
+                "assetPath": "audio/zh-Hans/7f2fa5ddbee2c384a554f6ab18cbca5706a4a4ea.mp3"
+            },
+            "curriculumSequence": 25,
+            "contentVersion": "m4.1-draft-for-teacher-review",
+            "review": {
+                "approved": false,
+                "reviewer": ""
+            }
+        },
+        {
+            "character": "们",
+            "primaryReading": {
+                "pinyin": "men",
+                "tone": 5
+            },
+            "learnerGloss": "plural marker for pronouns and some nouns",
+            "usageExample": {
+                "text": "我们",
+                "segmentedPinyin": "wǒ men",
+                "translation": "we; us; ourselves; our",
+                "targetReading": "men"
+            },
+            "pronunciationAudio": {
+                "spokenText": "们",
+                "assetPath": "audio/zh-Hans/91c76e0b5a827e4bfd9ff8e70d5932e26daaf155.mp3"
+            },
+            "curriculumSequence": 26,
+            "contentVersion": "m4.1-draft-for-teacher-review",
+            "review": {
+                "approved": false,
+                "reviewer": ""
+            }
+        },
+        {
+            "character": "子",
+            "primaryReading": {
+                "pinyin": "zi",
+                "tone": 5
+            },
+            "learnerGloss": "son",
+            "pronunciationAudio": {
+                "spokenText": "子",
+                "assetPath": "audio/zh-Hans/219e08c960260762b72feca09bdd17aa3ab61910.mp3"
+            },
+            "curriculumSequence": 27,
+            "contentVersion": "m4.1-draft-for-teacher-review",
+            "review": {
+                "approved": false,
+                "reviewer": ""
+            }
+        },
+        {
+            "character": "女",
+            "primaryReading": {
+                "pinyin": "nǚ",
+                "tone": 3
+            },
+            "learnerGloss": "woman",
+            "usageExample": {
+                "text": "女人",
+                "segmentedPinyin": "nǚ rén",
+                "translation": "woman",
+                "targetReading": "nǚ"
+            },
+            "pronunciationAudio": {
+                "spokenText": "女",
+                "assetPath": "audio/zh-Hans/26bc84961cad3b7b144d9a1d8bb45ed245a28b1b.mp3"
+            },
+            "curriculumSequence": 28,
+            "contentVersion": "m4.1-draft-for-teacher-review",
+            "review": {
+                "approved": false,
+                "reviewer": ""
+            }
+        },
+        {
+            "character": "友",
+            "primaryReading": {
+                "pinyin": "yǒu",
+                "tone": 3
+            },
+            "learnerGloss": "friend",
+            "pronunciationAudio": {
+                "spokenText": "友",
+                "assetPath": "audio/zh-Hans/6cca7a3ec0671effbffa56e5bf00239fd6998802.mp3"
+            },
+            "curriculumSequence": 29,
+            "contentVersion": "m4.1-draft-for-teacher-review",
+            "review": {
+                "approved": false,
+                "reviewer": ""
+            }
+        },
+        {
+            "character": "儿",
+            "primaryReading": {
+                "pinyin": "ér",
+                "tone": 2
+            },
+            "learnerGloss": "son",
+            "usageExample": {
+                "text": "她是我女儿。",
+                "segmentedPinyin": "tā shì wǒ nǚ'ér",
+                "translation": "She is my daughter.",
+                "targetReading": "ér"
+            },
+            "pronunciationAudio": {
+                "spokenText": "儿",
+                "assetPath": "audio/zh-Hans/06af8ec0f409f31595297a24b6a728eff4eca5b2.mp3"
+            },
+            "curriculumSequence": 30,
+            "contentVersion": "m4.1-draft-for-teacher-review",
+            "review": {
+                "approved": false,
+                "reviewer": ""
+            }
+        }
+    ]
+}

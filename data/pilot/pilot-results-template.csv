@@ -1,0 +1,2 @@
+participantId,guardianConsent,teenAssent,firstQuestDate,firstQuestUnaided,coreDurationSeconds,fairness1to5,nextDayDate,nextDayRecallCount,thirdSessionDate,incidents,notes
+P1,yes,yes,2026-10-26,yes,480,5,2026-10-27,3,2026-10-28,,"Example row — replace with real, pseudonymous data."
