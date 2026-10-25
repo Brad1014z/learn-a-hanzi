@@ -63,3 +63,16 @@ device and turn them into the gate evidence:
 
 See [`data/corpus/README.md`](../data/corpus/README.md) for the recording phases, the
 `adb` pull command, and what may be committed.
+
+## Pilot results (facilitator worksheet)
+
+The pilot APK ships no telemetry; a facilitator records the gate facts on a pseudonymous
+worksheet.
+
+| Task | What it does |
+|---|---|
+| `./gradlew :data-ingest:analyzePilotResults` | Reads `data/pilot/pilot-results.csv` and writes `data/pilot/pilot-report.md` |
+| `./gradlew :data-ingest:checkPilotResults` | Same, but exits non-zero unless the participation and outcome gates pass |
+
+See [`docs/milestones/m4.1-pilot-protocol.md`](../docs/milestones/m4.1-pilot-protocol.md)
+and [`data/pilot/README.md`](../data/pilot/README.md).

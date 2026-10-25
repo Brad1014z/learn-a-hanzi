@@ -1,3 +1,7 @@
 # Raw sources (data/raw) and raw pilot exports (data/corpus/raw) stay local.
 # The generated corpus report is tracked as gate evidence.
 raw/
+
+# The real pilot worksheet and consent records stay local; the generated report is
+# tracked as gate evidence.
+pilot/pilot-results.csv

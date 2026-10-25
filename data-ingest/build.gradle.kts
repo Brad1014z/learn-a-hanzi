@@ -93,6 +93,24 @@ tasks.register<JavaExec>("checkPilotCorpus") {
     workingDir = rootDir
 }
 
+// Pilot protocol (docs/milestones/m4.1-pilot-protocol.md): the facilitator worksheet is
+// the measurement source. The signed pilot APK ships no telemetry.
+tasks.register<JavaExec>("analyzePilotResults") {
+    group = "verification"
+    description = "Analyze the facilitator worksheet and write data/pilot/pilot-report.md"
+    mainClass.set("io.github.brad1014z.hanzi.ingest.PilotResultsAnalyzerKt")
+    classpath = sourceSets["main"].runtimeClasspath
+    workingDir = rootDir
+}
+
+tasks.register<JavaExec>("checkPilotResults") {
+    group = "verification"
+    description = "Fail unless the pilot worksheet meets the M4.1 participation and outcome gates"
+    mainClass.set("io.github.brad1014z.hanzi.ingest.CheckPilotResultsKt")
+    classpath = sourceSets["main"].runtimeClasspath
+    workingDir = rootDir
+}
+
 // Tests read the checked-in dataset/audio by repo-relative path, like the tasks above.
 tasks.test {
     workingDir = rootDir

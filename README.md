@@ -50,7 +50,10 @@ final ([ADR 0001](./docs/adr/0001-application-id-frozen.md)), so pilot installs 
 place rather than forcing a reinstall that would wipe local progress. Tagging does not
 bypass the release gates in
 [`m4.1-release-gates`](./docs/milestones/m4.1-release-gates.md) — those are human
-decisions, not CI steps.
+decisions, not CI steps. Pilot sessions follow
+[`m4.1-pilot-protocol`](./docs/milestones/m4.1-pilot-protocol.md); the signed APK ships no
+telemetry, and the pseudonymous facilitator worksheet is checked by
+`./gradlew :data-ingest:checkPilotResults`.
 
 ## What this is
 
