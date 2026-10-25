@@ -228,8 +228,10 @@ signed out, forever.
       writes, edge-gated reads, no enumeration; console checklist in
       `firebase/README.md`.
 - [x] Offline fakes power every social surface with no Firebase project; the
-      signed-out, airplane-mode experience is untouched (INTERNET is now the app's
-      single permission, used only by the optional layer).
+      signed-out, airplane-mode experience is untouched. The optional layer adds
+      `INTERNET` and `ACCESS_NETWORK_STATE`; the only other permission is
+      `POST_NOTIFICATIONS`, requested at runtime solely for the opt-in daily reminder
+      (`10`). Learning never needs a network or a notification.
 
 **Definition of done (the demo):** dad's and the sons' phones befriend by QR and share
 one weekly board; a demo-day friend joins in under a minute; a third, signed-out phone

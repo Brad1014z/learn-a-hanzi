@@ -44,3 +44,38 @@ tasks.register<JavaExec>("generateAudio") {
     classpath = sourceSets["main"].runtimeClasspath
     workingDir = rootDir
 }
+
+// The deep half of the M4.1 content gate (docs/milestones/m4.1-release-gates.md): the
+// checked-in manifest is validated against the bundled dataset and audio. It needs no
+// data/raw/, so CI can run it on every push. An empty manifest is "pending" for CI and a
+// hard failure for the signing task.
+tasks.register<JavaExec>("verifyLessonManifest") {
+    group = "verification"
+    description = "Validate the checked-in teacher manifest (empty = pending, not a failure)"
+    mainClass.set("io.github.brad1014z.hanzi.ingest.VerifyLessonManifestKt")
+    classpath = sourceSets["main"].runtimeClasspath
+    workingDir = rootDir
+    args("--allow-pending")
+}
+
+tasks.register<JavaExec>("verifyPilotLessonManifest") {
+    group = "verification"
+    description = "Strict manifest gate for a signed release: empty or invalid fails"
+    mainClass.set("io.github.brad1014z.hanzi.ingest.VerifyLessonManifestKt")
+    classpath = sourceSets["main"].runtimeClasspath
+    workingDir = rootDir
+}
+
+// Teacher-review workflow: never approves anything, never touches the app asset.
+tasks.register<JavaExec>("draftLessonContent") {
+    group = "ingest"
+    description = "Generate a first-30 teacher-review draft + HTML/CSV review sheet"
+    mainClass.set("io.github.brad1014z.hanzi.ingest.DraftLessonContentKt")
+    classpath = sourceSets["main"].runtimeClasspath
+    workingDir = rootDir
+}
+
+// Tests read the checked-in dataset/audio by repo-relative path, like the tasks above.
+tasks.test {
+    workingDir = rootDir
+}

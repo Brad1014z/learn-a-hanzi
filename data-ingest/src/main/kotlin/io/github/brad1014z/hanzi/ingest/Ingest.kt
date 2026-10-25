@@ -3,6 +3,7 @@ package io.github.brad1014z.hanzi.ingest
 import io.github.brad1014z.hanzi.engine.data.HanziCoordinates
 import io.github.brad1014z.hanzi.engine.geometry.Point
 import io.github.brad1014z.hanzi.engine.data.LessonManifest
+import io.github.brad1014z.hanzi.engine.data.requireValidLessonManifest
 import io.github.brad1014z.hanzi.engine.svg.SvgPathParser
 import io.github.brad1014z.hanzi.engine.svg.mapPoints
 import io.github.brad1014z.hanzi.engine.svg.toPathString

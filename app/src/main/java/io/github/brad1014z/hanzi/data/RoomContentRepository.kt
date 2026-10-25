@@ -32,7 +32,14 @@ class RoomContentRepository(
         .bufferedReader()
         .use { json.decodeFromString<LessonManifest>(it.readText()) }
         .lessons
-        .filter { it.review.approved }
+        // "Approved" means complete teacher metadata, not just a boolean. The deep gate
+        // (:data-ingest:verifyPilotLessonManifest) enforces this at signing time; this is
+        // the runtime half of the same rule.
+        .filter {
+            it.review.approved &&
+                it.review.reviewer.isNotBlank() &&
+                !it.review.reviewedAt.isNullOrBlank()
+        }
         .associateBy { it.character }
     private val cache = mutableMapOf<String, CharacterData>()
     private var curriculumSequence: Map<String, Int>? = null

@@ -226,7 +226,13 @@ fun HanziApp() {
             val hub by produceState<HubState?>(null, progress, refresh) {
                 val now = System.currentTimeMillis()
                 val today = questStore.loadToday(now)
-                val due = today.due
+                // The release content gate applies to the quest too, not only to the
+                // shelves: due reviews can outlive a manifest change (restored progress,
+                // a reduced pilot set), and the starter trio is hardcoded. Intersect both
+                // with what this build is allowed to offer so an unreviewed character can
+                // never reach `load()` and fail mid-quest.
+                val offerable = loadedWorlds.flatMap { it.characters }.map { it.character }.toSet()
+                val due = today.due.filter { it.character in offerable }
                 val masteryByWorld = loadedWorlds.map { world ->
                     Ranks.masteryFraction(world.characters.map { progress[it.character] })
                 }
@@ -236,7 +242,7 @@ fun HanziApp() {
                     .map { it.character }
                     .filter { it !in progress }
                 val newCandidates = (
-                    QuestBuilder.STARTER_ORDER.filter { it !in progress } + gatedCandidates
+                    QuestBuilder.STARTER_ORDER.filter { it in offerable && it !in progress } + gatedCandidates
                 ).distinct()
                 val plan = QuestBuilder.buildDaily(due, newCandidates, today.introducedToday)
                 value = HubState(

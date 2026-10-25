@@ -34,3 +34,19 @@ generated content into the bundled SQLite the app reads.
   placeholders; naming belongs to the co-designer, spec 11).
 - `data/pinned/hsk1-words.json` — the pinned HSK 1 (2.0) word list (150 words,
   178 unique characters).
+
+## Teacher manifest workflow (M4.1 release gate)
+
+The signed-release content gate reads `app/src/main/assets/content/lesson-content-first30.json`.
+Three tasks work on it without needing `data/raw/`:
+
+| Task | What it does |
+|---|---|
+| `./gradlew :data-ingest:draftLessonContent` | Writes an unapproved first-30 draft + HTML/CSV review sheet to `data/review/` (see its README) |
+| `./gradlew :data-ingest:verifyLessonManifest` | Validates the checked-in manifest against the bundled dataset + audio; an empty manifest is “pending”, not a failure (CI) |
+| `./gradlew :data-ingest:verifyPilotLessonManifest` | The strict signing gate: empty or invalid fails |
+
+The deep rules (readings, tones, contiguous sequences, audio, teacher metadata, and
+examples that use only already-learned characters) live in
+`engine/.../data/LessonContentValidation.kt`, so CI, the ingest run, and the signing gate
+all enforce the same thing.

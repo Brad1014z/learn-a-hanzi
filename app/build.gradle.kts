@@ -111,6 +111,12 @@ val lessonManifestLabel = lessonManifestFile.relativeTo(rootDir).path
 val verifyPilotContent = tasks.register("verifyPilotContent") {
     group = "verification"
     description = "Fails a signed release build when no lesson content is teacher-approved."
+    // The deep check lives in :data-ingest: it validates the real manifest against the
+    // bundled dataset (readings, tones, example vocabulary) and audio assets, and it needs
+    // no data/raw/. The regex below stays as a fast, human-readable backstop for the
+    // empty-manifest case. (It used to be the *only* check, which could be satisfied by
+    // "approved": true with a blank reviewer or invalid content.)
+    dependsOn(":data-ingest:verifyPilotLessonManifest")
     val manifest = lessonManifestFile
     val manifestLabel = lessonManifestLabel
     inputs.file(manifest)

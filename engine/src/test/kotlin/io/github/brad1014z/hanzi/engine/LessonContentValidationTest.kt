@@ -1,11 +1,13 @@
-package io.github.brad1014z.hanzi.ingest
+package io.github.brad1014z.hanzi.engine
 
 import io.github.brad1014z.hanzi.engine.data.LessonContent
+import io.github.brad1014z.hanzi.engine.data.LessonContentValidationException
 import io.github.brad1014z.hanzi.engine.data.LessonManifest
 import io.github.brad1014z.hanzi.engine.data.PrimaryReading
 import io.github.brad1014z.hanzi.engine.data.PronunciationAudio
 import io.github.brad1014z.hanzi.engine.data.TeacherReview
 import io.github.brad1014z.hanzi.engine.data.UsageExample
+import io.github.brad1014z.hanzi.engine.data.requireValidLessonManifest
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
